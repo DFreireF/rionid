@@ -1,0 +1,14 @@
+Brho          6.90922
+GAMMAT        1.395
+dpop          0.00001 
+dToTSystem    0.000001
+RefRangeMin1 243.05
+RefRangeMax1 243.15
+RefRangeMin2 0.99
+RefRangeMax2 1.01
+RefRangeMin3 511
+RefRangeMax3 512 
+ScaleFactor   0.01
+ReferenceIsotope 72Ge
+ReferenceIsotopeCharge 32
+Harmonic      125
