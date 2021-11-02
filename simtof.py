@@ -118,23 +118,10 @@ FlagRead = False
 # filename: 
 datafile_name = "data/mass.rd"
 print(f"reading ame data from {datafile_name}")
-mass_dat=np.genfromtxt(datafile_name)
+mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
 print("Read ame ok.")
 # (could also use barion here)
-
-# ------------- obsolete method ------------------
-# # importing mass names from first column
-# mass_name=np.loadtxt(datafile_name,usecols=0,dtype=str)
-
-# # importing mass data into array for floats
-# numcols  = np.arange(0,4,1) #for extracting the 5 float columns
-# numrows  = 3250 #3250 rows of data
-# mass_dat = np.zeros((len(numcols),numrows)) #initialise empty array
-
-# for i in range(len(numcols)):
-#   mass_dat[i,:] = np.loadtxt(datafile_name, usecols=(numcols[i]+1), \
-#     dtype=float)
-# -------------------------------------------------
+# reads NUCNAM, Z, A, MassExcess, ERR
 
 #  ========= 2. Load binding energy file ===========
 print("Read from ElBiEn_2007.dat")
@@ -228,7 +215,7 @@ c_4.SetLogy(0)
 
 # ============= 5. Importing Input params ===============
 # Imported as strings 
-params_file = "simtof/InputParameters.txt"
+params_file = "data/InputParameters.txt"
 print(f"reading input parameters from {params_file}")
 with open(params_file) as f:
   inputparams = dict([line.split() for line in f])
@@ -243,6 +230,7 @@ gi.RemovePoint(0)
 
 	  for(int j=0,j<NProductions,j++)
 	    {
+        # NUCNAM from ame, 
 	      if(NUCNAM[i] == PRONAM[j])
 		{
 		  m                 = A[i]*amu + MassExcess[i]/1e3 - Z[i]*me + BindingEnergyDB[Z[i]  ][ChargeDB[j]-1]/1e6   // MeV 
