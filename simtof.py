@@ -1,7 +1,7 @@
 from ROOT import *
 import numpy as np
 from scipy.constants import physical_constants
-
+import lisereader as lread
 import Barion as bar
 import iqtools as iqt
 
@@ -99,60 +99,32 @@ class simtof():
     frequence_center = 0
     OrbitalLength    = 108430
 
-    NA       = 0
-    lines    = 0
-    FlagRead = False
-
-    # ========= declaring even more variables ==========
-    # These were initialised as strings:
-    # NUCNAM[6000], ET[6000], PPSString1[6000]
-    # PRONAM[6000],PPSString[6000],ChargeString[6000]
-
-    # LISEFileName, T1, lineBuffer, Flag
-    # P[30001],ReferenceIsotopeCharge
-    # m,me,amu,BindingEnergy
-    # Clight,E,U,GAMMAT,CSREL,EMASS,UK,ACCP,Brho,gamma,beta,velocity,
-    # RevolutionTime_Rel,Frequence_Rel, m_Rel,moq,moq_Rel,Z_Rel,dpop,
-    # dToTSystem,RefRangeMin1,RefRangeMax1,RefRangeMin2,RefRangeMax2,
-    # RefRangeMin3,RefRangeMax3,ScaleFactor
-    # StartLine,StopLine,NProductions,Harmonic
-    # char PPStmp[20]
-    # string ReferenceIsotope
-    # ifstream fAME03,fLISE,fBindingEnergy
+    # Unecessary I think
+    # NA       = 0
+    # lines    = 0
+    # FlagRead = False
 
     # ============= 1. Importing ame data ==================
     # filename: 
     datafile_name = "data/mass.rd"
     print(f"reading ame data from {datafile_name}")
-
-    # importing mass names from first column
-    mass_name=np.loadtxt(datafile_name,usecols=0,dtype=str)
-
-    # importing mass data into array for floats
-    numcols  = np.arange(0,4,1) #for extracting the 5 float columns
-    numrows  = 3250 #3250 rows of data
-    mass_dat = np.zeros((len(numcols),numrows)) #initialise empty array
-
-    for i in range(len(numcols)):
-      mass_dat[i,:] = np.loadtxt(datafile_name, usecols=(numcols[i]+1), \
-        dtype=float)
-
-    # mass_dat=np.genfromtxt(datafile_name)
-
+    mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
     print("Read ame ok.")
+    # (could also use barion here)
+    # reads NUCNAM, Z, A, MassExcess, ERR
 
     #  ========= 2. Load binding energy file ===========
     print("Read from ElBiEn_2007.dat")
-    fBindingEnergy = np.loadtxt("ElBiEn_2007.dat")
+    fBindingEnergy = np.genfromtxt("data/ElBiEn_2007.dat",skip_header=11)
     print("Read ok.")
 
     # ============== 3. Load LISE file =================
-    LISEFileName = "simtof/E143_TEline-ESR-72Ge.lpp"
+    LISEFileName = "data/E143_TEline-ESR-72Ge.lpp"
     print(f"reading from {LISEFileName}")
-    # (reading from calculations part: isotope name and 6th charge state.)
-    # np.genfromtxt(LISEFileName,dtype=str)
+    lise_file=lread.LISEreader(LISEFileName)
+    lise_data=lise_file.get_info_all()
     print("Read ok.")
-
+    # ===================================================
     hSim = TH1F("hSim","hSim",200e3,400,700)
     gZ   = TGraph()
     gA   = TGraph()
@@ -231,7 +203,7 @@ class simtof():
 
     # ============= 5. Importing Input params ===============
     # Imported as strings 
-    params_file = "simtof/InputParameters.txt"
+    params_file = "data/InputParameters.txt"
     print(f"reading input parameters from {params_file}")
     with open(params_file) as f:
       inputparams = dict([line.split() for line in f])
@@ -246,6 +218,7 @@ class simtof():
 
               for(int j=0,j<NProductions,j++)
                 {
+                  #  NUCNAM from ame
                   if(NUCNAM[i] == PRONAM[j])
                     {
                       m                 = A[i]*amu + MassExcess[i]/1e3 - Z[i]*me + BindingEnergyDB[Z[i]  ][ChargeDB[j]-1]/1e6   // MeV 
