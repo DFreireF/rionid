@@ -1,7 +1,7 @@
 from ROOT import *
 import numpy as np
 from scipy.constants import physical_constants
-
+import lisereader as lread
 import Barion as bar
 
 #importing constants
@@ -83,51 +83,23 @@ class simtof():###
     frequence_center = 0
     OrbitalLength    = 108430
 
-    NA       = 0
-    lines    = 0
-    FlagRead = False
-
-    # ========= declaring even more variables ==========
-    # These were initialised as strings:
-    # NUCNAM[6000], ET[6000], PPSString1[6000]
-    # PRONAM[6000],PPSString[6000],ChargeString[6000]
-
-    # LISEFileName, T1, lineBuffer, Flag
-    # P[30001],ReferenceIsotopeCharge
-    # m,me,amu,BindingEnergy
-    # Clight,E,U,GAMMAT,CSREL,EMASS,UK,ACCP,Brho,gamma,beta,velocity,
-    # RevolutionTime_Rel,Frequence_Rel, m_Rel,moq,moq_Rel,Z_Rel,dpop,
-    # dToTSystem,RefRangeMin1,RefRangeMax1,RefRangeMin2,RefRangeMax2,
-    # RefRangeMin3,RefRangeMax3,ScaleFactor
-    # StartLine,StopLine,NProductions,Harmonic
-    # char PPStmp[20]
-    # string ReferenceIsotope
-    # ifstream fAME03,fLISE,fBindingEnergy
+# Unecessary I think
+# NA       = 0
+# lines    = 0
+# FlagRead = False
 
     # ============= 1. Importing ame data ==================
     # filename: 
     datafile_name = "data/mass.rd"
     print(f"reading ame data from {datafile_name}")
-
-    # importing mass names from first column
-    mass_name=np.loadtxt(datafile_name,usecols=0,dtype=str)
-
-    # importing mass data into array for floats
-    numcols  = np.arange(0,4,1) #for extracting the 5 float columns
-    numrows  = 3250 #3250 rows of data
-    mass_dat = np.zeros((len(numcols),numrows)) #initialise empty array
-
-    for i in range(len(numcols)):
-      mass_dat[i,:] = np.loadtxt(datafile_name, usecols=(numcols[i]+1), \
-        dtype=float)
-
-    # mass_dat=np.genfromtxt(datafile_name)
-
+mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
     print("Read ame ok.")
+    # (could also use barion here)
+# reads NUCNAM, Z, A, MassExcess, ERR
 
     #  ========= 2. Load binding energy file ===========
     print("Read from ElBiEn_2007.dat")
-    fBindingEnergy = np.loadtxt("ElBiEn_2007.dat")
+    fBindingEnergy = np.genfromtxt("data/ElBiEn_2007.dat",skip_header=11)
     print("Read ok.")
 
     # ============== 3. Load LISE file =================
