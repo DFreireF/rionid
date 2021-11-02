@@ -58,7 +58,7 @@ class simtof():###
     # hFFT_px
     ###Insert routine that reads and transform every file in a loop
     def read(self,)
-    fdata = TFile("0000013.iq.tdms.root")
+    fdata = TFile("0000017.iq.tdms.root")
     TH1D = hFFT_px #please check this against original line! TH1D *hFFT_px
 
     fdata.GetObject("FFT_Average",hFFT_px)
