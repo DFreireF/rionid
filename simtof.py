@@ -10,7 +10,7 @@ Clight = physical_constants['speed of light in vacuum'][0]
 me     = physical_constants['electron mass energy equivalent in MeV'][0]
 
 #############################################################
-######################### SIMTOF.PY #########################
+######################### SIMTOF.PY ########################
 #############################################################
 # --------------------------------------------------------- #
 #     Originally written in C++ by Dr. Rui Jiu Chen         #
