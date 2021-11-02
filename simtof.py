@@ -83,19 +83,19 @@ class simtof():###
     frequence_center = 0
     OrbitalLength    = 108430
 
-# Unecessary I think
-# NA       = 0
-# lines    = 0
-# FlagRead = False
+    # Unecessary I think
+    # NA       = 0
+    # lines    = 0
+    # FlagRead = False
 
     # ============= 1. Importing ame data ==================
     # filename: 
     datafile_name = "data/mass.rd"
     print(f"reading ame data from {datafile_name}")
-mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
+    mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
     print("Read ame ok.")
     # (could also use barion here)
-# reads NUCNAM, Z, A, MassExcess, ERR
+    # reads NUCNAM, Z, A, MassExcess, ERR
 
     #  ========= 2. Load binding energy file ===========
     print("Read from ElBiEn_2007.dat")
@@ -103,12 +103,12 @@ mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
     print("Read ok.")
 
     # ============== 3. Load LISE file =================
-    LISEFileName = "simtof/E143_TEline-ESR-72Ge.lpp"
+    LISEFileName = "data/E143_TEline-ESR-72Ge.lpp"
     print(f"reading from {LISEFileName}")
-    # (reading from calculations part: isotope name and 6th charge state.)
-    # np.genfromtxt(LISEFileName,dtype=str)
+    lise_file=lread.LISEreader(LISEFileName)
+    lise_data=lise_file.get_info_all()
     print("Read ok.")
-
+    # ===================================================
     hSim = TH1F("hSim","hSim",200e3,400,700)
     gZ   = TGraph()
     gA   = TGraph()
@@ -187,7 +187,7 @@ mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
 
     # ============= 5. Importing Input params ===============
     # Imported as strings 
-    params_file = "simtof/InputParameters.txt"
+    params_file = "data/InputParameters.txt"
     print(f"reading input parameters from {params_file}")
     with open(params_file) as f:
       inputparams = dict([line.split() for line in f])
@@ -202,6 +202,7 @@ mass_dat=np.genfromtxt(datafile_name,usecols=range(0,4),dtype=str)
 
               for(int j=0,j<NProductions,j++)
                 {
+                  #  NUCNAM from ame
                   if(NUCNAM[i] == PRONAM[j])
                     {
                       m                 = A[i]*amu + MassExcess[i]/1e3 - Z[i]*me + BindingEnergyDB[Z[i]  ][ChargeDB[j]-1]/1e6   // MeV 
