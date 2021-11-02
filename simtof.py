@@ -3,6 +3,7 @@ import numpy as np
 from scipy.constants import physical_constants
 
 import Barion as bar
+import iqtools as iqt
 
 #importing constants
 amu    = physical_constants['atomic mass constant energy equivalent in MeV'][0]
@@ -18,17 +19,17 @@ me     = physical_constants['electron mass energy equivalent in MeV'][0]
 #         Adapted to Python by George Hudson-Chang          #
 # --------------------------------------------------------- #
 
-class simtof():###
+class simtof():
     
     def SetPadFormat (self):
       self.c_1 = SetPadFormat(TPad)
       self.c_1.SetLeftMargin(0.10)
       self.c_1.SetRightMargin(0.05)
-      self. c_1.SetTopMargin(0.12)
-      self. c_1.SetBottomMargin(0.25)
-      self. c_1.SetFrameBorderMode(0)
+      self.c_1.SetTopMargin(0.12)
+      self.c_1.SetBottomMargin(0.25)
+      self.c_1.SetFrameBorderMode(0)
       self.c_1.SetLogy(1)
-      self. c_1.Draw()
+      self.c_1.Draw()
     def SetCanvasFormat (self):
       self.c = SetCanvasFormat(TCanvas)
       self.c.SetFillColor(0)
@@ -42,8 +43,8 @@ class simtof():###
       self.tex.SetLineWidth(2)
       self.tex.Draw()
     def GAMMATCalculator(self):
-      gGAMMAT = TGraph()
-      k = -0.5
+      gGAMMAT=TGraph()
+      k=-0.5
       gGAMMAT.SetName("gGAMMAT")
       gGAMMAT.SetPoint(0,0.998,2.4234 + (0.98 - 1)*k)
       gGAMMAT.SetPoint(1,1.000,2.4234 + (1.000 - 1)*k)
@@ -54,10 +55,25 @@ class simtof():###
     gStyle.SetOptTitle(0)
     gGAMMAT = GAMMATCalculator()
     gGAMMAT.Print()
+
+
+    def do_something(self,filename):
+     iq = iqt.get_iq_object(filename)
+     iq.iqt.read_samples(...)
+     iq.iqt.get_spectrogramme....
+     
+    #plot / calculate etc...
+    filename="245-j.txt"
+    def read_to_root(self,filename):
+        with open(filename) as f:
+            files=f.readlines()
+        for file in files:
+            call do_something(file)
+
+
+
     
     # hFFT_px
-    ###Insert routine that reads and transform every file in a loop
-    def read(self,)
     fdata = TFile("0000013.iq.tdms.root")
     TH1D = hFFT_px #please check this against original line! TH1D *hFFT_px
 
