@@ -1,23 +1,8 @@
 from ROOT import *
 import numpy as np
-from scipy.constants import physical_constants
 import lisereader as lread
 import Barion as bar
 import iqtools as iqt
-
-#importing constants
-amu    = physical_constants['atomic mass constant energy equivalent in MeV'][0]
-Clight = physical_constants['speed of light in vacuum'][0]
-me     = physical_constants['electron mass energy equivalent in MeV'][0]
-
-#############################################################
-######################### SIMTOF.PY #########################
-#############################################################
-# --------------------------------------------------------- #
-#     Originally written in C++ by Dr. Rui Jiu Chen         #
-#                           ---                             #
-#         Adapted to Python by George Hudson-Chang          #
-# --------------------------------------------------------- #
 
 class simtof():
     
@@ -57,10 +42,29 @@ class simtof():
     gGAMMAT.Print()
 
 
-    def do_something(self,filename):
+    def FFT_root(self,filename):
      iq = iqt.get_iq_object(filename)
-     iq.iqt.read_samples(...)
+     iq.iqt.read_samples(LFRAMES*NFRAMES)
      iq.iqt.get_spectrogramme....
+     ff, pp, _ = iq.get_fft()
+     pp = pp / pp.max()
+     h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
+     for i in range(len(ff)):
+        h.SetBinContent(i, pp[i])
+     f = TFile(filename + '.root', 'RECREATE')
+     h.Write()
+     f.Close()
+
+     
+LFRAMES = 2**18
+NFRAMES = 2*8
+
+
+def do_plot(filename):
+    iq = get_iq_object(filename)
+    iq.read_samples(LFRAMES * NFRAMES)
+    
+     
      
     #plot / calculate etc...
     filename="245-j.txt"
@@ -69,6 +73,9 @@ class simtof():
             files=f.readlines()
         for file in files:
             call do_something(file)
+             #do fft 1D
+             #save to root
+             #implement ruiju brho-root ploting and find brho
 
 
 
@@ -221,8 +228,8 @@ class simtof():
                   #  NUCNAM from ame
                   if(NUCNAM[i] == PRONAM[j])
                     {
-                      m                 = A[i]*amu + MassExcess[i]/1e3 - Z[i]*me + BindingEnergyDB[Z[i]  ][ChargeDB[j]-1]/1e6   // MeV 
-                      moq               = m/ChargeDB[j]/amu
+                      m                 = A[i]*bar.AMEData.UU + MassExcess[i]/1e3 - Z[i]*bar.AMEData.ME + BindingEnergyDB[Z[i]  ][ChargeDB[j]-1]/1e6   // MeV 
+                      moq               = m/ChargeDB[j]/bar.AMEData.UU
                       gZ   .SetPoint(k,moq,Z[i])
                       gA   .SetPoint(k,moq,A[i])
                       gCharge   .SetPoint(k,moq,ChargeDB[j])
@@ -231,9 +238,9 @@ class simtof():
                       if(NUCNAM[i] == ReferenceIsotope&&ChargeDB[j]==ReferenceIsotopeCharge)
                         {
                           moq_Rel           = moq
-                          gamma             = sqrt(pow(Brho*ChargeDB[j]*Clight/m,2)+1)
+                          gamma             = sqrt(pow(Brho*ChargeDB[j]*bar.AMEData.CC/m,2)+1)
                           beta              = sqrt(gamma*gamma -1)/gamma
-                          velocity          = Clight * beta
+                          velocity          = bar.AMEData.CC * beta
                           Frequence_Rel     = 1000/(OrbitalLength/velocity)
                         }
                       k++
