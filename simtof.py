@@ -1,6 +1,6 @@
 from ROOT import *
 import numpy as np
-import lisereader
+import lisereader as lread
 import amedata
 from scipy.constants import physical_constants
 from simtof.lisereader import LISEreader
@@ -93,26 +93,10 @@ Frequence_Tl     = 243.2712156
 frequence_center = 0
 OrbitalLength    = 108430
 
-NA       = 0
-lines    = 0
-FlagRead = False
-
-# ========= declaring even more variables ==========
-# These were initialised as strings:
-# NUCNAM[6000], ET[6000], PPSString1[6000]
-# PRONAM[6000],PPSString[6000],ChargeString[6000]
-
-# LISEFileName, T1, lineBuffer, Flag
-# P[30001],ReferenceIsotopeCharge
-# m,me,amu,BindingEnergy
-# Clight,E,U,GAMMAT,CSREL,EMASS,UK,ACCP,Brho,gamma,beta,velocity,
-# RevolutionTime_Rel,Frequence_Rel, m_Rel,moq,moq_Rel,Z_Rel,dpop,
-# dToTSystem,RefRangeMin1,RefRangeMax1,RefRangeMin2,RefRangeMax2,
-# RefRangeMin3,RefRangeMax3,ScaleFactor
-# StartLine,StopLine,NProductions,Harmonic
-# char PPStmp[20]
-# string ReferenceIsotope
-# ifstream fAME03,fLISE,fBindingEnergy
+# Unecessary I think
+# NA       = 0
+# lines    = 0
+# FlagRead = False
 
 # ============= 1. Importing ame data ==================
 # filename: 
@@ -129,9 +113,9 @@ fBindingEnergy = np.genfromtxt("data/ElBiEn_2007.dat",skip_header=11)
 print("Read ok.")
  
 # ============== 3. Load LISE file =================
-LISEFileName = "simtof/E143_TEline-ESR-72Ge.lpp"
+LISEFileName = "data/E143_TEline-ESR-72Ge.lpp"
 print(f"reading from {LISEFileName}")
-lise_file=LISEreader(LISEFileName)
+lise_file=lread.LISEreader(LISEFileName)
 lise_data=lise_file.get_info_all()
 print("Read ok.")
 
