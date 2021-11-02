@@ -213,7 +213,7 @@ class simtof():###
     SetPadFormat(c_4)
     c_4.SetLogy(0)
 
-    # ============= 5. Importing Input params ===============
+    # ============= 5. Importing Input params ============
     # Imported as strings 
     params_file = "simtof/InputParameters.txt"
     print(f"reading input parameters from {params_file}")
