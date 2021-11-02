@@ -43,74 +43,39 @@ class simtof():
 
 
     def FFT_root(self,filename):
-     iq = iqt.get_iq_object(filename)
-     iq.iqt.read_samples(LFRAMES*NFRAMES)
-     iq.iqt.get_spectrogramme....
-     ff, pp, _ = iq.get_fft()
-     pp = pp / pp.max()
-     h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
-     for i in range(len(ff)):
-        h.SetBinContent(i, pp[i])
-     f = TFile(filename + '.root', 'RECREATE')
-     h.Write()
-     f.Close()
-
+        
+        LFRAMES = 2**18
+        NFRAMES = 2*8
+        iq = iqt.get_iq_object(filename)
+        iq.iqt.read_samples(LFRAMES*NFRAMES)
+        iq.iqt.get_spectrogramme()
+        ff, pp, _ = iq.get_fft()
+        pp = pp / pp.max()
+        h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
+        for i in range(len(ff)):
+           h.SetBinContent(i, pp[i])
+        f = TFile(filename + '.root', 'RECREATE')
+        h.Write()
+        f.GetObject("FFT_Average",h)
+        f.close()
+        nbins         = h.GetXaxis().GetNbins()
+        frequence_min = h.GetXaxis().GetXmin()/1000 +245
+        frequence_max = h.GetXaxis().GetXmax()/1000 +245
+        y_max         = h.GetMaximum()
+        h.GetXaxis().SetLimits(frequence_min, frequence_max)
+        Frequence_Tl     = 243.2712156
+        frequence_center = 0
+        OrbitalLength    = 108430
      
-LFRAMES = 2**18
-NFRAMES = 2*8
 
-
-def do_plot(filename):
-    iq = get_iq_object(filename)
-    iq.read_samples(LFRAMES * NFRAMES)
-    
-     
-     
-    #plot / calculate etc...
     filename="245-j.txt"
     def read_to_root(self,filename):
         with open(filename) as f:
             files=f.readlines()
         for file in files:
-            call do_something(file)
-             #do fft 1D
-             #save to root
+            self.FFT_root(file)
              #implement ruiju brho-root ploting and find brho
-
-
-
-    
-    # hFFT_px
-    fdata = TFile("0000013.iq.tdms.root")
-    TH1D = hFFT_px #please check this against original line! TH1D *hFFT_px
-
-    fdata.GetObject("FFT_Average",hFFT_px)
-    nbins         = hFFT_px.GetXaxis().GetNbins()
-    frequence_min = hFFT_px.GetXaxis().GetXmin()
-    frequence_max = hFFT_px.GetXaxis().GetXmax()
-    y_max         = hFFT_px.GetMaximum()
-
-    # User output
-    print(f"nbins = {nbins}")
-    print(f"frequence_min = {frequence_min}")
-    print(f"frequence_max = {frequence_max}")
-
-    #setting new min/max
-    frequence_min = 245 + frequence_min/1000
-    frequence_max = 245 + frequence_max/1000
-    #setting limits
-    hFFT_px.GetXaxis().SetLimits(frequence_min, frequence_max)
-
-    # ============ declaring variables ================
-    Frequence_Tl     = 243.2712156
-    frequence_center = 0
-    OrbitalLength    = 108430
-
-    # Unecessary I think
-    # NA       = 0
-    # lines    = 0
-    # FlagRead = False
-
+           
     # ============= 1. Importing ame data ==================
     # filename: 
     datafile_name = "data/mass.rd"
