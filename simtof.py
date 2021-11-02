@@ -1,6 +1,10 @@
 from ROOT import *
 import numpy as np
+import lisereader
+import amedata
 from scipy.constants import physical_constants
+from simtof.lisereader import LISEreader
+
 
 #importing constants
 amu    = physical_constants['atomic mass constant energy equivalent in MeV'][0]
@@ -13,9 +17,8 @@ me     = physical_constants['electron mass energy equivalent in MeV'][0]
 # --------------------------------------------------------- #
 #     Originally written in C++ by Dr. Rui Jiu Chen         #
 #                           ---                             #
-#         Adapted to Python by George Hudson-Chang          #
+#                                                           #
 # --------------------------------------------------------- #
-
 
 #Below is unecessary i think:
 #----------------------------
@@ -65,7 +68,7 @@ gGAMMAT = GAMMATCalculator()
 gGAMMAT.Print()
 
 # hFFT_px
-fdata = TFile("0000013.iq.tdms.root")
+fdata = TFile("data/0000013.iq.tdms.root")
 TH1D = hFFT_px #please check this against original line! TH1D *hFFT_px
 
 fdata.GetObject("FFT_Average",hFFT_px)
@@ -115,34 +118,37 @@ FlagRead = False
 # filename: 
 datafile_name = "data/mass.rd"
 print(f"reading ame data from {datafile_name}")
-
-# importing mass names from first column
-mass_name=np.loadtxt(datafile_name,usecols=0,dtype=str)
-
-# importing mass data into array for floats
-numcols  = np.arange(0,4,1) #for extracting the 5 float columns
-numrows  = 3250 #3250 rows of data
-mass_dat = np.zeros((len(numcols),numrows)) #initialise empty array
-
-for i in range(len(numcols)):
-  mass_dat[i,:] = np.loadtxt(datafile_name, usecols=(numcols[i]+1), \
-    dtype=float)
-
-# mass_dat=np.genfromtxt(datafile_name)
-
+mass_dat=np.genfromtxt(datafile_name)
 print("Read ame ok.")
+# (could also use barion here)
+
+# ------------- obsolete method ------------------
+# # importing mass names from first column
+# mass_name=np.loadtxt(datafile_name,usecols=0,dtype=str)
+
+# # importing mass data into array for floats
+# numcols  = np.arange(0,4,1) #for extracting the 5 float columns
+# numrows  = 3250 #3250 rows of data
+# mass_dat = np.zeros((len(numcols),numrows)) #initialise empty array
+
+# for i in range(len(numcols)):
+#   mass_dat[i,:] = np.loadtxt(datafile_name, usecols=(numcols[i]+1), \
+#     dtype=float)
+# -------------------------------------------------
 
 #  ========= 2. Load binding energy file ===========
 print("Read from ElBiEn_2007.dat")
-fBindingEnergy = np.loadtxt("ElBiEn_2007.dat")
+fBindingEnergy = np.genfromtxt("data/ElBiEn_2007.dat",skip_header=11)
 print("Read ok.")
  
 # ============== 3. Load LISE file =================
 LISEFileName = "simtof/E143_TEline-ESR-72Ge.lpp"
 print(f"reading from {LISEFileName}")
-# (reading from calculations part: isotope name and 6th charge state.)
-# np.genfromtxt(LISEFileName,dtype=str)
+lise_file=LISEreader(LISEFileName)
+lise_data=lise_file.get_info_all()
 print("Read ok.")
+
+# ===================================================
 
 hSim = TH1F("hSim","hSim",200e3,400,700)
 gZ   = TGraph()
