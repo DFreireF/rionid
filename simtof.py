@@ -3,7 +3,8 @@ import numpy as np
 import lisereader as lread
 import Barion as bar
 import iqtools as iqt
-
+import amedata
+import particle
 
 class simtof():
   def __init__(self):
@@ -81,26 +82,33 @@ class simtof():
         self.FFT_root(file)
         #implement ruiju brho-root ploting and find brho
 
-  # ============= 1. Importing ame data ==================
-  datafile_name = 'data/mass.rd' #this also needs to go test section
-  print(f'reading ame data from {datafile_name}')
-  mass_dat = np.genfromtxt(datafile_name, usecols=range(0, 4), dtype=str)
-  print('Read ame ok.')
-  # (could also use barion here)
-  # reads NUCNAM, Z, A, MassExcess, ERR
+  # ===================================================
+  # 1. Importing ame data
+  # datafile_name = 'data/mass.rd' #this also needs to go test section
+  # print(f'reading ame data from {datafile_name}')
+  # mass_dat = np.genfromtxt(datafile_name, usecols=range(0, 4), dtype=str)
+  # print('Read ame ok.')
+  
+  # 1.1 Import ame instead using barion:
+  ame = amedata.AMEData()
+  ame.init_ame_db
+  ame_data = ame.ame_table
+  # needs: NUCNAM (column 5+6), Z(4), A(5), MassExcess (8), ERR (9)
 
-  #  ========= 2. Load binding energy file ===========
-  print('Read from ElBiEn_2007.dat')
+  # 2. Load binding energy file
   fBindingEnergy = np.genfromtxt('data/ElBiEn_2007.dat', skip_header=11)
-  print('Read ok.')
 
-  # ============== 3. Load LISE file =================
+  # 3. Load LISE file
   LISEFileName = 'data/E143_TEline-ESR-72Ge.lpp'
-  print(f'reading from {LISEFileName}')
   lise_file = lread.LISEreader(LISEFileName)
   lise_data = lise_file.get_info_all()
-  print('Read ok.')
-  # ===================================================
+  
+  # 4. Importing Input params
+  params_file = 'data/InputParameters.txt'
+  inputparams={k:(float(v) if v.replace('.','').isdigit() else v) 
+               for k,v in [line.split() for line in open(params_file)]}
+  
+  # new tgraphs
   hSim = TH1F('hSim','hSim',200e3,400,700)
   gCharge = TGraph()
   gZ   = TGraph()
@@ -123,67 +131,59 @@ class simtof():
   hSRRF = TH1F('hSRRF', 'simulated relative revolution frequence',
                 nbins, (frequence_center+frequence_min)/Frequence_Tl,
                 (frequence_center+frequence_max)/Frequence_Tl)
-
   hSRF.SetLineStyle(2)
   hSRRF.SetLineStyle(2)
 
   # ================= 4. Tpad Setup =================
-  #Tpad r3
-  r3 = TRandom3()
+  def setup_tpad(self):
+    #Tpad r3
+    r3 = TRandom3()
 
-  #Tpad c0
-  c0 = TCanvas('c0', 'c0', 0, 0, 1000, 300)
-  SetCanvasFormat(c0)
+    #Tpad c0
+    c0 = TCanvas('c0', 'c0', 0, 0, 1000, 300)
+    SetCanvasFormat(c0)
 
-  #Tpad c
-  c = TCanvas('c', 'c', 0, 0, 1000, 880)
-  SetCanvasFormat(c)
-  c.cd()
+    #Tpad c
+    c = TCanvas('c', 'c', 0, 0, 1000, 880)
+    SetCanvasFormat(c)
+    c.cd()
 
-  #Tpad c_1
-  c_1 = TPad('c_1', 'c_1', 0.00, 0.75, 0.99, 0.99)
-  SetPadFormat(c_1)
-  c.cd()
+    #Tpad c_1
+    c_1 = TPad('c_1', 'c_1', 0.00, 0.75, 0.99, 0.99)
+    SetPadFormat(c_1)
+    c.cd()
 
-  #Tpad c_2
-  c_2 = TPad('c_2', 'c_2', 0.0, 0.50, 0.99, 0.75)
-  SetPadFormat(c_2)
-  c.cd()
+    #Tpad c_2
+    c_2 = TPad('c_2', 'c_2', 0.0, 0.50, 0.99, 0.75)
+    SetPadFormat(c_2)
+    c.cd()
 
-  #Tpad c_2_1
-  c_2_1 = TPad('c_2_1', 'c_2_1', 0.70, 0.6, 0.86, 0.7189711)
-  SetPadFormat(c_2_1)
-  c_2_1.SetLeftMargin(0.02857143)
-  c_2_1.SetRightMargin(0.02857143)
-  c_2_1.SetTopMargin(0.01851852)
-  c_2_1.SetBottomMargin(0.01851852)
+    #Tpad c_2_1
+    c_2_1 = TPad('c_2_1', 'c_2_1', 0.70, 0.6, 0.86, 0.7189711)
+    SetPadFormat(c_2_1)
+    c_2_1.SetLeftMargin(0.02857143)
+    c_2_1.SetRightMargin(0.02857143)
+    c_2_1.SetTopMargin(0.01851852)
+    c_2_1.SetBottomMargin(0.01851852)
 
-  #Tpad c_2_2
-  c_2_2 = TPad('c_2_2', 'c_2_2', 0.45, 0.6, 0.61, 0.7189711)
-  SetPadFormat(c_2_2)
-  c_2_2.SetLeftMargin(0.02857143)
-  c_2_2.SetRightMargin(0.02857143)
-  c_2_2.SetTopMargin(0.01851852)
-  c_2_2.SetBottomMargin(0.01851852)
-  c.cd()
+    #Tpad c_2_2
+    c_2_2 = TPad('c_2_2', 'c_2_2', 0.45, 0.6, 0.61, 0.7189711)
+    SetPadFormat(c_2_2)
+    c_2_2.SetLeftMargin(0.02857143)
+    c_2_2.SetRightMargin(0.02857143)
+    c_2_2.SetTopMargin(0.01851852)
+    c_2_2.SetBottomMargin(0.01851852)
+    c.cd()
 
-  #Tpad c_3
-  c_3 = TPad('c_3', 'c_3', 0.0, 0.25, 0.99, 0.50)
-  SetPadFormat(c_3)
-  c.cd()
+    #Tpad c_3
+    c_3 = TPad('c_3', 'c_3', 0.0, 0.25, 0.99, 0.50)
+    SetPadFormat(c_3)
+    c.cd()
 
-  #Tpad c_4
-  c_4 = TPad('c_4', 'c_4', 0.0, 0.0, 0.99, 0.25)
-  SetPadFormat(c_4)
-  c_4.SetLogy(0)
-
-  # ============= 5. Importing Input params ===============
-  # Imported as strings
-  params_file = 'data/InputParameters.txt'
-  print(f'reading input parameters from {params_file}')
-  with open(params_file) as f:
-    inputparams = dict([line.split() for line in f])
-  print(f'read ok.')
+    #Tpad c_4
+    c_4 = TPad('c_4', 'c_4', 0.0, 0.0, 0.99, 0.25)
+    SetPadFormat(c_4)
+    c_4.SetLogy(0)
 
   gZ.RemovePoint(0)
   gA.RemovePoint(0)
@@ -191,44 +191,48 @@ class simtof():
   gmoq.RemovePoint(0)
   gi.RemovePoint(0)
 
-
 # next section can replace with barion function 
-  for(int j=0,j<NProductions,j++)
-    {
-      #  NUCNAM from ame
-      if(NUCNAM[i] == PRONAM[j])
-        {
-          m                 = A[i]*bar.AMEData.UU + MassExcess[i]/1e3 - Z[i]*bar.AMEData.ME + BindingEnergyDB[Z[i]  ][ChargeDB[j]-1]/1e6   // MeV 
-          moq               = m/ChargeDB[j]/bar.AMEData.UU
-          gZ   .SetPoint(k,moq,Z[i])
-          gA   .SetPoint(k,moq,A[i])
-          gCharge   .SetPoint(k,moq,ChargeDB[j])
-          gmoq .SetPoint(k,moq,moq)
-          gi   .SetPoint(k,moq,j)
-          if(NUCNAM[i] == ReferenceIsotope&&ChargeDB[j]==ReferenceIsotopeCharge)
-            {
-              moq_Rel           = moq
-              gamma             = sqrt(pow(Brho*ChargeDB[j]*bar.AMEData.CC/m,2)+1)
-              beta              = sqrt(gamma*gamma -1)/gamma
-              velocity          = bar.AMEData.CC * beta
-              Frequence_Rel     = 1000/(OrbitalLength/velocity)
-            }
-          k++
-        }
-    }	
-              
-gZ.Sort()
-gA.Sort()
-gCharge.Sort()
-gmoq.Sort()
-gi.Sort()
-char tmp[100]
-sprintf(tmp,'output_%d.tof',Harmonic)
-ofstream fout(tmp)
-std::cout.precision(10)
+  # for(int j=0,j<NProductions,j++)
+  # need new for loop
+  # e.g. for i,element in lise_data:
+  
+    #  NUCNAM from ame, PRONAM from lise
+    # if(NUCNAM[i] == PRONAM[j])
+    
+    # below: if name string and A number match:
+  for lise in lise_data:
+    for ame in ame_data:
+      if lise[0]==ame[6] and lise[1]==ame[5]:
+        particle_name = Particle(zz,nn,ame_data,ring)
+        m = amedata.to_mev(particle_name.get_ionic_mass_in_u())
+        moq = particle_name.get_ionic_moq_in_u()
+      
+      m = A[i]*bar.AMEData.UU + MassExcess[i]/1e3 - Z[i]*bar.AMEData.ME + BindingEnergyDB[Z[i]][ChargeDB[j]-1]/1e6 #in MeV
+      moq = m/ChargeDB[j]/bar.AMEData.UU
+      gZ   .SetPoint(k, moq, Z[i])
+      gA   .SetPoint(k, moq, A[i])
+      gCharge.SetPoint(k, moq, ChargeDB[j])
+      gmoq .SetPoint(k, moq, moq)
+      gi   .SetPoint(k, moq, j)
+      if(NUCNAM[i] == ReferenceIsotope and ChargeDB[j] == ReferenceIsotopeCharge)
+      moq_Rel = moq
+        gamma         = sqrt(pow(Brho*ChargeDB[j]*bar.AMEData.CC/m,2)+1)
+        beta          = sqrt(gamma*gamma -1)/gamma
+        velocity      = bar.AMEData.CC * beta
+        Frequence_Rel = 1000/(OrbitalLength/velocity)
 
-double index,ZZZ,AAA,Charge,moq,SRRF,SRF
-int kkk=0
+  gZ.Sort()
+  gA.Sort()
+  gCharge.Sort()
+  gmoq.Sort()
+  gi.Sort()
+  char tmp[100]
+  sprintf(tmp,'output_%d.tof',Harmonic)
+  ofstream fout(tmp)
+  std::cout.precision(10)
+
+  double index,ZZZ,AAA,Charge,moq,SRRF,SRF
+  int kkk=0
   for(int i=0i<gZ.GetN()i++)
     gZ     .GetPoint(i,moqDB[i],ZZZ)	
     gA     .GetPoint(i,moqDB[i],AAA)	
@@ -236,15 +240,15 @@ int kkk=0
     gmoq   .GetPoint(i,moqDB[i],moq)	
     gi     .GetPoint(i,moqDB[i],index)
 
-    # ====== 1. simulated relative revolution frequence ======
+    # 1. simulated relative revolution frequency
     SRRF   = 1-1/GAMMAT/GAMMAT*(moqDB[i]-moq_Rel)/moq_Rel
 
-    # ====== 2. simulated revolution frequence ===============
+    # 2. simulated revolution frequency
     SRF= SRRF*Frequence_Rel*(Harmonic)
     Nx_SRF = hSRF.GetXaxis().FindBin(SRF)
     hSRF.SetBinContent(Nx_SRF,PPS[(index)]*y_max*0.01)
 
-    # ====== 3. ===============================================
+    # 3. 
     SRRF = SRF/(Frequence_Rel*(Harmonic))
     Nx_SRRF = hSRRF.GetXaxis().FindBin(SRRF)
     hSRRF.SetBinContent(Nx_SRRF,1)
