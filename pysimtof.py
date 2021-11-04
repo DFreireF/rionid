@@ -200,7 +200,7 @@ class simtof():
     # if(NUCNAM[i] == PRONAM[j])
     
     # below: if name string and A number match:
-  for lise in lise_data:
+  for i,lise in enumerate(lise_data): #i gives line index
     for ame in ame_data:
       if lise[0]==ame[6] and lise[1]==ame[5]:
         particle_name = Particle(zz,nn,ame_data,ring)
@@ -214,9 +214,9 @@ class simtof():
       gCharge.SetPoint(k, moq, ChargeDB[j])
       gmoq .SetPoint(k, moq, moq)
       gi   .SetPoint(k, moq, j)
-      if(NUCNAM[i] == ReferenceIsotope and ChargeDB[j] == ReferenceIsotopeCharge)
+      if(NUCNAM[i] == inputparams['ReferenceIsotope'] and ChargeDB[j] == inputparams['ReferenceIsotopeCharge'])
       moq_Rel = moq
-        gamma         = sqrt(pow(Brho*ChargeDB[j]*bar.AMEData.CC/m,2)+1)
+        gamma         = sqrt(pow(inputparams['Brho']*ChargeDB[j]*bar.AMEData.CC/m,2)+1)
         beta          = sqrt(gamma*gamma -1)/gamma
         velocity      = bar.AMEData.CC * beta
         Frequence_Rel = 1000/(OrbitalLength/velocity)
@@ -227,7 +227,7 @@ class simtof():
   gmoq.Sort()
   gi.Sort()
   char tmp[100]
-  sprintf(tmp,'output_%d.tof',Harmonic)
+  sprintf(tmp,'output_%d.tof',inputparams['Harmonic'])
   ofstream fout(tmp)
   std::cout.precision(10)
 
@@ -241,27 +241,27 @@ class simtof():
     gi     .GetPoint(i,moqDB[i],index)
 
     # 1. simulated relative revolution frequency
-    SRRF   = 1-1/GAMMAT/GAMMAT*(moqDB[i]-moq_Rel)/moq_Rel
+    SRRF   = 1-1/inputparams['GAMMAT']/inputparams['GAMMAT']*(moqDB[i]-moq_Rel)/moq_Rel
 
     # 2. simulated revolution frequency
-    SRF= SRRF*Frequence_Rel*(Harmonic)
+    SRF= SRRF*Frequence_Rel*(inputparams['Harmonic'])
     Nx_SRF = hSRF.GetXaxis().FindBin(SRF)
     hSRF.SetBinContent(Nx_SRF,PPS[(index)]*y_max*0.01)
 
     # 3. 
-    SRRF = SRF/(Frequence_Rel*(Harmonic))
+    SRRF = SRF/(Frequence_Rel*(inputparams['Harmonic']))
     Nx_SRRF = hSRRF.GetXaxis().FindBin(SRRF)
     hSRRF.SetBinContent(Nx_SRRF,1)
 
-    fout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(Harmonic)<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
-    cout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(Harmonic)<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
+    fout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
+    cout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
   }
       fout.close()
 
   c_1.cd()
   gPad.SetBottomMargin(0.08)
   hFFT_px.Draw()
-  hFFT_px.GetXaxis().SetRangeUser(RefRangeMin1,RefRangeMax1)
+  hFFT_px.GetXaxis().SetRangeUser(inputparams['RefRangeMin1'],inputparams['RefRangeMax1'])
   hSRF.Draw('same')
   hSRF.SetLineColor(3)
   c_1.Update()
@@ -278,7 +278,7 @@ class simtof():
   hFFT_px_ref.Draw()
   hFFT_px_ref.Scale(0.00000001)
   hFFT_px_ref.GetYaxis().SetRangeUser(1,1e3)
-  hFFT_px_ref.GetXaxis().SetRangeUser(RefRangeMin2,RefRangeMax2)
+  hFFT_px_ref.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
   hSRRF.Draw('same')
 
   c_2_1.cd()
@@ -327,7 +327,7 @@ class simtof():
   hSRRF.GetYaxis().SetTitleFont(42)
   hSRRF.GetYaxis().SetTitleOffset(0.5)	  	
   hSRRF.GetYaxis().SetNdivisions(505)  
-  hSRRF.GetXaxis().SetRangeUser(RefRangeMin2,RefRangeMax2)
+  hSRRF.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
   hSRRF.Scale(100)
   c_3.Update()
 
@@ -342,15 +342,15 @@ class simtof():
   gSystem.Sleep(10)
   cout<<'exit or not? [Exit,exit]'<<endl
   cout<<'Frequence_Rel = '<<Frequence_Rel<<endl
-  cout<<'Harmonic = '<<Harmonic<<endl
-  cout<<'Frequence_Rel*(Harmonic) = '<<Frequence_Rel*(Harmonic)<<endl
+  cout<<'Harmonic = '<<inputparams['Harmonic']<<endl
+  cout<<'Frequence_Rel*(Harmonic) = '<<Frequence_Rel*(inputparams['Harmonic'])
   cout<<'Frequence_Tl  = '<<Frequence_Tl<<endl
   cin>>Flag
   cout<<Flag<<endl
 
     
   char tmp[100]
-  sprintf(tmp,'simtof_%d.root',Harmonic)
+  sprintf(tmp,'simtof_%d.root',inputparams['Harmonic'])
   TFile = TFile(tmp,'recreate')
   hFFT_px.Write()
   hFFT_px_ref.Write()

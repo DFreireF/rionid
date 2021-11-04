@@ -1,4 +1,4 @@
-### simtof.py adapted from Dr Rui Jiu Chen's code
+### pysimtof.py adapted from Dr Rui Jiu Chen's code
 
 #### Dependencies
 Requires [Barion](https://github.com/xaratustrah/barion) from [@Xaratustrah](https://github.com/xaratustrah) to pull ame data.
