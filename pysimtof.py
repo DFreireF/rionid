@@ -80,7 +80,7 @@ class simtof():
         files = f.readlines()
     for file in files:
         self.FFT_root(file)
-        #implement ruiju brho-root ploting and find brho
+        #find brho
 
   # ===================================================
   # 1. Importing ame data
@@ -95,8 +95,8 @@ class simtof():
   ame_data = ame.ame_table
   # needs: NUCNAM (column 5+6), Z(4), A(5), MassExcess (8), ERR (9)
 
-  # 2. Load binding energy file
-  fBindingEnergy = np.genfromtxt('data/ElBiEn_2007.dat', skip_header=11)
+  # 2. Load binding energy file; Not necessay I think
+  #fBindingEnergy = np.genfromtxt('data/ElBiEn_2007.dat', skip_header=11)
 
   # 3. Load LISE file
   LISEFileName = 'data/E143_TEline-ESR-72Ge.lpp'
@@ -194,73 +194,54 @@ class simtof():
   
   self.remove_points()
 
-# next section can replace with barion function 
-  # for(int j=0,j<NProductions,j++)
-  # need new for loop
-  # e.g. for i,element in lise_data:
-  
-    #  NUCNAM from ame, PRONAM from lise
-    # if(NUCNAM[i] == PRONAM[j])
-    
-    # below: if name string and A number match:
+  k=0
+  ofstream fout('output_%d.tof',inputparams['Harmonic'])
+  # below: if name string and A number match:
   for i,lise in enumerate(lise_data): #i gives line index
     for ame in ame_data:
       if lise[0]==ame[6] and lise[1]==ame[5]:
         particle_name = Particle(zz,nn,ame_data,ring)
-        m = amedata.to_mev(particle_name.get_ionic_mass_in_u())
-        moq = particle_name.get_ionic_moq_in_u()
-      
-      m = A[i]*bar.AMEData.UU + MassExcess[i]/1e3 - Z[i]*bar.AMEData.ME + BindingEnergyDB[Z[i]][ChargeDB[j]-1]/1e6 #in MeV
-      moq = m/ChargeDB[j]/bar.AMEData.UU
-      gZ   .SetPoint(k, moq, Z[i])
-      gA   .SetPoint(k, moq, A[i])
-      gCharge.SetPoint(k, moq, ChargeDB[j])
-      gmoq .SetPoint(k, moq, moq)
-      gi   .SetPoint(k, moq, j)
-      if(NUCNAM[i] == inputparams['ReferenceIsotope'] and ChargeDB[j] == inputparams['ReferenceIsotopeCharge'])
-      moq_Rel = moq
-        gamma         = sqrt(pow(inputparams['Brho']*ChargeDB[j]*bar.AMEData.CC/m,2)+1)
-        beta          = sqrt(gamma*gamma -1)/gamma
-        velocity      = bar.AMEData.CC * beta
-        Frequence_Rel = 1000/(OrbitalLength/velocity)
+        m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
+        moq[k] = particle_name.get_ionic_moq_in_u()
+        
+        gZ   .SetPoint(k, moq[k], lise[2])
+        gA   .SetPoint(k, moq[k], lise[1])
+        gCharge.SetPoint(k, moq[k], lise[4])
+        gmoq .SetPoint(k, moq[k], moq[k])
+        gi   .SetPoint(k, moq[k], lise[5])
+        if(lise[0] == inputparams['ReferenceIsotope'] and lise[4] == inputparams['ReferenceIsotopeCharge'])
+            moq_Rel = moq[k]
+            gamma         = sqrt(pow(inputparams['Brho']*lise[4]/bar.AMEData.CC/m,2)+1) #this is wrong (relations + unit analysis) ; c must be dividing (now corrected) --> implications of this? probably it cancels out somehow in the relations of interest calculated
+            beta          = sqrt(gamma*gamma -1)/gamma
+            velocity      = bar.AMEData.CC * beta
+            Frequence_Rel = 1000/(OrbitalLength/velocity)
+            
+        # 1. simulated relative revolution frequency
+        SRRF[k]   = 1-1/inputparams['GAMMAT']/inputparams['GAMMAT']*(moqDB[k]-moq_Rel)/moq_Rel
+        # 2. simulated revolution frequency
+        SRF[k]= SRRF[k]*Frequence_Rel*(inputparams['Harmonic'])
+        Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
+        hSRF.SetBinContent(Nx_SRF[k],PPS[(index)]*y_max*0.01)
+        # 3. 
+        SRRF[k] = SRF[k]/(Frequence_Rel*(inputparams['Harmonic']))
+        Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
+        hSRRF.SetBinContent(Nx_SRRF[k],1)
+        #fout
+        fout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
+        cout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
+        k+=1
+        
+  fout.close()
 
-  gZ.Sort()
-  gA.Sort()
-  gCharge.Sort()
-  gmoq.Sort()
-  gi.Sort()
-  char tmp[100]
-  sprintf(tmp,'output_%d.tof',inputparams['Harmonic'])
-  ofstream fout(tmp)
-  std::cout.precision(10)
-
-  double index,ZZZ,AAA,Charge,moq,SRRF,SRF
-  int kkk=0
-  for(int i=0i<gZ.GetN()i++)
-    gZ     .GetPoint(i,moqDB[i],ZZZ)	
-    gA     .GetPoint(i,moqDB[i],AAA)	
-    gCharge.GetPoint(i,moqDB[i],Charge)	
-    gmoq   .GetPoint(i,moqDB[i],moq)	
-    gi     .GetPoint(i,moqDB[i],index)
-
-    # 1. simulated relative revolution frequency
-    SRRF   = 1-1/inputparams['GAMMAT']/inputparams['GAMMAT']*(moqDB[i]-moq_Rel)/moq_Rel
-
-    # 2. simulated revolution frequency
-    SRF= SRRF*Frequence_Rel*(inputparams['Harmonic'])
-    Nx_SRF = hSRF.GetXaxis().FindBin(SRF)
-    hSRF.SetBinContent(Nx_SRF,PPS[(index)]*y_max*0.01)
-
-    # 3. 
-    SRRF = SRF/(Frequence_Rel*(inputparams['Harmonic']))
-    Nx_SRRF = hSRRF.GetXaxis().FindBin(SRRF)
-    hSRRF.SetBinContent(Nx_SRRF,1)
-
-    fout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
-    cout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
-  }
-      fout.close()
-
+  def root_sort(self):#sort in decreasing order
+    gZ.Sort()
+    gA.Sort()
+    gCharge.Sort()
+    gmoq.Sort()
+    gi.Sort()
+    
+  self.root_sort()
+  
   c_1.cd()
   gPad.SetBottomMargin(0.08)
   h.Draw()
@@ -352,9 +333,7 @@ class simtof():
   cout<<Flag<<endl
 
     
-  char tmp[100]
-  sprintf(tmp,'simtof_%d.root',inputparams['Harmonic'])
-  TFile = TFile(tmp,'recreate')
+  fout_root = TFile(('simtof_%d.tof',inputparams['Harmonic']),'recreate')
   h.Write()
   h_ref.Write()
   hSRRF.Write()
