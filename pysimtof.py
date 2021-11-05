@@ -69,11 +69,11 @@ class simtof():
     frequence_max = h.GetXaxis().GetXmax()/1000 +245
     y_max         = h.GetMaximum()
     h.GetXaxis().SetLimits(frequence_min, frequence_max)
-    Frequence_Tl     = 243.2712156
+    Frequence_Tl     = 243.2712156 #MHz
     frequence_center = 0
-    OrbitalLength    = 108430
+    OrbitalLength    = 108430 #mm
     
-  filename = '245-j.txt'  # this needs to go in test section
+  filename = '245-j.txt'  # this needs to go in test section; File containing all the data files taken in June with the 245MHz
 
   def read_to_root(self, filename):
     with open(filename) as f:
@@ -104,60 +104,60 @@ class simtof():
   lise_data = lise_file.get_info_all()
   
   # 4. Importing Input params
-  params_file = 'data/InputParameters.txt'
+  params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
   inputparams={k:(float(v) if v.replace('.','').isdigit() else v) 
                for k,v in [line.split() for line in open(params_file)]}
   
-  # new tgraphs
-  hSim = TH1F('hSim','hSim',200e3,400,700)
-  gCharge = TGraph()
-  gZ   = TGraph()
-  gA   = TGraph()
-  gmoq = TGraph()
-  gi   = TGraph()
-  gSim = TGraph()
-  gSim.SetLineColor(2)
-  gSim.SetName('gSim')
-
-  # FFT px ref
-  hFFT_px_ref = TH1F('hFFT_px_ref', 'hFFT_px_ref',
+  def root_histo(self):
+    hSim = TH1D('hSim','hSim',200e3,400,700)
+    # FFT px ref
+    h_ref = TH1D('h_ref', 'h_ref',
                       nbins, (frequence_center+frequence_min)/Frequence_Tl,
                       (frequence_center+frequence_max)/Frequence_Tl)
-  # SRF
-  hSRF = TH1F('hSRF', 'simulated revolution frequence',
+    # SRF
+    hSRF = TH1D('hSRF', 'simulated revolution frequence',
               nbins, (frequence_center+frequence_min),
               (frequence_center+frequence_max))
-  # SRRF
-  hSRRF = TH1F('hSRRF', 'simulated relative revolution frequence',
+    # SRRF
+    hSRRF = TH1D('hSRRF', 'simulated relative revolution frequence',
                 nbins, (frequence_center+frequence_min)/Frequence_Tl,
                 (frequence_center+frequence_max)/Frequence_Tl)
-  hSRF.SetLineStyle(2)
-  hSRRF.SetLineStyle(2)
+    hSRF.SetLineStyle(2)
+    hSRRF.SetLineStyle(2)
+    
+  self.root_histo()
+  # new tgraphs
+  def root_graph(self):
+    gCharge = TGraph()
+    gZ   = TGraph()
+    gA   = TGraph()
+    gmoq = TGraph()
+    gi   = TGraph()
+    gSim = TGraph()
+    gSim.SetLineColor(2)
+    gSim.SetName('gSim')
+    
+  self.root_graph()
 
   # ================= 4. Tpad Setup =================
   def setup_tpad(self):
     #Tpad r3
     r3 = TRandom3()
-
     #Tpad c0
     c0 = TCanvas('c0', 'c0', 0, 0, 1000, 300)
     SetCanvasFormat(c0)
-
     #Tpad c
     c = TCanvas('c', 'c', 0, 0, 1000, 880)
     SetCanvasFormat(c)
     c.cd()
-
     #Tpad c_1
     c_1 = TPad('c_1', 'c_1', 0.00, 0.75, 0.99, 0.99)
     SetPadFormat(c_1)
     c.cd()
-
     #Tpad c_2
     c_2 = TPad('c_2', 'c_2', 0.0, 0.50, 0.99, 0.75)
     SetPadFormat(c_2)
     c.cd()
-
     #Tpad c_2_1
     c_2_1 = TPad('c_2_1', 'c_2_1', 0.70, 0.6, 0.86, 0.7189711)
     SetPadFormat(c_2_1)
@@ -165,7 +165,6 @@ class simtof():
     c_2_1.SetRightMargin(0.02857143)
     c_2_1.SetTopMargin(0.01851852)
     c_2_1.SetBottomMargin(0.01851852)
-
     #Tpad c_2_2
     c_2_2 = TPad('c_2_2', 'c_2_2', 0.45, 0.6, 0.61, 0.7189711)
     SetPadFormat(c_2_2)
@@ -174,22 +173,26 @@ class simtof():
     c_2_2.SetTopMargin(0.01851852)
     c_2_2.SetBottomMargin(0.01851852)
     c.cd()
-
     #Tpad c_3
     c_3 = TPad('c_3', 'c_3', 0.0, 0.25, 0.99, 0.50)
     SetPadFormat(c_3)
     c.cd()
-
     #Tpad c_4
     c_4 = TPad('c_4', 'c_4', 0.0, 0.0, 0.99, 0.25)
     SetPadFormat(c_4)
     c_4.SetLogy(0)
-
-  gZ.RemovePoint(0)
-  gA.RemovePoint(0)
-  gCharge.RemovePoint(0)
-  gmoq.RemovePoint(0)
-  gi.RemovePoint(0)
+   
+  self.setup_tpad()
+  def remove_points(self):
+    k=int(gZ.GetN())
+    for i in range(0,k):
+        gZ.RemovePoint(0)
+        gA.RemovePoint(0)
+        gCharge.RemovePoint(0)
+        gmoq.RemovePoint(0)
+        gi.RemovePoint(0)
+  
+  self.remove_points()
 
 # next section can replace with barion function 
   # for(int j=0,j<NProductions,j++)
@@ -260,37 +263,37 @@ class simtof():
 
   c_1.cd()
   gPad.SetBottomMargin(0.08)
-  hFFT_px.Draw()
-  hFFT_px.GetXaxis().SetRangeUser(inputparams['RefRangeMin1'],inputparams['RefRangeMax1'])
+  h.Draw()
+  h.GetXaxis().SetRangeUser(inputparams['RefRangeMin1'],inputparams['RefRangeMax1'])
   hSRF.Draw('same')
   hSRF.SetLineColor(3)
   c_1.Update()
 
   c_2.cd()
   gPad.SetBottomMargin(0.01)
-  for(int nnn=0nnn<hFFT_px.GetXaxis().GetNbins()nnn++)
+  for(int nnn=0nnn<h.GetXaxis().GetNbins()nnn++)
             
-  double x_ref = (hFFT_px.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
-  double y     = hFFT_px.GetBinContent(nnn)
-  Int_t nx_ref = hFFT_px_ref. GetXaxis().FindBin(x_ref)
-  hFFT_px_ref.SetBinContent(nx_ref,y)
+  double x_ref = (h.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
+  double y     = h.GetBinContent(nnn)
+  Int_t nx_ref = h_ref. GetXaxis().FindBin(x_ref)
+  h_ref.SetBinContent(nx_ref,y)
 
-  hFFT_px_ref.Draw()
-  hFFT_px_ref.Scale(0.00000001)
-  hFFT_px_ref.GetYaxis().SetRangeUser(1,1e3)
-  hFFT_px_ref.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
+  h_ref.Draw()
+  h_ref.Scale(0.00000001)
+  h_ref.GetYaxis().SetRangeUser(1,1e3)
+  h_ref.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
   hSRRF.Draw('same')
 
   c_2_1.cd()
-  hFFT_px_ref_small1  = hFFT_px_ref.Clone('hFFT_px_ref_small1')
-  hFFT_px_ref_small1.Draw()
-  hFFT_px_ref_small1.GetXaxis().SetRangeUser(1.0010,1.0032)
+  h_ref_small1  = h_ref.Clone('h_ref_small1')
+  h_ref_small1.Draw()
+  h_ref_small1.GetXaxis().SetRangeUser(1.0010,1.0032)
   hSRRF.Draw('same')
 
   c_2_2.cd()      
-  hFFT_px_ref_small2  = hFFT_px_ref.Clone('hFFT_px_ref_small2')
-  hFFT_px_ref_small2.Draw()
-  hFFT_px_ref_small2.GetXaxis().SetRangeUser(0.99994,1.00004)
+  h_ref_small2  = h_ref.Clone('h_ref_small2')
+  h_ref_small2.Draw()
+  h_ref_small2.GetXaxis().SetRangeUser(0.99994,1.00004)
   hSRRF.Draw('same')
 
   #============= latex text: ==============
@@ -352,8 +355,8 @@ class simtof():
   char tmp[100]
   sprintf(tmp,'simtof_%d.root',inputparams['Harmonic'])
   TFile = TFile(tmp,'recreate')
-  hFFT_px.Write()
-  hFFT_px_ref.Write()
+  h.Write()
+  h_ref.Write()
   hSRRF.Write()
   hSRF.Write()
   fout_root.Close()
