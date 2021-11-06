@@ -48,7 +48,7 @@ class simtof():
   gStyle.SetOptTitle(0)
   gGAMMAT = GAMMATCalculator()
   gGAMMAT.Print()
-
+  
   def FFT_root(self, filename):
     LFRAMES = 2**18
     NFRAMES = 2*8
@@ -82,28 +82,17 @@ class simtof():
         self.FFT_root(file)
         #find brho
 
-  # ===================================================
-  # 1. Importing ame data
-  # datafile_name = 'data/mass.rd' #this also needs to go test section
-  # print(f'reading ame data from {datafile_name}')
-  # mass_dat = np.genfromtxt(datafile_name, usecols=range(0, 4), dtype=str)
-  # print('Read ame ok.')
-  
-  # 1.1 Import ame instead using barion:
+  # 1 Import ame instead using barion:
   ame = amedata.AMEData()
   ame.init_ame_db
   ame_data = ame.ame_table
-  # needs: NUCNAM (column 5+6), Z(4), A(5), MassExcess (8), ERR (9)
 
-  # 2. Load binding energy file; Not necessay I think
-  #fBindingEnergy = np.genfromtxt('data/ElBiEn_2007.dat', skip_header=11)
-
-  # 3. Load LISE file
+  # 2. Load LISE file
   LISEFileName = 'data/E143_TEline-ESR-72Ge.lpp'
   lise_file = lread.LISEreader(LISEFileName)
   lise_data = lise_file.get_info_all()
   
-  # 4. Importing Input params
+  # 3. Importing Input params
   params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
   inputparams={k:(float(v) if v.replace('.','').isdigit() else v) 
                for k,v in [line.split() for line in open(params_file)]}
@@ -125,7 +114,6 @@ class simtof():
     hSRF.SetLineStyle(2)
     hSRRF.SetLineStyle(2)
     
-  self.root_histo()
   # new tgraphs
   def root_graph(self):
     gCharge = TGraph()
@@ -137,7 +125,6 @@ class simtof():
     gSim.SetLineColor(2)
     gSim.SetName('gSim')
     
-  self.root_graph()
 
   # ================= 4. Tpad Setup =================
   def setup_tpad(self):
@@ -182,7 +169,6 @@ class simtof():
     SetPadFormat(c_4)
     c_4.SetLogy(0)
    
-  self.setup_tpad()
   def remove_points(self):
     k=int(gZ.GetN())
     for i in range(0,k):
@@ -191,11 +177,9 @@ class simtof():
         gCharge.RemovePoint(0)
         gmoq.RemovePoint(0)
         gi.RemovePoint(0)
-  
-  self.remove_points()
 
   k=0
-  ofstream fout('output_%d.tof',inputparams['Harmonic'])
+  fout=open(('output_%d.tof',inputparams['Harmonic']),'a')
   # below: if name string and A number match:
   for i,lise in enumerate(lise_data): #i gives line index
     for ame in ame_data:
@@ -217,20 +201,18 @@ class simtof():
             Frequence_Rel = 1000/(OrbitalLength/velocity)
             
         # 1. simulated relative revolution frequency
-        SRRF[k]   = 1-1/inputparams['GAMMAT']/inputparams['GAMMAT']*(moqDB[k]-moq_Rel)/moq_Rel
+        SRRF[k]   = 1-1/inputparams['GAMMAT']/inputparams['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
         # 2. simulated revolution frequency
         SRF[k]= SRRF[k]*Frequence_Rel*(inputparams['Harmonic'])
         Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
-        hSRF.SetBinContent(Nx_SRF[k],PPS[(index)]*y_max*0.01)
+        hSRF.SetBinContent(Nx_SRF[k],lise[5]*y_max*0.01)
         # 3. 
         SRRF[k] = SRF[k]/(Frequence_Rel*(inputparams['Harmonic']))
         Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
         hSRRF.SetBinContent(Nx_SRRF[k],1)
         #fout
-        fout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
-        cout<<std::fixed<<PRONAM[int(index)]<<'\t'<<int(ZZZ)<<'\t'<<int(AAA)<<'\t'<<int(Charge)<<'\t'<<setw(2)<<int(inputparams['Harmonic'])<<'\t'<<setw(2)<<setw(5)<<moqDB[i]<<' ue,\t f/f0 = '<<setw(5)<<SRRF<<' \t'<<setw(5)<<SRF<<' MHz,\t'<<setw(10)<<PPS[int(index)]<<endl
+        fout.write(lise[0],'\t',lise[2],'\t',lise[1],'\t',lise[4],'\t',int(inputparams['Harmonic']),'\t',moq[k],' ue,\t f/f0 = ',SRRF,' \t',SRF,' MHz,\t',lise[5])
         k+=1
-        
   fout.close()
 
   def root_sort(self):#sort in decreasing order
@@ -240,107 +222,95 @@ class simtof():
     gmoq.Sort()
     gi.Sort()
     
-  self.root_sort()
   
-  c_1.cd()
-  gPad.SetBottomMargin(0.08)
-  h.Draw()
-  h.GetXaxis().SetRangeUser(inputparams['RefRangeMin1'],inputparams['RefRangeMax1'])
-  hSRF.Draw('same')
-  hSRF.SetLineColor(3)
-  c_1.Update()
-
-  c_2.cd()
-  gPad.SetBottomMargin(0.01)
-  for(int nnn=0nnn<h.GetXaxis().GetNbins()nnn++)
-            
-  double x_ref = (h.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
-  double y     = h.GetBinContent(nnn)
-  Int_t nx_ref = h_ref. GetXaxis().FindBin(x_ref)
-  h_ref.SetBinContent(nx_ref,y)
-
-  h_ref.Draw()
-  h_ref.Scale(0.00000001)
-  h_ref.GetYaxis().SetRangeUser(1,1e3)
-  h_ref.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
-  hSRRF.Draw('same')
-
-  c_2_1.cd()
-  h_ref_small1  = h_ref.Clone('h_ref_small1')
-  h_ref_small1.Draw()
-  h_ref_small1.GetXaxis().SetRangeUser(1.0010,1.0032)
-  hSRRF.Draw('same')
-
-  c_2_2.cd()      
-  h_ref_small2  = h_ref.Clone('h_ref_small2')
-  h_ref_small2.Draw()
-  h_ref_small2.GetXaxis().SetRangeUser(0.99994,1.00004)
-  hSRRF.Draw('same')
-
-  #============= latex text: ==============
-  tex200Au79 =TLatex(0.9999552,2.176887e+14,'^{200}Au^{79+}')
-  tex200Au79.SetTextColor(2)
-  tex200Au79.SetTextSize(0.08)
-  tex200Au79.SetTextAngle(88.21009)
-  tex200Au79.SetLineWidth(2)
-  tex200Au79.Draw()
-
-  tex200Hg79 = TLatex(0.999965,2.176887e+13,'^{200}Au^{79+}')
-  tex200Hg79.SetTextColor(2)
-  tex200Hg79.SetTextSize(0.08)
-  tex200Hg79.SetTextAngle(88.21009)
-  tex200Hg79.SetLineWidth(2)
-  tex200Hg79.Draw()
-
-  c_3.cd()
-  gPad.SetTopMargin(0.01)
-  gPad.SetTickx(1)
-  hSRRF.Draw('')
-  hSRRF.SetLineColor(2)
-  hSRRF.GetXaxis().SetTitle('relative revolution frequence')
-  hSRRF.GetXaxis().CenterTitle(true)
-  hSRRF.GetXaxis().SetLabelFont(42)
-  hSRRF.GetXaxis().SetLabelSize(0.10)
-  hSRRF.GetXaxis().SetTitleSize(0.10)
-  hSRRF.GetXaxis().SetTitleFont(42)
-  hSRRF.GetYaxis().SetTitle('arb. units')
-  hSRRF.GetYaxis().CenterTitle(true)
-  hSRRF.GetYaxis().SetLabelFont(42)
-  hSRRF.GetYaxis().SetLabelSize(0.10)
-  hSRRF.GetYaxis().SetTitleSize(0.10)
-  hSRRF.GetYaxis().SetTitleFont(42)
-  hSRRF.GetYaxis().SetTitleOffset(0.5)	  	
-  hSRRF.GetYaxis().SetNdivisions(505)  
-  hSRRF.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
-  hSRRF.Scale(100)
-  c_3.Update()
-
-  c_4.cd()
-  gGAMMAT.Draw('al')
-  gGAMMAT.GetXaxis().SetLimits((frequence_center+frequence_min)/Frequence_Tl,
-                               (frequence_center+frequence_max)/Frequence_Tl)
-  gGAMMAT.GetYaxis().SetRangeUser(2.412,2.432)
-  c_4.Update()
-
-  gSystem.ProcessEvents()
-  gSystem.Sleep(10)
-  cout<<'exit or not? [Exit,exit]'<<endl
-  cout<<'Frequence_Rel = '<<Frequence_Rel<<endl
-  cout<<'Harmonic = '<<inputparams['Harmonic']<<endl
-  cout<<'Frequence_Rel*(Harmonic) = '<<Frequence_Rel*(inputparams['Harmonic'])
-  cout<<'Frequence_Tl  = '<<Frequence_Tl<<endl
-  cin>>Flag
-  cout<<Flag<<endl
-
+  def make_graphs(self):
+    c_1.cd()
+    gPad.SetBottomMargin(0.08)
+    h.Draw()
+    h.GetXaxis().SetRangeUser(inputparams['RefRangeMin1'],inputparams['RefRangeMax1'])
+    hSRF.Draw('same')
+    hSRF.SetLineColor(3)
+    c_1.Update()
     
-  fout_root = TFile(('simtof_%d.tof',inputparams['Harmonic']),'recreate')
-  h.Write()
-  h_ref.Write()
-  hSRRF.Write()
-  hSRF.Write()
-  fout_root.Close()
-  c.Print('result.pdf')
+    c_2.cd()
+    gPad.SetBottomMargin(0.01)
+    for nnn in h.GetXaxis().GetNbins():  
+        x_ref = (h.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
+        y     = h.GetBinContent(nnn)
+        nx_ref = h_ref. GetXaxis().FindBin(x_ref)
+        h_ref.SetBinContent(nx_ref,y)
     
+    h_ref.Draw()
+    h_ref.Scale(0.00000001)
+    h_ref.GetYaxis().SetRangeUser(1,1e3)
+    h_ref.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
+    hSRRF.Draw('same')
+    
+    c_2_1.cd()
+    h_ref_small1  = h_ref.Clone('h_ref_small1')
+    h_ref_small1.Draw()
+    h_ref_small1.GetXaxis().SetRangeUser(1.0010,1.0032)
+    hSRRF.Draw('same')
+    
+    c_2_2.cd()      
+    h_ref_small2  = h_ref.Clone('h_ref_small2')
+    h_ref_small2.Draw()
+    h_ref_small2.GetXaxis().SetRangeUser(0.99994,1.00004)
+    hSRRF.Draw('same')
+    
+    self.latex_labels()#latex labels below
+  
+    c_3.cd()
+    gPad.SetTopMargin(0.01)
+    gPad.SetTickx(1)
+    hSRRF.Draw('')
+    hSRRF.SetLineColor(2)
+    hSRRF.GetXaxis().SetTitle('relative revolution frequence')
+    hSRRF.GetXaxis().CenterTitle(true)
+    hSRRF.GetXaxis().SetLabelFont(42)
+    hSRRF.GetXaxis().SetLabelSize(0.10)
+    hSRRF.GetXaxis().SetTitleSize(0.10)
+    hSRRF.GetXaxis().SetTitleFont(42)
+    hSRRF.GetYaxis().SetTitle('arb. units')
+    hSRRF.GetYaxis().CenterTitle(true)
+    hSRRF.GetYaxis().SetLabelFont(42)
+    hSRRF.GetYaxis().SetLabelSize(0.10)
+    hSRRF.GetYaxis().SetTitleSize(0.10)
+    hSRRF.GetYaxis().SetTitleFont(42)
+    hSRRF.GetYaxis().SetTitleOffset(0.5)	  	
+    hSRRF.GetYaxis().SetNdivisions(505)  
+    hSRRF.GetXaxis().SetRangeUser(inputparams['RefRangeMin2'],inputparams['RefRangeMax2'])
+    hSRRF.Scale(100)
+    c_3.Update()
+    
+    c_4.cd()
+    gGAMMAT.Draw('al')
+    gGAMMAT.GetXaxis().SetLimits((frequence_center+frequence_min)/Frequence_Tl,
+                                (frequence_center+frequence_max)/Frequence_Tl)
+    gGAMMAT.GetYaxis().SetRangeUser(2.412,2.432)
+    c_4.Update()
+  def latex_labels(self):
+    tex200Au79 =TLatex(0.9999552,2.176887e+14,'^{200}Au^{79+}')
+    tex200Au79.SetTextColor(2)
+    tex200Au79.SetTextSize(0.08)
+    tex200Au79.SetTextAngle(88.21009)
+    tex200Au79.SetLineWidth(2)
+    tex200Au79.Draw()
+    tex200Hg79 = TLatex(0.999965,2.176887e+13,'^{200}Au^{79+}')
+    tex200Hg79.SetTextColor(2)
+    tex200Hg79.SetTextSize(0.08)
+    tex200Hg79.SetTextAngle(88.21009)
+    tex200Hg79.SetLineWidth(2)
+    tex200Hg79.Draw()
+  def print_out(self):  
+    fout_root = TFile(('simtof_%d.tof',inputparams['Harmonic']),'recreate')
+    h.Write()
+    h_ref.Write()
+    hSRRF.Write()
+    hSRF.Write()
+    fout_root.Close()
+    c.Print('result.pdf')
+
 # ================== testing =====================
 #here you can put the filenames of files you want to test
 
