@@ -7,33 +7,34 @@ import amedata
 import particle
 
 class simtof():
-  def __init__(self):
-    #here enter commands to execute on initialisation
-    pass
+  def __init__(self,filename,data):
+    self.filename=filename
+    self.data=data
   
   def SetPadFormat(self):
-    self.c_1 = SetPadFormat(TPad)
-    self.c_1.SetLeftMargin(0.10)
-    self.c_1.SetRightMargin(0.05)
-    self.c_1.SetTopMargin(0.12)
-    self.c_1.SetBottomMargin(0.25)
-    self.c_1.SetFrameBorderMode(0)
-    self.c_1.SetLogy(1)
-    self.c_1.Draw()
+    c_1 = TPad()
+    c_1.SetLeftMargin(0.10)
+    c_1.SetRightMargin(0.05)
+    c_1.SetTopMargin(0.12)
+    c_1.SetBottomMargin(0.25)
+    c_1.SetFrameBorderMode(0)
+    c_1.SetLogy(1)
+    return c_1.Draw()
 
   def SetCanvasFormat(self):
-    self.c = SetCanvasFormat(TCanvas)
-    self.c.SetFillColor(0)
-    self.c.SetBorderMode(0)
-    self.c.SetBorderSize(2)
-    self.c.SetFrameBorderMode(0)
+    c = TCanvas()
+    c.SetFillColor(0)
+    c.SetBorderMode(0)
+    c.SetBorderSize(2)
+    c.SetFrameBorderMode(0)
+    return c
 
   def SetLatexFormat(self):
-    self.tex = SetLatexFormat(TLatex)
-    self.tex.SetTextColor(2)
-    self.tex.SetTextAngle(90)
-    self.tex.SetLineWidth(2)
-    self.tex.Draw()
+    tex = TLatex()
+    tex.SetTextColor(2)
+    tex.SetTextAngle(90)
+    tex.SetLineWidth(2)
+    return tex.Draw()
 
   def GAMMATCalculator(self):
     gGAMMAT = TGraph()
@@ -52,7 +53,7 @@ class simtof():
   def FFT_root(self, filename):
     LFRAMES = 2**18
     NFRAMES = 2*8
-    iq = iqt.get_iq_object(filename)
+    iq = iqt.get_iq_object(self.filename)
     iq.iqt.read_samples(LFRAMES*NFRAMES)
     iq.iqt.get_spectrogramme()
     ff, pp, _ = iq.get_fft()
@@ -60,7 +61,7 @@ class simtof():
     h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
         h.SetBinContent(i, pp[i])
-    f = TFile(filename + '.root', 'RECREATE')
+    f = TFile(self.filename + '.root', 'RECREATE')
     h.Write()
     f.GetObject('FFT_Average', h)
     f.close()
@@ -73,10 +74,8 @@ class simtof():
     frequence_center = 0
     OrbitalLength    = 108430 #mm
     
-  filename = '245-j.txt'  # this needs to go in test section; File containing all the data files taken in June with the 245MHz
-
   def read_to_root(self, filename):
-    with open(filename) as f:
+    with open(self.filename) as f:
         files = f.readlines()
     for file in files:
         self.FFT_root(file)
@@ -114,7 +113,6 @@ class simtof():
     hSRF.SetLineStyle(2)
     hSRRF.SetLineStyle(2)
     
-  # new tgraphs
   def root_graph(self):
     gCharge = TGraph()
     gZ   = TGraph()
@@ -125,8 +123,6 @@ class simtof():
     gSim.SetLineColor(2)
     gSim.SetName('gSim')
     
-
-  # ================= 4. Tpad Setup =================
   def setup_tpad(self):
     #Tpad r3
     r3 = TRandom3()
@@ -193,9 +189,9 @@ class simtof():
         gCharge.SetPoint(k, moq[k], lise[4])
         gmoq .SetPoint(k, moq[k], moq[k])
         gi   .SetPoint(k, moq[k], lise[5])
-        if(lise[0] == inputparams['ReferenceIsotope'] and lise[4] == inputparams['ReferenceIsotopeCharge'])
+        if (lise[0]==inputparams['ReferenceIsotope'] and lise[4]==inputparams['ReferenceIsotopeCharge']):
             moq_Rel = moq[k]
-            gamma         = sqrt(pow(inputparams['Brho']*lise[4]/bar.AMEData.CC/m,2)+1) #this is wrong (relations + unit analysis) ; c must be dividing (now corrected) --> implications of this? probably it cancels out somehow in the relations of interest calculated
+            gamma         = sqrt(pow(inputparams['Brho']*int(lise[4])/bar.AMEData.CC/m,2)+1) #this is wrong (relations + unit analysis) ; c must be dividing (now corrected) --> implications of this? probably it cancels out somehow in the relations of interest calculated
             beta          = sqrt(gamma*gamma -1)/gamma
             velocity      = bar.AMEData.CC * beta
             Frequence_Rel = 1000/(OrbitalLength/velocity)
@@ -222,7 +218,6 @@ class simtof():
     gmoq.Sort()
     gi.Sort()
     
-  
   def make_graphs(self):
     c_1.cd()
     gPad.SetBottomMargin(0.08)
@@ -303,7 +298,7 @@ class simtof():
     tex200Hg79.SetLineWidth(2)
     tex200Hg79.Draw()
   def print_out(self):  
-    fout_root = TFile(('simtof_%d.tof',inputparams['Harmonic']),'recreate')
+    fout_root = TFile.Open(('simtof_%d.tof',inputparams['Harmonic']),'recreate')
     h.Write()
     h_ref.Write()
     hSRRF.Write()
@@ -313,7 +308,7 @@ class simtof():
 
 # ================== testing =====================
 #here you can put the filenames of files you want to test
-
+#introduce 245-j.txt file
 def test():
   print('here is where you can check that routines work')
   
