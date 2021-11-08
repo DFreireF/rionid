@@ -5,38 +5,13 @@ import iqtools as iqt
 import amedata
 import particle
 import inputparams
+import canvasformat
+
 
 class SimTOF():
-  def __init__(self,filename):
-    self.filename=filename
-    #self.data=data
-  
-  #============= canvas options ================
-  def SetPadFormat(self):
-    c_1 = TPad()
-    c_1.SetLeftMargin(0.10)
-    c_1.SetRightMargin(0.05)
-    c_1.SetTopMargin(0.12)
-    c_1.SetBottomMargin(0.25)
-    c_1.SetFrameBorderMode(0)
-    c_1.SetLogy(1)
-    return c_1.Draw()
+  def __init__(self, filename):
+    self.filename = filename
 
-  def SetCanvasFormat(self):
-    c = TCanvas()
-    c.SetFillColor(0)
-    c.SetBorderMode(0)
-    c.SetBorderSize(2)
-    c.SetFrameBorderMode(0)
-    return c
-
-  def SetLatexFormat(self):
-    tex = TLatex()
-    tex.SetTextColor(2)
-    tex.SetTextAngle(90)
-    tex.SetLineWidth(2)
-    return tex.Draw()
-  
   #============= calculations ================
   def GAMMATCalculator(self):
     gGAMMAT = TGraph()
@@ -62,8 +37,8 @@ class SimTOF():
     f.GetObject('FFT-', h)
     f.close()
     nbins         = h.GetXaxis().GetNbins()
-    frequence_min = h.GetXaxis().GetXmin()/1000 +245
-    frequence_max = h.GetXaxis().GetXmax()/1000 +245
+    frequence_min = h.GetXaxis().GetXmin()/1000 + 245
+    frequence_max = h.GetXaxis().GetXmax()/1000 + 245
     y_max         = h.GetMaximum()
     h.GetXaxis().SetLimits(frequence_min, frequence_max)
     Frequence_Tl     = 243.2712156 #MHz
@@ -71,7 +46,7 @@ class SimTOF():
     OrbitalLength    = 108430 #mm
     
     
-  def read_to_root(self, filename):
+  def read_to_root(self, filename): # this function doesnt use its input variable
     with open(self.filename) as f:
         files = f.readlines()
     for file in files:
@@ -105,48 +80,6 @@ class SimTOF():
     gSim.SetLineColor(2)
     gSim.SetName('gSim')
     
-  def setup_tpad(self):
-    #Tpad r3
-    r3 = TRandom3()
-    #Tpad c0
-    c0 = TCanvas('c0', 'c0', 0, 0, 1000, 300)
-    SetCanvasFormat(c0)
-    #Tpad c
-    c = TCanvas('c', 'c', 0, 0, 1000, 880)
-    SetCanvasFormat(c)
-    c.cd()
-    #Tpad c_1
-    c_1 = TPad('c_1', 'c_1', 0.00, 0.75, 0.99, 0.99)
-    SetPadFormat(c_1)
-    c.cd()
-    #Tpad c_2
-    c_2 = TPad('c_2', 'c_2', 0.0, 0.50, 0.99, 0.75)
-    SetPadFormat(c_2)
-    c.cd()
-    #Tpad c_2_1
-    c_2_1 = TPad('c_2_1', 'c_2_1', 0.70, 0.6, 0.86, 0.7189711)
-    SetPadFormat(c_2_1)
-    c_2_1.SetLeftMargin(0.02857143)
-    c_2_1.SetRightMargin(0.02857143)
-    c_2_1.SetTopMargin(0.01851852)
-    c_2_1.SetBottomMargin(0.01851852)
-    #Tpad c_2_2
-    c_2_2 = TPad('c_2_2', 'c_2_2', 0.45, 0.6, 0.61, 0.7189711)
-    SetPadFormat(c_2_2)
-    c_2_2.SetLeftMargin(0.02857143)
-    c_2_2.SetRightMargin(0.02857143)
-    c_2_2.SetTopMargin(0.01851852)
-    c_2_2.SetBottomMargin(0.01851852)
-    c.cd()
-    #Tpad c_3
-    c_3 = TPad('c_3', 'c_3', 0.0, 0.25, 0.99, 0.50)
-    SetPadFormat(c_3)
-    c.cd()
-    #Tpad c_4
-    c_4 = TPad('c_4', 'c_4', 0.0, 0.0, 0.99, 0.25)
-    SetPadFormat(c_4)
-    c_4.SetLogy(0)
-
   def remove_points(self):
     k = int(gZ.GetN())
     for i in range(0, k):
@@ -258,18 +191,27 @@ class SimTOF():
     c.Print('result.pdf')
     
   #=================== execution ====================
-
+  
+  # canvas:
+  mycanvas=CanvasFormat()
+  mycanvas.set_latex_format()
+  mycanvas.set_latex_labels()
+  c = mycanvas.set_format_c()
+  c_1 = mycanvas.set_format_c_1()
+  r3, c0, c, c_1, c_2_1, c_2_2, c_3, c_4 = mycanvas.setup_tpad()
+  
+  # gstyle and gGAMMAT
   gStyle.SetOptStat(0)
   gStyle.SetOptTitle(0)
   gGAMMAT = GAMMATCalculator()
   gGAMMAT.Print()
 
-  # 1 Import ame instead using barion:
+  # 1 Import ame 
   ame = amedata.AMEData()
   ame.init_ame_db
   ame_data = ame.ame_table
 
-  # 2. Importing Input params
+  # 2. Importing input params
   params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
   input_params=InputParameters(params_file)
                 
