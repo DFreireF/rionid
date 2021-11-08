@@ -130,9 +130,6 @@ class SimTOF():
     h_ref_small2.Draw()
     h_ref_small2.GetXaxis().SetRangeUser(0.99994,1.00004)
     hSRRF.Draw('same')
-    
-    #below obsolete line
-    self.latex_labels()#latex labels below
   
     c_3.cd()
     gPad.SetTopMargin(0.01)
@@ -222,34 +219,34 @@ class SimTOF():
     for i,lise in enumerate(lise_data): #i gives line index
       for ame in ame_data:
         if lise[0]==ame[6] and lise[1]==ame[5]:
-          particle_name = Particle(lise[2],lise[3],ame_data,Ring('ESR', 108.5))
-          m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
-          moq[k] = particle_name.get_ionic_moq_in_u()
-          gZ   .SetPoint(k, moq[k], lise[2])
-          gA   .SetPoint(k, moq[k], lise[1])
-          gCharge.SetPoint(k, moq[k], lise[4])
-          gmoq .SetPoint(k, moq[k], moq[k])
-          gi   .SetPoint(k, moq[k], lise[5])
-          if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
-            moq_Rel = moq[k]
-            gamma         = sqrt(pow(input_params.dict['Brho']*int(lise[4])/amedata.AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)
-            beta          = sqrt(gamma*gamma -1)/gamma
-            velocity      = amedata.AMEData.CC * beta
-            Frequence_Rel = 1000/(OrbitalLength/velocity)
-              
-          # 1. simulated relative revolution frequency
-          SRRF[k]   = 1-1/input_params.dict['GAMMAT']/input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
-          # 2. simulated revolution frequency
-          SRF[k]= SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
-          Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
-          hSRF.SetBinContent(Nx_SRF[k],lise[5]*y_max*0.01)
-          # 3. 
-          SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
-          Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
-          hSRRF.SetBinContent(Nx_SRRF[k],1)
-          #fout
-          fout.write(lise[0],'\t',lise[2],'\t',lise[1],'\t',lise[4],'\t',int(input_params.dict['Harmonic']),'\t',moq[k],' ue,\t f/f0 = ',SRRF,' \t',SRF,' MHz,\t',lise[5])
-          k+=1
+            particle_name = Particle(int(lise[2]),int(lise[3]),ame_data,Ring('ESR', 108.5))
+            m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
+            moq[k] = particle_name.get_ionic_moq_in_u()
+            gZ   .SetPoint(k, moq[k], int(lise[2]))
+            gA   .SetPoint(k, moq[k], int(lise[1]))
+            gCharge.SetPoint(k, moq[k], int(lise[4]))
+            gmoq .SetPoint(k, moq[k], moq[k])
+            gi   .SetPoint(k, moq[k], float(lise[5]))
+            if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
+                moq_Rel = moq[k]
+                gamma         = sqrt(pow(input_params.dict['Brho']*int(lise[4])/AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)
+                beta          = sqrt(gamma*gamma -1)/gamma
+                velocity      = AMEData.CC * beta
+                Frequence_Rel = 1000/(OrbitalLength/velocity)
+                
+            # 1. simulated relative revolution frequency
+            SRRF[k]   = 1-1/input_params.dict['GAMMAT']/input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
+            # 2. simulated revolution frequency
+            SRF[k]= SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
+            Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
+            hSRF.SetBinContent(Nx_SRF[k],lise[5]*y_max*0.01)
+            # 3. 
+            SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
+            Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
+            hSRRF.SetBinContent(Nx_SRRF[k],1)
+            #fout
+            fout.write(lise[0],'\t',lise[2],'\t',lise[1],'\t',lise[4],'\t',int(input_params.dict['Harmonic']),'\t',moq[k],' ue,\t f/f0 = ',SRRF,' \t',SRF,' MHz,\t',lise[5])
+            k+=1
     fout.close()
     self.root_sort()
     self.make_graphs()
