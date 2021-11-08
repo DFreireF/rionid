@@ -1,15 +1,14 @@
 from ROOT import *
 import numpy as np
 import lisereader as lread
-import Barion as bar
 import iqtools as iqt
 import amedata
 import particle
 
 class simtof():
-  def __init__(self,filename,data):
+  def __init__(self,filename):
     self.filename=filename
-    self.data=data
+    #self.data=data
   
   def SetPadFormat(self):
     c_1 = TPad()
@@ -55,15 +54,14 @@ class simtof():
     NFRAMES = 2*8
     iq = iqt.get_iq_object(self.filename)
     iq.iqt.read_samples(LFRAMES*NFRAMES)
-    iq.iqt.get_spectrogramme()
-    ff, pp, _ = iq.get_fft()
-    pp = pp / pp.max()
+    ff, pp, _ = iq.get_fft() #frec and power
+    pp = pp / pp.max() #normalized
     h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
         h.SetBinContent(i, pp[i])
     f = TFile(self.filename + '.root', 'RECREATE')
     h.Write()
-    f.GetObject('FFT_Average', h)
+    f.GetObject('FFT-', h)
     f.close()
     nbins         = h.GetXaxis().GetNbins()
     frequence_min = h.GetXaxis().GetXmin()/1000 +245
@@ -164,7 +162,7 @@ class simtof():
     c_4 = TPad('c_4', 'c_4', 0.0, 0.0, 0.99, 0.25)
     SetPadFormat(c_4)
     c_4.SetLogy(0)
-   
+  
   def remove_points(self):
     k=int(gZ.GetN())
     for i in range(0,k):
@@ -191,9 +189,9 @@ class simtof():
         gi   .SetPoint(k, moq[k], lise[5])
         if (lise[0]==inputparams['ReferenceIsotope'] and lise[4]==inputparams['ReferenceIsotopeCharge']):
             moq_Rel = moq[k]
-            gamma         = sqrt(pow(inputparams['Brho']*int(lise[4])/bar.AMEData.CC/m,2)+1) #this is wrong (relations + unit analysis) ; c must be dividing (now corrected) --> implications of this? probably it cancels out somehow in the relations of interest calculated
+            gamma         = sqrt(pow(inputparams['Brho']*int(lise[4])/amedata.AMEData.CC/m,2)+1) #this is wrong (relations + unit analysis) ; c must be dividing (now corrected) --> implications of this? probably it cancels out somehow in the relations of interest calculated
             beta          = sqrt(gamma*gamma -1)/gamma
-            velocity      = bar.AMEData.CC * beta
+            velocity      = amedata.AMEData.CC * beta
             Frequence_Rel = 1000/(OrbitalLength/velocity)
             
         # 1. simulated relative revolution frequency
