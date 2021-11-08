@@ -12,3 +12,4 @@ ScaleFactor   0.01
 ReferenceIsotope 72Ge
 ReferenceIsotopeCharge 32
 Harmonic      125
+lise_filename 'data/E143_TEline-ESR-72Ge.lpp' 

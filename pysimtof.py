@@ -5,11 +5,12 @@ import iqtools as iqt
 import amedata
 import particle
 
-class simtof():
+class SimTOF():
   def __init__(self,filename):
     self.filename=filename
     #self.data=data
   
+  #============= canvas options ================
   def SetPadFormat(self):
     c_1 = TPad()
     c_1.SetLeftMargin(0.10)
@@ -34,7 +35,9 @@ class simtof():
     tex.SetTextAngle(90)
     tex.SetLineWidth(2)
     return tex.Draw()
-
+  
+  
+  #============= calculations ================
   def GAMMATCalculator(self):
     gGAMMAT = TGraph()
     k = -0.5
@@ -265,16 +268,16 @@ class simtof():
   ame.init_ame_db
   ame_data = ame.ame_table
 
-  # 2. Load LISE file
-  LISEFileName = 'data/E143_TEline-ESR-72Ge.lpp'
-  lise_file = lread.LISEreader(LISEFileName)
-  lise_data = lise_file.get_info_all()
-  
-  # 3. Importing Input params
+  # 2. Importing Input params
   params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
   inputparams={k:(float(v) if v.replace('.','').isdigit() else v) 
                for k,v in [line.split() for line in open(params_file)]}\
                  
+  # 3. Load LISE file
+  LISEFileName = InputParameters['lise_filename']
+  lise_file = lread.LISEreader(LISEFileName)
+  lise_data = lise_file.get_info_all()
+  
   k = 0
   fout = open(('output_%d.tof', inputparams['Harmonic']), 'a')
   # below: if name string and A number match:
