@@ -30,6 +30,15 @@ class CanvasFormat():
         tex.SetTextAngle(90)
         tex.SetLineWidth(2)
         return tex.Draw()
+    
+    def gammat_calculator(self):
+        gGAMMAT = TGraph()
+        k = -0.5
+        gGAMMAT.SetName('gGAMMAT')
+        gGAMMAT.SetPoint(0, 0.998, 2.4234 + (0.98 - 1)*k)
+        gGAMMAT.SetPoint(1, 1.000, 2.4234 + (1.000 - 1)*k)
+        gGAMMAT.SetPoint(2, 1.002, 2.4234 + (1.02 - 1)*k)
+        return gGAMMAT
 
     def setup_tpad(self):
         # Tpad r3
