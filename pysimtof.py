@@ -154,8 +154,8 @@ class SimTOF():
     c_4.Update()
       
   def print_out_or_not(self):  
-    gSystem->ProcessEvents();
-    gSystem->Sleep(10);
+    gSystem.ProcessEvents()
+    gSystem.Sleep(10)
     print('Frequence_Rel = ', Frequence_Rel)
     print('Harmonic = ',Harmonic)
     print('Frequence_Rel*(Harmonic) = ',Frequence_Rel*(Harmonic))
@@ -209,18 +209,17 @@ class SimTOF():
     for i, lise in enumerate(lise_data):
       for ame in ame_data:
         if lise[0]==ame[6] and lise[1]==ame[5]:
-            particle_name = Particle(int(lise[2]),int(lise[3]),ame_data,Ring('ESR', 108.5))
+            particle_name = Particle(lise[2],lise[3],ame_data,Ring('ESR', 108.5))
             m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
             moq[k] = particle_name.get_ionic_moq_in_u()
-            gZ   .SetPoint(k, moq[k], int(lise[2]))
-            gA   .SetPoint(k, moq[k], int(lise[1]))
-            gCharge.SetPoint(k, moq[k], int(lise[4]))
+            gZ   .SetPoint(k, moq[k], lise[2])
+            gA   .SetPoint(k, moq[k], lise[1])
+            gCharge.SetPoint(k, moq[k], lise[4])
             gmoq .SetPoint(k, moq[k], moq[k])
-            gi   .SetPoint(k, moq[k], float(lise[5]))
+            gi   .SetPoint(k, moq[k], lise[5])
             if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
                 moq_Rel = moq[k]
-                gamma         = sqrt(pow(input_params.dict['Brho']*int(lise[4])/AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)
-                # need int statement on line above?
+                gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]/AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)
                 beta          = sqrt(gamma * gamma - 1)/gamma
                 velocity      = AMEData.CC * beta
                 Frequence_Rel = 1000/(OrbitalLength / velocity)
