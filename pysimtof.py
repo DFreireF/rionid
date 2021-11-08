@@ -4,6 +4,7 @@ import lisereader as lread
 import iqtools as iqt
 import amedata
 import particle
+import inputparams
 
 class SimTOF():
   def __init__(self,filename):
@@ -35,7 +36,6 @@ class SimTOF():
     tex.SetTextAngle(90)
     tex.SetLineWidth(2)
     return tex.Draw()
-  
   
   #============= calculations ================
   def GAMMATCalculator(self):
@@ -69,6 +69,7 @@ class SimTOF():
     Frequence_Tl     = 243.2712156 #MHz
     frequence_center = 0
     OrbitalLength    = 108430 #mm
+    
     
   def read_to_root(self, filename):
     with open(self.filename) as f:
@@ -167,7 +168,7 @@ class SimTOF():
     gPad.SetBottomMargin(0.08)
     h.Draw()
     h.GetXaxis().SetRangeUser(
-        inputparams['RefRangeMin1'], inputparams['RefRangeMax1'])
+        input_params.dict['RefRangeMin1'], input_params.dict['RefRangeMax1'])
     hSRF.Draw('same')
     hSRF.SetLineColor(3)
     c_1.Update()
@@ -184,7 +185,7 @@ class SimTOF():
     h_ref.Scale(0.00000001)
     h_ref.GetYaxis().SetRangeUser(1, 1e3)
     h_ref.GetXaxis().SetRangeUser(
-        inputparams['RefRangeMin2'], inputparams['RefRangeMax2'])
+        input_params.dict['RefRangeMin2'], input_params.dict['RefRangeMax2'])
     hSRRF.Draw('same')
     
     c_2_1.cd()
@@ -221,7 +222,7 @@ class SimTOF():
     hSRRF.GetYaxis().SetTitleOffset(0.5)
     hSRRF.GetYaxis().SetNdivisions(505)
     hSRRF.GetXaxis().SetRangeUser(
-        inputparams['RefRangeMin2'], inputparams['RefRangeMax2'])
+        input_params.dict['RefRangeMin2'], input_params.dict['RefRangeMax2'])
     hSRRF.Scale(100)
     c_3.Update()
     
@@ -248,7 +249,7 @@ class SimTOF():
 
   def print_out(self):
     fout_root = TFile.Open(
-        ('simtof_%d.tof', inputparams['Harmonic']), 'recreate')
+        ('simtof_%d.tof', input_params.dict['Harmonic']), 'recreate')
     h.Write()
     h_ref.Write()
     hSRRF.Write()
@@ -270,16 +271,14 @@ class SimTOF():
 
   # 2. Importing Input params
   params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
-  inputparams={k:(float(v) if v.replace('.','').isdigit() else v) 
-               for k,v in [line.split() for line in open(params_file)]}\
-                 
+  input_params=InputParameters(params_file)
+                
   # 3. Load LISE file
-  LISEFileName = InputParameters['lise_filename']
-  lise_file = lread.LISEreader(LISEFileName)
+  lise_file = lread.LISEreader(input_params.lisefile)
   lise_data = lise_file.get_info_all()
   
   k = 0
-  fout = open(('output_%d.tof', inputparams['Harmonic']), 'a')
+  fout = open(('output_%d.tof', input_params.dict['Harmonic']), 'a')
   # below: if name string and A number match:
   for i, lise in enumerate(lise_data):  # i gives line index
     for ame in ame_data:
@@ -293,27 +292,27 @@ class SimTOF():
         gCharge.SetPoint(k, moq[k], lise[4])
         gmoq .SetPoint(k, moq[k], moq[k])
         gi   .SetPoint(k, moq[k], lise[5])
-        if (lise[0]==inputparams['ReferenceIsotope'] and lise[4]==inputparams['ReferenceIsotopeCharge']):
+        if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
             moq_Rel = moq[k]
-            gamma         = sqrt(pow(inputparams['Brho']*int(lise[4])/amedata.AMEData.CC/m,2)+1) #this is wrong (relations + unit analysis) ; c must be dividing (now corrected) --> implications of this? probably it cancels out somehow in the relations of interest calculated
+            gamma         = sqrt(pow(input_params.dict['Brho']*int(lise[4])/amedata.AMEData.CC/m,2)+1) #this is wrong (relations + unit analysis) ; c must be dividing (now corrected) --> implications of this? probably it cancels out somehow in the relations of interest calculated
             beta          = sqrt(gamma*gamma -1)/gamma
             velocity      = amedata.AMEData.CC * beta
             Frequence_Rel = 1000/(OrbitalLength/velocity)
 
         # 1. simulated relative revolution frequency
-        SRRF[k] = 1-1/inputparams['GAMMAT'] / \
-            inputparams['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
+        SRRF[k] = 1-1/input_params.dict['GAMMAT'] / \
+            input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
         # 2. simulated revolution frequency
-        SRF[k] = SRRF[k]*Frequence_Rel*(inputparams['Harmonic'])
+        SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
         Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
         hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
         # 3.
-        SRRF[k] = SRF[k]/(Frequence_Rel*(inputparams['Harmonic']))
+        SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
         Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
         hSRRF.SetBinContent(Nx_SRRF[k], 1)
         #fout
         fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
-            inputparams['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t', SRF, ' MHz,\t', lise[5])
+            input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t', SRF, ' MHz,\t', lise[5])
         k += 1
   fout.close()
   
