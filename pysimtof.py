@@ -200,20 +200,29 @@ class simtof():
     # if(NUCNAM[i] == PRONAM[j])
     
     # below: if name string and A number match:
-  for i,lise in enumerate(lise_data): #i gives line index
+  for i, lise in enumerate(lise_data):  # i gives line index
     for ame in ame_data:
-      if lise[0]==ame[6] and lise[1]==ame[5]:
-        particle_name = Particle(zz,nn,ame_data,ring)
+      if lise[0] == ame[6] and lise[1] == ame[5]:
+
+        particle_name = Particle(zz, nn, ame_data, ring)
         m = amedata.to_mev(particle_name.get_ionic_mass_in_u())
         moq = particle_name.get_ionic_moq_in_u()
+
+        gZ.SetPoint(i, m, moq)
+        gA.SetPoint(i, moq, A[i])
+        gCharge.SetPoint(i, moq, ChargeDB[j])
+        gmoq.SetPoint(i, moq, moq)
+        gi.SetPoint(i, moq, j)
+
+      # m = A[i]*bar.AMEData.UU + MassExcess[i]/1e3 - Z[i] * \
+      #     bar.AMEData.ME + BindingEnergyDB[Z[i]][ChargeDB[j]-1]/1e6  # in MeV
+      # moq = m/ChargeDB[j]/bar.AMEData.UU
+      # gZ   .SetPoint(k, moq, Z[i])
+      # gA   .SetPoint(k, moq, A[i])
+      # gCharge.SetPoint(k, moq, ChargeDB[j])
+      # gmoq .SetPoint(k, moq, moq)
+      # gi   .SetPoint(k, moq, j)
       
-      m = A[i]*bar.AMEData.UU + MassExcess[i]/1e3 - Z[i]*bar.AMEData.ME + BindingEnergyDB[Z[i]][ChargeDB[j]-1]/1e6 #in MeV
-      moq = m/ChargeDB[j]/bar.AMEData.UU
-      gZ   .SetPoint(k, moq, Z[i])
-      gA   .SetPoint(k, moq, A[i])
-      gCharge.SetPoint(k, moq, ChargeDB[j])
-      gmoq .SetPoint(k, moq, moq)
-      gi   .SetPoint(k, moq, j)
       if(NUCNAM[i] == inputparams['ReferenceIsotope'] and ChargeDB[j] == inputparams['ReferenceIsotopeCharge'])
       moq_Rel = moq
         gamma         = sqrt(pow(inputparams['Brho']*ChargeDB[j]*bar.AMEData.CC/m,2)+1)
