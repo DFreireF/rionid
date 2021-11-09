@@ -6,14 +6,6 @@ class CanvasFormat():
     def __init__(self):
         pass
 
-    def set_format_c(self):
-        c = TCanvas()
-        c.SetFillColor(0)
-        c.SetBorderMode(0)
-        c.SetBorderSize(2)
-        c.SetFrameBorderMode(0)
-        return c
-
     def set_format_c_1(self):
         c_1 = TPad()
         c_1.SetLeftMargin(0.10)
@@ -107,3 +99,11 @@ class CanvasFormat():
         tex200Hg79.SetTextAngle(88.21009)
         tex200Hg79.SetLineWidth(2)
         tex200Hg79.Draw()
+
+    @staticmethod
+    def set_format_c():
+        c.SetFillColor(0)
+        c.SetBorderMode(0)
+        c.SetBorderSize(2)
+        c.SetFrameBorderMode(0)
+        return c

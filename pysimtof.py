@@ -8,7 +8,6 @@ from ring import Ring
 import inputparams
 import canvasformat as cvfmt
 
-
 class SimTOF():
   def __init__(self, filename):
     self.filename = filename
@@ -27,8 +26,10 @@ class SimTOF():
     gGAMMAT = mycanvas.gammat_calculator()
     gGAMMAT.Print()    
   
+    read_to_root(self.filename)
+  
     # fft:
-    # fft_root() missing from operation
+    # self.fft_root() missing from operation
 
     # 1. Import ame 
     ame = amedata.AMEData()
@@ -41,21 +42,21 @@ class SimTOF():
     lise_file = lread.LISEreader(input_params.lisefile)
     lise_data = lise_file.get_info_all()
     
-    self.make_graphs()
+    SimTOF.make_graphs()
     
     #then big while loop must go here, so it should be a function
   
   def fft_root(self, filename):
     LFRAMES = 2**18
     NFRAMES = 2*8
-    iq = iqt.get_iq_object(self.filename)
+    iq = iqt.get_iq_object(filename)
     iq.iqt.read_samples(LFRAMES*NFRAMES)
     ff, pp, _ = iq.get_fft()  # frec and power
     pp = pp / pp.max()  # normalized
-    h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
+    h = TH1F('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
       h.SetBinContent(i, pp[i])
-    f = TFile(self.filename + '.root', 'RECREATE')
+    f = TFile(filename + '.root', 'RECREATE')
     h.Write()
     f.GetObject('FFT-', h)
     f.close()
@@ -69,13 +70,14 @@ class SimTOF():
     OrbitalLength    = 108430 #mm
     
   def read_to_root(self, filename): # this function doesnt use its input variable
-    with open(self.filename) as f:
+    with open(filename) as f:
       files = f.readlines()
     for file in files:
       self.FFT_root(file)
       #find brho
-        
-  def root_histo(self):
+      
+  @staticmethod
+  def root_histo():
     hSim = TH1F('hSim', 'hSim', 200e3, 400, 700)
     # FFT px ref
     h_ref = TH1F('h_ref', 'h_ref',
@@ -92,7 +94,8 @@ class SimTOF():
     hSRF.SetLineStyle(2)
     hSRRF.SetLineStyle(2)
       
-  def root_graph(self):
+  @staticmethod
+  def root_graph():
     gCharge = TGraph()
     gZ   = TGraph()
     gA   = TGraph()
@@ -102,7 +105,8 @@ class SimTOF():
     gSim.SetLineColor(2)
     gSim.SetName('gSim')
       
-  def remove_points(self):
+  @staticmethod
+  def remove_points():
     k=gZ.GetN()
     for i in range(0,k):
       gZ.RemovePoint(0)
@@ -111,14 +115,16 @@ class SimTOF():
       gmoq.RemovePoint(0)
       gi.RemovePoint(0)
           
-  def root_sort(self):#sort in decreasing order
+  @staticmethod
+  def root_sort():#sort in decreasing order
       gZ.Sort()
       gA.Sort()
       gCharge.Sort()
       gmoq.Sort()
       gi.Sort()
         
-  def make_graphs(self):
+  @staticmethod
+  def make_graphs():
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
@@ -185,6 +191,7 @@ class SimTOF():
     gGAMMAT.GetYaxis().SetRangeUser(2.412, 2.432)
     c_4.Update()
       
+  @staticmethod
   def print_out_or_not(self):  
     gSystem.ProcessEvents()
     gSystem.Sleep(10)
