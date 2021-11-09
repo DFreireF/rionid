@@ -3,7 +3,7 @@ import numpy as np
 import lisereader as lread
 import iqtools as iqt
 from amedata import *
-from particle import *
+#from particle import *
 from ring import Ring
 import inputparams
 import canvasformat as cvfmt
@@ -199,7 +199,7 @@ class SimTOF():
     print('Frequence_Tl  = ',Frequence_Tl)
     print('exit or not? introduce exit')
     Flag=input('Enter exit to finish Brho manual adjustment:')
-    if Flag='exit':
+    if Flag=='exit':
       fout_root = TFile.Open(('simtof_%d.tof',input_params.dict['Harmonic']),'recreate')
       h.Write()
       h_ref.Write()
