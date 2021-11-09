@@ -18,8 +18,8 @@ class SimTOF():
     NFRAMES = 2*8
     iq = iqt.get_iq_object(self.filename)
     iq.iqt.read_samples(LFRAMES*NFRAMES)
-    ff, pp, _ = iq.get_fft() #frec and power
-    pp = pp / pp.max() #normalized
+    ff, pp, _ = iq.get_fft()  # frec and power
+    pp = pp / pp.max()  # normalized
     h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
         h.SetBinContent(i, pp[i])
@@ -44,19 +44,19 @@ class SimTOF():
       #find brho
         
   def root_histo(self):
-    hSim = TH1D('hSim','hSim',200e3,400,700)
+    hSim = TH1D('hSim', 'hSim', 200e3, 400, 700)
     # FFT px ref
     h_ref = TH1D('h_ref', 'h_ref',
-                    nbins, (frequence_center+frequence_min)/Frequence_Tl,
-                    (frequence_center+frequence_max)/Frequence_Tl)
+                 nbins, (frequence_center+frequence_min)/Frequence_Tl,
+                 (frequence_center+frequence_max)/Frequence_Tl)
     # SRF
     hSRF = TH1D('hSRF', 'simulated revolution frequence',
-            nbins, (frequence_center+frequence_min),
-            (frequence_center+frequence_max))
+                nbins, (frequence_center+frequence_min),
+                (frequence_center+frequence_max))
     # SRRF
     hSRRF = TH1D('hSRRF', 'simulated relative revolution frequence',
-                nbins, (frequence_center+frequence_min)/Frequence_Tl,
-                (frequence_center+frequence_max)/Frequence_Tl)
+                 nbins, (frequence_center+frequence_min)/Frequence_Tl,
+                 (frequence_center+frequence_max)/Frequence_Tl)
     hSRF.SetLineStyle(2)
     hSRRF.SetLineStyle(2)
       
@@ -199,7 +199,6 @@ class SimTOF():
   
   Flag = ''
   while Flag != 'exit':
-    input_params = InputParameters(params_file)
     self.root_histo()
     self.root_graph()
     self.setup_tpad()
