@@ -1,4 +1,4 @@
-from root import *
+from ROOT import *
 # eventually change to from root import TCanvas, SetCanvasFormat, ... etc
 
 
