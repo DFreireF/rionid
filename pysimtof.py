@@ -6,14 +6,46 @@ from amedata import *
 from particle import *
 from ring import Ring
 import inputparams
-import canvasformat
+import canvasformat as cvfmt
 
 
 class SimTOF():
   def __init__(self, filename):
     self.filename = filename
+    
+    # canvas:
+    mycanvas=cvfmt.CanvasFormat()
+    mycanvas.set_latex_format()
+    mycanvas.set_latex_labels()
+    c = mycanvas.set_format_c()
+    c_1 = mycanvas.set_format_c_1()
+    r3, c0, c, c_1, c_2_1, c_2_2, c_3, c_4 = mycanvas.setup_tpad()
+    
+    # gstyle:
+    gStyle.SetOptStat(0)
+    gStyle.SetOptTitle(0)
+    gGAMMAT = mycanvas.gammat_calculator()
+    gGAMMAT.Print()    
   
-  def FFT_root(self, filename):
+    # fft:
+    # fft_root() missing from operation
+
+    # 1. Import ame 
+    ame = amedata.AMEData()
+    ame.init_ame_db
+    ame_data = ame.ame_table
+    # 2. Importing in put params
+    params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
+    input_params=InputParameters(params_file)
+    # 3. Load LISE file
+    lise_file = lread.LISEreader(input_params.lisefile)
+    lise_data = lise_file.get_info_all()
+    
+    self.make_graphs()
+    
+    #then big while loop must go here, so it should be a function
+  
+  def fft_root(self, filename):
     LFRAMES = 2**18
     NFRAMES = 2*8
     iq = iqt.get_iq_object(self.filename)
@@ -22,7 +54,7 @@ class SimTOF():
     pp = pp / pp.max()  # normalized
     h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
-        h.SetBinContent(i, pp[i])
+      h.SetBinContent(i, pp[i])
     f = TFile(self.filename + '.root', 'RECREATE')
     h.Write()
     f.GetObject('FFT-', h)
@@ -44,17 +76,17 @@ class SimTOF():
       #find brho
         
   def root_histo(self):
-    hSim = TH1D('hSim', 'hSim', 200e3, 400, 700)
+    hSim = TH1F('hSim', 'hSim', 200e3, 400, 700)
     # FFT px ref
-    h_ref = TH1D('h_ref', 'h_ref',
+    h_ref = TH1F('h_ref', 'h_ref',
                  nbins, (frequence_center+frequence_min)/Frequence_Tl,
                  (frequence_center+frequence_max)/Frequence_Tl)
     # SRF
-    hSRF = TH1D('hSRF', 'simulated revolution frequence',
+    hSRF = TH1F('hSRF', 'simulated revolution frequence',
                 nbins, (frequence_center+frequence_min),
                 (frequence_center+frequence_max))
     # SRRF
-    hSRRF = TH1D('hSRRF', 'simulated relative revolution frequence',
+    hSRRF = TH1F('hSRRF', 'simulated relative revolution frequence',
                  nbins, (frequence_center+frequence_min)/Frequence_Tl,
                  (frequence_center+frequence_max)/Frequence_Tl)
     hSRF.SetLineStyle(2)
@@ -172,31 +204,8 @@ class SimTOF():
       c.Print('result.pdf')
           
   #=================== execution ====================          
-  # canvas:
-  mycanvas=CanvasFormat()
-  mycanvas.set_latex_format()
-  mycanvas.set_latex_labels()
-  c = mycanvas.set_format_c()
-  c_1 = mycanvas.set_format_c_1()
-  r3, c0, c, c_1, c_2_1, c_2_2, c_3, c_4 = mycanvas.setup_tpad()
   
-  # gstyle and gGAMMAT
-  gStyle.SetOptStat(0)
-  gStyle.SetOptTitle(0)
-  gGAMMAT = mycanvas.gammat_calculator()
-  gGAMMAT.Print()
-
-  # 1. Import ame 
-  ame = amedata.AMEData()
-  ame.init_ame_db
-  ame_data = ame.ame_table
-  # 2. Importing in put params
-  params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
-  input_params=InputParameters(params_file)
-  # 3. Load LISE file
-  lise_file = lread.LISEreader(input_params.lisefile)
-  lise_data = lise_file.get_info_all()
-  
+  #this should go under __init__ once it is a function
   Flag = ''
   while Flag != 'exit':
     self.root_histo()
