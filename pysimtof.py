@@ -1,12 +1,12 @@
+from iqtools import *
 from ROOT import *
 import numpy as np
-import lisereader as lread
-import iqtools as iqt
 from amedata import *
 from particle import *
 from ring import Ring
-import inputparams
+from inputparams import *
 import canvasformat as cvfmt
+from lisereader import *
 
 class SimTOF():
   def __init__(self, filename):
@@ -25,41 +25,42 @@ class SimTOF():
     gGAMMAT.Print()    
   
     # fft:
-    SimTOF.fft_root(filename)
+    SimTOF.fft_root(self.filename)
 
     # 1. Import ame 
-    ame = amedata.AMEData()
+    ame = AMEData()
     ame.init_ame_db
     ame_data = ame.ame_table
     # 2. Importing in put params
     params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
-    input_params=InputParameters(params_file)
+    input_params=InputParams(params_file)
     # 3. Load LISE file
-    lise_file = lread.LISEreader(input_params.lisefile)
+    lise_file = LISEreader(input_params.lisefile)
     lise_data = lise_file.get_info_all()
     
     gCharge, gZ, gA, gmoq, gi, gSim = SimTOF.root_graph()
     
     SimTOF.make_graphs()
-    SimTOF.Brho_adjust(lise_data,input_params)
+    SimTOF.Brho_adjust(input_params,lise_data)
       
   @staticmethod
   def fft_root(filename):
-    LFRAMES = 2**18
-    NFRAMES = 2*8
-    iq = iqt.get_iq_object(filename)
-    iq.iqt.read_samples(LFRAMES*NFRAMES)
+    LFRAMES = 2**13
+    NFRAMES = 2*4
+    iq = TIQData(filename)
+    iq.read_samples(LFRAMES*NFRAMES)
 
     ff, pp, _ = iq.get_fft()  # frec and power
     pp = pp / pp.max()  # normalized
-
-    h = TH1F('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
+    print('a')
+    h = TH1D('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
+      print(i)
       h.SetBinContent(i, pp[i])
-    f = TFile(filename + '.root', 'RECREATE')
-    h.Write()
-    f.GetObject('FFT-', h)
-    f.close()
+    #f = TFile(filename + '.root')
+    #h.Write()
+    #f.GetObject('FFT_Average', h)
+    #f.close()
 
     nbins = h.GetXaxis().GetNbins()
     frequence_min = h.GetXaxis().GetXmin()/1000 + 245
@@ -79,7 +80,7 @@ class SimTOF():
     # SRF
     hSRF = TH1F('hSRF', 'simulated revolution frequence',
                 nbins, (frequence_center+frequence_min),
-                (frequence_center+frequence_max))
+      hSRRF          (frequence_center+frequence_max))
     # SRRF
     hSRRF = TH1F('hSRRF', 'simulated relative revolution frequence',
                  nbins, (frequence_center+frequence_min)/Frequence_Tl,
@@ -118,7 +119,7 @@ class SimTOF():
     return gZ, gA, gCharge, gmoq, gi
         
   @staticmethod
-  def make_graphs():
+  def make_graphs(c_1,):
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
@@ -203,7 +204,7 @@ class SimTOF():
       hSRF.Write()
       fout_root.Close()
       c.Print('result.pdf')
-    else input_params=InputParameters(params_file) #reads input again after modification      
+    else: input_params=InputParameters(params_file) #reads input again after modification      
   #=================== execution ====================                                       
   def Brho_adjust(self,input_params,lise_data):
     Flag = ''
@@ -225,11 +226,9 @@ class SimTOF():
               gCharge.SetPoint(k, moq[k], lise[4])
               gmoq .SetPoint(k, moq[k], moq[k])
               gi   .SetPoint(k, moq[k], lise[5])
-              if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.d\
-ict['ReferenceIsotopeCharge']):
+              if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
                   moq_Rel = moq[k]
-                  gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]/AMEData.CC/m,2)\
-+1) # c was wrong (relations + unit analysis)                                                
+                  gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]/AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)                                                
                   beta          = sqrt(gamma * gamma - 1)/gamma
                   velocity      = AMEData.CC * beta
                   Frequence_Rel = 1000/(OrbitalLength / velocity)
@@ -241,7 +240,7 @@ ict['ReferenceIsotopeCharge']):
               SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
               Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
               hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
-              # 3.                                                                           
+              # 3.                                                                           hSRRF
               SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
               Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
               hSRRF.SetBinContent(Nx_SRRF[k], 1)
@@ -259,11 +258,11 @@ ict['ReferenceIsotopeCharge']):
     
 # ================== testing =====================
 def main():
-  filename='data/245-j.txt'
+  filename='data/410-j'
   with open(filename) as f:
     files = f.readlines()
     for file in files:
-      SimTOF(file)
+      SimTOF(file[:-1])
   
 #this tests when program is run  
 if __name__ == '__main__':
