@@ -16,8 +16,6 @@ class SimTOF():
     mycanvas=cvfmt.CanvasFormat()
     mycanvas.set_latex_format()
     mycanvas.set_latex_labels()
-    c = mycanvas.set_format_c()
-    c_1 = mycanvas.set_format_c_1()
     r3, c0, c, c_1, c_2_1, c_2_2, c_3, c_4 = mycanvas.setup_tpad()
     
     # gstyle:
