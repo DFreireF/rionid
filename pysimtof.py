@@ -268,13 +268,13 @@ class SimTOF():
   ##while ends
 
 # ================== testing =====================
-#here you can put the filenames of files you want to test
-#introduce 245-j.txt file
 def test():
   print('here is where you can check that routines work')
   
 #this tests when program is run  
 if __name__ == '__main__':
+  #here you can put the filenames of files you want to test
+  #introduce 245-j.txt file
   try:
       test()
   except:
