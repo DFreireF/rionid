@@ -24,10 +24,8 @@ class SimTOF():
     gGAMMAT = mycanvas.gammat_calculator()
     gGAMMAT.Print()    
   
-    read_to_root(self.filename)
-  
     # fft:
-    # self.fft_root() missing from operation
+    # SimTOF.fft_root(needs_filename)
 
     # 1. Import ame 
     ame = amedata.AMEData()
@@ -40,17 +38,22 @@ class SimTOF():
     lise_file = lread.LISEreader(input_params.lisefile)
     lise_data = lise_file.get_info_all()
     
+    gCharge, gZ, gA, gmoq, gi, gSim = SimTOF.root_graph()
+    
     SimTOF.make_graphs()
     
     #then big while loop must go here, so it should be a function
   
-  def fft_root(self, filename):
+  @staticmethod
+  def fft_root(filename):
     LFRAMES = 2**18
     NFRAMES = 2*8
     iq = iqt.get_iq_object(filename)
     iq.iqt.read_samples(LFRAMES*NFRAMES)
+
     ff, pp, _ = iq.get_fft()  # frec and power
     pp = pp / pp.max()  # normalized
+
     h = TH1F('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
       h.SetBinContent(i, pp[i])
@@ -58,16 +61,17 @@ class SimTOF():
     h.Write()
     f.GetObject('FFT-', h)
     f.close()
-    nbins         = h.GetXaxis().GetNbins()
+
+    nbins = h.GetXaxis().GetNbins()
     frequence_min = h.GetXaxis().GetXmin()/1000 + 245
     frequence_max = h.GetXaxis().GetXmax()/1000 + 245
-    y_max         = h.GetMaximum()
+    y_max = h.GetMaximum()
     h.GetXaxis().SetLimits(frequence_min, frequence_max)
-    Frequence_Tl     = 243.2712156 #MHz
-    frequence_center = 0
-    OrbitalLength    = 108430 #mm
-    
-  def read_to_root(self, filename): # this function doesnt use its input variable
+
+    return nbins, frequence_min, frequence_max, y_max
+
+  @staticmethod #for future code
+  def read_to_root(filename):
     with open(filename) as f:
       files = f.readlines()
     for file in files:
@@ -75,7 +79,7 @@ class SimTOF():
       #find brho
       
   @staticmethod
-  def root_histo():
+  def root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl):
     hSim = TH1F('hSim', 'hSim', 200e3, 400, 700)
     # FFT px ref
     h_ref = TH1F('h_ref', 'h_ref',
@@ -91,6 +95,7 @@ class SimTOF():
                  (frequence_center+frequence_max)/Frequence_Tl)
     hSRF.SetLineStyle(2)
     hSRRF.SetLineStyle(2)
+    return h_ref, hSRF, hSRRF
       
   @staticmethod
   def root_graph():
@@ -102,24 +107,24 @@ class SimTOF():
     gSim = TGraph()
     gSim.SetLineColor(2)
     gSim.SetName('gSim')
+    return gCharge, gZ, gA, gmoq, gi, gSim
+  
+  @staticmethod #this doesnt need method, can just go in loop directly.
+  def remove_point(gZ,gA,gCharge,gmoq, gi):
+    gZ.RemovePoint(0)
+    gA.RemovePoint(0)
+    gCharge.RemovePoint(0)
+    gmoq.RemovePoint(0)
+    gi.RemovePoint(0)
       
   @staticmethod
-  def remove_points():
-    k=gZ.GetN()
-    for i in range(0,k):
-      gZ.RemovePoint(0)
-      gA.RemovePoint(0)
-      gCharge.RemovePoint(0)
-      gmoq.RemovePoint(0)
-      gi.RemovePoint(0)
-          
-  @staticmethod
-  def root_sort():#sort in decreasing order
-      gZ.Sort()
-      gA.Sort()
-      gCharge.Sort()
-      gmoq.Sort()
-      gi.Sort()
+  def root_sort(gZ, gA, gCharge, gmoq, gi):  # sort in decreasing order
+    gZ.Sort()
+    gA.Sort()
+    gCharge.Sort()
+    gmoq.Sort()
+    gi.Sort()
+    return gZ, gA, gCharge, gmoq, gi
         
   @staticmethod
   def make_graphs():
@@ -137,7 +142,7 @@ class SimTOF():
       x_ref = (h.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
       y = h.GetBinContent(nnn)
       nx_ref = h_ref.GetXaxis().FindBin(x_ref)
-      h_ref.SetBinContent(nx_ref, y)
+      h_ref.SetBinContent(nx_ref, y_max)
 
     h_ref.Draw()
     h_ref.Scale(0.00000001)
@@ -218,6 +223,9 @@ class SimTOF():
     self.setup_tpad()
     self.remove_points()
     k = 0
+    Frequence_Tl     = 243.2712156 #MHz
+    frequence_center = 0
+    OrbitalLength    = 108430 #mm
     fout = open(('output_%d.tof', input_params.dict['Harmonic']), 'a')
     for i, lise in enumerate(lise_data):
       for ame in ame_data:

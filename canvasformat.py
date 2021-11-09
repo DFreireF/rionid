@@ -20,18 +20,7 @@ class CanvasFormat():
         gGAMMAT.SetPoint(1, 1.000, 2.4234 + (1.000 - 1)*k)
         gGAMMAT.SetPoint(2, 1.002, 2.4234 + (1.02 - 1)*k)
         return gGAMMAT
-
-
-    #not sure about this one, gZ not defined etc...
-    def remove_points(self):
-        k = gZ.GetN()
-        for i in range(0, k):
-            gZ.RemovePoint(0)
-            gA.RemovePoint(0)
-            gCharge.RemovePoint(0)
-            gmoq.RemovePoint(0)
-            gi.RemovePoint(0)
-
+            
     def set_latex_labels(self):
         tex200Au79 = TLatex(0.9999552, 2.176887e+14, '^{200}Au^{79+}')
         tex200Au79.SetTextColor(2)
@@ -105,3 +94,9 @@ class CanvasFormat():
         pad.SetBottomMargin(0.25)
         pad.SetFrameBorderMode(0)
         pad.SetLogy(1)
+
+if __name__ == '__main__':
+    try:
+        pass
+    except:
+        raise
