@@ -3,7 +3,7 @@ import numpy as np
 import lisereader as lread
 import iqtools as iqt
 from amedata import *
-#from particle import *
+from particle import *
 from ring import Ring
 import inputparams
 import canvasformat as cvfmt
@@ -25,7 +25,7 @@ class SimTOF():
     gGAMMAT.Print()    
   
     # fft:
-    # SimTOF.fft_root(needs_filename)
+    SimTOF.fft_root(filename)
 
     # 1. Import ame 
     ame = amedata.AMEData()
@@ -41,9 +41,8 @@ class SimTOF():
     gCharge, gZ, gA, gmoq, gi, gSim = SimTOF.root_graph()
     
     SimTOF.make_graphs()
-    
-    #then big while loop must go here, so it should be a function
-  
+    SimTOF.Brho_adjust(lise_data,input_params)
+      
   @staticmethod
   def fft_root(filename):
     LFRAMES = 2**18
@@ -69,14 +68,6 @@ class SimTOF():
     h.GetXaxis().SetLimits(frequence_min, frequence_max)
 
     return nbins, frequence_min, frequence_max, y_max
-
-  @staticmethod #for future code
-  def read_to_root(filename):
-    with open(filename) as f:
-      files = f.readlines()
-    for file in files:
-      self.FFT_root(file)
-      #find brho
       
   @staticmethod
   def root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl):
@@ -212,70 +203,71 @@ class SimTOF():
       hSRF.Write()
       fout_root.Close()
       c.Print('result.pdf')
-          
-  #=================== execution ====================          
-  
-  #this should go under __init__ once it is a function
-  Flag = ''
-  while Flag != 'exit':
-    self.root_histo()
-    self.root_graph()
-    self.setup_tpad()
-    self.remove_points()
-    k = 0
-    Frequence_Tl     = 243.2712156 #MHz
-    frequence_center = 0
-    OrbitalLength    = 108430 #mm
-    fout = open(('output_%d.tof', input_params.dict['Harmonic']), 'a')
-    for i, lise in enumerate(lise_data):
-      for ame in ame_data:
-        if lise[0]==ame[6] and lise[1]==ame[5]:
-            particle_name = Particle(lise[2],lise[3],ame_data,Ring('ESR', 108.5))
-            m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
-            moq[k] = particle_name.get_ionic_moq_in_u()
-            gZ   .SetPoint(k, moq[k], lise[2])
-            gA   .SetPoint(k, moq[k], lise[1])
-            gCharge.SetPoint(k, moq[k], lise[4])
-            gmoq .SetPoint(k, moq[k], moq[k])
-            gi   .SetPoint(k, moq[k], lise[5])
-            if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
-                moq_Rel = moq[k]
-                gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]/AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)
-                beta          = sqrt(gamma * gamma - 1)/gamma
-                velocity      = AMEData.CC * beta
-                Frequence_Rel = 1000/(OrbitalLength / velocity)
-                
-            # 1. simulated relative revolution frequency
-            SRRF[k] = 1-1/input_params.dict['GAMMAT'] / \
-                input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
-            # 2. simulated revolution frequency
-            SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
-            Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
-            hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
-            # 3.
-            SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
-            Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
-            hSRRF.SetBinContent(Nx_SRRF[k], 1)
-            #fout
-            fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
-                input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t', SRF, ' MHz,\t', lise[5])
-            k += 1
-    fout.close()
-    self.root_sort()
-    self.make_graphs()
-    self.latex_labels()
-    self.print_out_or_not()
-  ##while ends
+    else input_params=InputParameters(params_file) #reads input again after modification      
+  #=================== execution ====================                                       
+  def Brho_adjust(self,input_params,lise_data):
+    Flag = ''
+    while Flag != 'exit':
+      SimTOF.root_histo()
+      SimTOF.root_graph()
+      SimTOF.etup_tpad()
+      SimTOF.remove_points()
+      k = 0
+      fout = open(('output_%d.tof', input_params.dict['Harmonic']), 'a')
+      for i, lise in enumerate(lise_data):
+        for ame in ame_data:
+          if lise[0]==ame[6] and lise[1]==ame[5]:
+              particle_name = Particle(lise[2],lise[3],ame_data,Ring('ESR', 108.5))
+              m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
+              moq[k] = particle_name.get_ionic_moq_in_u()
+              gZ   .SetPoint(k, moq[k], lise[2])
+              gA   .SetPoint(k, moq[k], lise[1])
+              gCharge.SetPoint(k, moq[k], lise[4])
+              gmoq .SetPoint(k, moq[k], moq[k])
+              gi   .SetPoint(k, moq[k], lise[5])
+              if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.d\
+ict['ReferenceIsotopeCharge']):
+                  moq_Rel = moq[k]
+                  gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]/AMEData.CC/m,2)\
++1) # c was wrong (relations + unit analysis)                                                
+                  beta          = sqrt(gamma * gamma - 1)/gamma
+                  velocity      = AMEData.CC * beta
+                  Frequence_Rel = 1000/(OrbitalLength / velocity)
 
+              # 1. simulated relative revolution frequency                                   
+              SRRF[k] = 1-1/input_params.dict['GAMMAT'] / \
+                  input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
+              # 2. simulated revolution frequency                                            
+              SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
+              Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
+              hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
+              # 3.                                                                           
+              SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
+              Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
+              hSRRF.SetBinContent(Nx_SRRF[k], 1)
+              #fout                                                                          
+              fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
+                  input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t\
+', SRF, ' MHz,\t', lise[5])
+              k += 1
+      fout.close()
+      SimTOF.root_sort()
+      SimTOF.make_graphs()
+      SimTOF.latex_labels()
+      SimTOF.print_out_or_not()
+    ##while ends
+    
 # ================== testing =====================
-#here you can put the filenames of files you want to test
-#introduce 245-j.txt file
-def test():
-  print('here is where you can check that routines work')
+def main():
+  filename='data/245-j.txt'
+  with open(filename) as f:
+    files = f.readlines()
+    for file in files:
+      SimTOF(file)
   
 #this tests when program is run  
 if __name__ == '__main__':
   try:
-      test()
+      main()
   except:
       raise
