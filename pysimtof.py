@@ -25,7 +25,7 @@ class SimTOF():
     gGAMMAT.Print()    
   
     # fft:
-    SimTOF.fft_root(filename)
+    SimTOF.fft_root(self.filename)
 
     # 1. Import ame 
     ame = amedata.AMEData()
@@ -42,19 +42,21 @@ class SimTOF():
     
     SimTOF.make_graphs()
     SimTOF.Brho_adjust(lise_data,input_params)
-      
+  
   @staticmethod
   def fft_root(filename):
     LFRAMES = 2**18
     NFRAMES = 2*8
-    iq = iqt.get_iq_object(filename)
-    iq.iqt.read_samples(LFRAMES*NFRAMES)
+    iq_data = iqt.get_iq_object(filename)
+    iq_data.iqt.read_samples(LFRAMES*NFRAMES)
 
     ff, pp, _ = iq.get_fft()  # frec and power
     pp = pp / pp.max()  # normalized
 
     h = TH1F('h', 'h', len(ff), iq.center + ff[0], iq.center + ff[-1])
     for i in range(len(ff)):
+      if i%1000:
+        print(i)
       h.SetBinContent(i, pp[i])
     f = TFile(filename + '.root', 'RECREATE')
     h.Write()
@@ -117,8 +119,8 @@ class SimTOF():
     gi.Sort()
     return gZ, gA, gCharge, gmoq, gi
         
-  @staticmethod
-  def make_graphs():
+  @staticmethod #maybe this also doesnt need to be a method
+  def make_graphs(): #needs input of all the variables
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
@@ -133,10 +135,10 @@ class SimTOF():
       x_ref = (h.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
       y = h.GetBinContent(nnn)
       nx_ref = h_ref.GetXaxis().FindBin(x_ref)
-      h_ref.SetBinContent(nx_ref, y_max)
+      h_ref.SetBinContent(nx_ref, y)
 
     h_ref.Draw()
-    h_ref.Scale(0.00000001)
+    h_ref.Scale(1e-8)
     h_ref.GetYaxis().SetRangeUser(1, 1e3)
     h_ref.GetXaxis().SetRangeUser(
         input_params.dict['RefRangeMin2'], input_params.dict['RefRangeMax2'])
@@ -159,7 +161,7 @@ class SimTOF():
     gPad.SetTickx(1)
     hSRRF.Draw('')
     hSRRF.SetLineColor(2)
-    hSRRF.GetXaxis().SetTitle('relative revolution frequence')
+    hSRRF.GetXaxis().SetTitle('Relative Revolution Frequency')
     hSRRF.GetXaxis().CenterTitle(true)
     hSRRF.GetXaxis().SetLabelFont(42)
     hSRRF.GetXaxis().SetLabelSize(0.10)
@@ -204,7 +206,9 @@ class SimTOF():
       fout_root.Close()
       c.Print('result.pdf')
     else input_params=InputParameters(params_file) #reads input again after modification      
+  
   #=================== execution ====================                                       
+  
   def Brho_adjust(self,input_params,lise_data):
     Flag = ''
     while Flag != 'exit':
@@ -258,17 +262,12 @@ ict['ReferenceIsotopeCharge']):
     ##while ends
     
 # ================== testing =====================
-<<<<<<< HEAD
-def test():
-  print('here is where you can check that routines work')
-=======
 def main():
   filename='data/245-j.txt'
   with open(filename) as f:
     files = f.readlines()
     for file in files:
       SimTOF(file)
->>>>>>> a9bf6568282c53cae8f3d78ba1b35c37d4f4e2c2
   
 #this tests when program is run  
 if __name__ == '__main__':
