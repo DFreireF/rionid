@@ -39,7 +39,7 @@ class SimTOF():
       
   @staticmethod
   def fft_root(filename):
-    LFRAMES = 2**13
+    LFRAMES = 2**18
     NFRAMES = 2*4
     iq = TIQData(filename)
     iq.read_samples(LFRAMES*NFRAMES)
@@ -51,10 +51,6 @@ class SimTOF():
     for i in range(len(ff)):
       print(i)
       h.SetBinContent(i, pp[i])
-    #f = TFile(filename + '.root')
-    #h.Write()
-    #f.GetObject('FFT_Average', h)
-    #f.close()
 
     nbins = h.GetXaxis().GetNbins()
     frequence_min = h.GetXaxis().GetXmin()/1000 + 245
@@ -128,10 +124,10 @@ class SimTOF():
       x_ref = (h.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
       y = h.GetBinContent(nnn)
       nx_ref = h_ref.GetXaxis().FindBin(x_ref)
-      h_ref.SetBinContent(nx_ref, y_max)
+      h_ref.SetBinContent(nx_ref, y)
 
     h_ref.Draw()
-    h_ref.Scale(0.00000001)
+    h_ref.Scale(1e-8)
     h_ref.GetYaxis().SetRangeUser(1, 1e3)
     h_ref.GetXaxis().SetRangeUser(
         input_params.dict['RefRangeMin2'], input_params.dict['RefRangeMax2'])
@@ -154,7 +150,7 @@ class SimTOF():
     gPad.SetTickx(1)
     hSRRF.Draw('')
     hSRRF.SetLineColor(2)
-    hSRRF.GetXaxis().SetTitle('relative revolution frequence')
+    hSRRF.GetXaxis().SetTitle('Relative Revolution Frequency')
     hSRRF.GetXaxis().CenterTitle(true)
     hSRRF.GetXaxis().SetLabelFont(42)
     hSRRF.GetXaxis().SetLabelSize(0.10)
@@ -181,7 +177,7 @@ class SimTOF():
     c_4.Update()
       
   @staticmethod
-  def print_out_or_not(self):  
+  def print_out_or_not(Frequence_Rel,Frequence_Tl,Harmonic):  
     gSystem.ProcessEvents()
     gSystem.Sleep(10)
     print('Frequence_Rel = ', Frequence_Rel)
@@ -198,7 +194,65 @@ class SimTOF():
       hSRF.Write()
       fout_root.Close()
       c.Print('result.pdf')
+<<<<<<< HEAD
     else: input_params=InputParameters(params_file) #reads input again after modification      
+=======
+    else: input_params=InputParams(params_file) #reads input again after modification      
+  #=================== execution ====================                                       
+  
+  def Brho_adjust(self,input_params,lise_data): # should also be in main or init
+                                                # as contains many variables.
+    Flag = ''
+    while Flag != 'exit':
+      SimTOF.root_histo()
+      SimTOF.root_graph()
+      SimTOF.etup_tpad()
+      SimTOF.remove_points()
+      k = 0
+      fout = open(('output_%d.tof', input_params.dict['Harmonic']), 'a')
+      for i, lise in enumerate(lise_data):
+        for ame in ame_data:
+          if lise[0]==ame[6] and lise[1]==ame[5]:
+            particle_name = Particle(lise[2],lise[3],ame_data,Ring('ESR', 108.5))
+            m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
+            moq[k] = particle_name.get_ionic_moq_in_u()
+            
+            gZ      .SetPoint(k, moq[k], lise[2])
+            gA      .SetPoint(k, moq[k], lise[1])
+            gCharge .SetPoint(k, moq[k], lise[4])
+            gmoq    .SetPoint(k, moq[k], moq[k])
+            gi      .SetPoint(k, moq[k], lise[5])
+            
+            if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
+              moq_Rel = moq[k]
+              gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]/AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)                                                
+              beta          = sqrt(gamma * gamma - 1)/gamma
+              velocity      = AMEData.CC * beta
+              Frequence_Rel = 1000/(OrbitalLength / velocity)
+
+            # 1. simulated relative revolution frequency                                   
+            SRRF[k] = 1-1/input_params.dict['GAMMAT'] / \
+                input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
+            # 2. simulated revolution frequency                                            
+            SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
+            Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
+            hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
+            # 3.                                                                           hSRRF
+            SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
+            Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
+            hSRRF.SetBinContent(Nx_SRRF[k], 1)
+            #fout                                                                          
+            fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
+                input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF,
+                '\t', SRF,  MHz, '\t', lise[5])
+            k += 1
+      fout.close()
+      SimTOF.root_sort()
+      SimTOF.make_graphs()
+      SimTOF.latex_labels()
+      SimTOF.print_out_or_not()
+    ##while ends
+>>>>>>> 6ebc0dc9da272498147d4b7878e26c7dfa373010
     
 # ================== testing =====================
 def main():
@@ -259,6 +313,8 @@ def main():
       
 #this tests when program is run  
 if __name__ == '__main__':
+  #here you can put the filenames of files you want to test
+  #introduce 245-j.txt file
   try:
       main()
   except:
