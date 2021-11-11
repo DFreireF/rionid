@@ -77,7 +77,7 @@ class CanvasFormat():
         CanvasFormat.set_pad_format(c_4)
         c_4.SetLogy(0)
 
-        return r3, c0, c, c_1, c_2_1, c_2_2, c_3, c_4
+        return r3, c0, c, c_1,c_2, c_2_1, c_2_2, c_3, c_4
     
     @staticmethod
     def set_canvas_format(canvas):

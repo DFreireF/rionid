@@ -11,30 +11,7 @@ from lisereader import *
 class SimTOF():
   def __init__(self, filename):
     self.filename = filename
-    print(self.filename)
-    # canvas:
-    mycanvas=cvfmt.CanvasFormat()
-    mycanvas.set_latex_format()
-    mycanvas.set_latex_labels()
-    self.r3, self.c0, self.c, self.c_1, self.c_2_1, self.c_2_2, self.c_3, self.c_4 = mycanvas.setup_tpad()
-    # gstyle:
-    gStyle.SetOptStat(0)
-    gStyle.SetOptTitle(0)
-    gGAMMAT = mycanvas.gammat_calculator()
-    gGAMMAT.Print()    
-
-    # 1. Import ame 
-    ame = AMEData()
-    ame.init_ame_db
-    ame_data = ame.ame_table
-    # 2. Importing in put params
-    params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
-    input_params=InputParams(params_file)
-    # 3. Load LISE file
-    lise_file = LISEreader(input_params.lisefile)
-    lise_data = lise_file.get_info_all()
-    
-    gCharge, gZ, gA, gmoq, gi, gSim = SimTOF.root_graph()
+    print(self.filename)    
       
   @staticmethod
   def fft_root(filename):
@@ -59,7 +36,7 @@ class SimTOF():
       
   @staticmethod
   def root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl):
-    hSim = TH1F('hSim', 'hSim', 200e3, 400, 700)
+    hSim = TH1F('hSim', 'hSim', 200000, 400, 700)
     # FFT px ref
     h_ref = TH1F('h_ref', 'h_ref',
                  nbins, (frequence_center+frequence_min)/Frequence_Tl,
@@ -67,7 +44,7 @@ class SimTOF():
     # SRF
     hSRF = TH1F('hSRF', 'simulated revolution frequence',
                 nbins, (frequence_center+frequence_min),
-      hSRRF          (frequence_center+frequence_max))
+                (frequence_center+frequence_max))
     # SRRF
     hSRRF = TH1F('hSRRF', 'simulated relative revolution frequence',
                  nbins, (frequence_center+frequence_min)/Frequence_Tl,
@@ -90,11 +67,13 @@ class SimTOF():
   
   @staticmethod #this doesnt need method, can just go in loop directly.
   def remove_point(gZ,gA,gCharge,gmoq, gi):
-    gZ.RemovePoint(0)
-    gA.RemovePoint(0)
-    gCharge.RemovePoint(0)
-    gmoq.RemovePoint(0)
-    gi.RemovePoint(0)
+    k=gZ.GetN()
+    for i in range(0,k):
+      gZ.RemovePoint(0)
+      gA.RemovePoint(0)
+      gCharge.RemovePoint(0)
+      gmoq.RemovePoint(0)
+      gi.RemovePoint(0)
       
   @staticmethod
   def root_sort(gZ, gA, gCharge, gmoq, gi):  # sort in decreasing order
@@ -105,8 +84,8 @@ class SimTOF():
     gi.Sort()
     return gZ, gA, gCharge, gmoq, gi
         
-  
-  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4):
+  @staticmethod
+  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRRF):
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
@@ -196,25 +175,47 @@ class SimTOF():
 # ================== execution =====================
 def main():
   filename='data/410-j'
+  frequence_center=0
+  Frequence_Tl=243.2712156 
+  # 1. Import ame 
+  ame = AMEData()
+  ame.init_ame_db
+  ame_data = ame.ame_table
+  # 2. Importing in put params
+  params_file = 'data/InputParameters.txt' #initial seeds; although can be changed to just declaring variables here
+  input_params=InputParams(params_file)
+  # 3. Load LISE file
+  lise_file = LISEreader(input_params.lisefile)
+  lise_data = lise_file.get_info_all()
+  
   with open(filename) as f:
     files = f.readlines()
-    for file in files:
-      tof=SimTOF(file[:-1])
-      tof.fft_root(file[:-1])
-      tof.make_graphs(tof.c_1,tof.c_2,tof.c_2_1,tof.c_2_2,tof.c_3,tof.c_4)
+    for file in files:      
+      SimTOF(file[:-1])
+      # canvas:
+      mycanvas=cvfmt.CanvasFormat()
+      mycanvas.set_latex_format()
+      mycanvas.set_latex_labels()
+      # gstyle:
+      gStyle.SetOptStat(0)
+      gStyle.SetOptTitle(0)
+      gGAMMAT = mycanvas.gammat_calculator()
+      gGAMMAT.Print()    
+
+      r3, c0, c, c_1, c_2,c_2_1, c_2_2, c_3,c_4 = mycanvas.setup_tpad()
+      nbins, frequence_min, frequence_max, y_max=SimTOF.fft_root(file[:-1])
+      h_ref, hSRF, hSRRF=SimTOF.root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl)
+      gCharge, gZ, gA, gmoq, gi, gSim=SimTOF.root_graph()
       Flag = ''
       while Flag != 'exit':
-        SimTOF.root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl)
-        SimTOF.root_graph()
-        SimTOF.setup_tpad()
-        SimTOF.remove_points()
+        SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
         k = 0
-        fout = open(('output_%d.tof', input_params.dict['Harmonic']), 'a')
+        fout = open('output_'+str(input_params.dict['Harmonic'])+'.tof', 'a')
         for i, lise in enumerate(lise_data):
           for ame in ame_data:
             if lise[0]==ame[6] and lise[1]==ame[5]:
-              particle_name = Particle(lise[2],lise[3],ame_data,Ring('ESR', 108.5))
-              m[k] = amedata.to_mev(particle_name.get_ionic_mass_in_u())
+              particle_name = Particle(lise[2],lise[3],AMEData(),Ring('ESR', 108.5))
+              m[k] = AMEData.to_mev(particle_name.get_ionic_mass_in_u())
               moq[k] = particle_name.get_ionic_moq_in_u()
               gZ   .SetPoint(k, moq[k], lise[2])
               gA   .SetPoint(k, moq[k], lise[1])
@@ -243,12 +244,11 @@ def main():
               fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
                   input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t\
 ', SRF, ' MHz,\t', lise[5])
-                k += 1
+              k += 1
         fout.close()
-        SimTOF.root_sort()
-        SimTOF.make_graphs()
-        SimTOF.latex_labels()
-        SimTOF.print_out_or_not()
+        gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
+        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRRF)
+        SimTOF.print_out_or_not(Frequence_Rel,Frequence_Tl,Harmonic)
       
       
 #this tests when program is run  
