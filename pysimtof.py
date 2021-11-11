@@ -16,8 +16,7 @@ class SimTOF():
     mycanvas=cvfmt.CanvasFormat()
     mycanvas.set_latex_format()
     mycanvas.set_latex_labels()
-    r3, c0, c, c_1, c_2_1, c_2_2, c_3, c_4 = mycanvas.setup_tpad()
-    abc='####################################'
+    self.r3, self.c0, self.c, self.c_1, self.c_2_1, self.c_2_2, self.c_3, self.c_4 = mycanvas.setup_tpad()
     # gstyle:
     gStyle.SetOptStat(0)
     gStyle.SetOptTitle(0)
@@ -107,7 +106,7 @@ class SimTOF():
     return gZ, gA, gCharge, gmoq, gi
         
   
-  def make_graphs():
+  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4):
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
@@ -173,7 +172,7 @@ class SimTOF():
                                  (frequence_center+frequence_max)/Frequence_Tl)
     gGAMMAT.GetYaxis().SetRangeUser(2.412, 2.432)
     c_4.Update()
-    return c_1,c_2,c_3,c_4  
+      
   @staticmethod
   def print_out_or_not(Frequence_Rel,Frequence_Tl,Harmonic):
     gSystem.ProcessEvents()
@@ -200,10 +199,9 @@ def main():
   with open(filename) as f:
     files = f.readlines()
     for file in files:
-      SimTOF(file[:-1])
-      print(abc)
-      SimTOF.fft_root(file[:-1])
-      SimTOF.make_graphs(c_1,h,c_2,c_2_1,c_2_2,c_3,c_4)
+      tof=SimTOF(file[:-1])
+      tof.fft_root(file[:-1])
+      tof.make_graphs(tof.c_1,tof.c_2,tof.c_2_1,tof.c_2_2,tof.c_3,tof.c_4)
       Flag = ''
       while Flag != 'exit':
         SimTOF.root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl)
