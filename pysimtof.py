@@ -32,7 +32,7 @@ class SimTOF():
     y_max = h.GetMaximum()
     h.GetXaxis().SetLimits(frequence_min, frequence_max)
 
-    return nbins, frequence_min, frequence_max, y_max
+    return nbins, frequence_min, frequence_max, y_max,h
       
   @staticmethod
   def root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl):
@@ -85,7 +85,7 @@ class SimTOF():
     return gZ, gA, gCharge, gmoq, gi
         
   @staticmethod
-  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRRF):
+  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,Frequence_Tl):
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
@@ -96,7 +96,7 @@ class SimTOF():
       
     c_2.cd()
     gPad.SetBottomMargin(0.01)
-    for nnn in h.GetXaxis().GetNbins():
+    for nnn in range(0,h.GetXaxis().GetNbins()):
       x_ref = (h.GetXaxis().GetBinCenter(nnn)+frequence_center)/Frequence_Tl
       y = h.GetBinContent(nnn)
       nx_ref = h_ref.GetXaxis().FindBin(x_ref)
@@ -127,13 +127,13 @@ class SimTOF():
     hSRRF.Draw('')
     hSRRF.SetLineColor(2)
     hSRRF.GetXaxis().SetTitle('Relative Revolution Frequency')
-    hSRRF.GetXaxis().CenterTitle(true)
+    #hSRRF.GetXaxis().CenterTitle(true)
     hSRRF.GetXaxis().SetLabelFont(42)
     hSRRF.GetXaxis().SetLabelSize(0.10)
     hSRRF.GetXaxis().SetTitleSize(0.10)
     hSRRF.GetXaxis().SetTitleFont(42)
     hSRRF.GetYaxis().SetTitle('arb. units')
-    hSRRF.GetYaxis().CenterTitle(true)
+    #hSRRF.GetYaxis().CenterTitle(true)
     hSRRF.GetYaxis().SetLabelFont(42)
     hSRRF.GetYaxis().SetLabelSize(0.10)
     hSRRF.GetYaxis().SetTitleSize(0.10)
@@ -203,20 +203,24 @@ def main():
       gGAMMAT.Print()    
 
       r3, c0, c, c_1, c_2,c_2_1, c_2_2, c_3,c_4 = mycanvas.setup_tpad()
-      nbins, frequence_min, frequence_max, y_max=SimTOF.fft_root(file[:-1])
+      nbins, frequence_min, frequence_max, y_max,h=SimTOF.fft_root(file[:-1])
       h_ref, hSRF, hSRRF=SimTOF.root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl)
       gCharge, gZ, gA, gmoq, gi, gSim=SimTOF.root_graph()
+      
       Flag = ''
       while Flag != 'exit':
+        m=[]
+        moq=[]
         SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
         k = 0
         fout = open('output_'+str(input_params.dict['Harmonic'])+'.tof', 'a')
         for i, lise in enumerate(lise_data):
+          print(i)
           for ame in ame_data:
             if lise[0]==ame[6] and lise[1]==ame[5]:
               particle_name = Particle(lise[2],lise[3],AMEData(),Ring('ESR', 108.5))
-              m[k] = AMEData.to_mev(particle_name.get_ionic_mass_in_u())
-              moq[k] = particle_name.get_ionic_moq_in_u()
+              m.append(AMEData.to_mev(particle_name.get_ionic_mass_in_u()))
+              moq.append(particle_name.get_ionic_moq_in_u())
               gZ   .SetPoint(k, moq[k], lise[2])
               gA   .SetPoint(k, moq[k], lise[1])
               gCharge.SetPoint(k, moq[k], lise[4])
@@ -229,25 +233,26 @@ def main():
                 velocity      = AMEData.CC * beta
                 Frequence_Rel = 1000/(OrbitalLength / velocity)
       
-              # 1. simulated relative revolution frequency                                   
-              SRRF[k] = 1-1/input_params.dict['GAMMAT'] / \
-                  input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
-              # 2. simulated revolution frequency                                            
-              SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
-              Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
-              hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
-              # 3.                                                                           hSRRF
-              SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
-              Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
-              hSRRF.SetBinContent(Nx_SRRF[k], 1)
-              #fout                                                                          
-              fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
-                  input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t\
-', SRF, ' MHz,\t', lise[5])
-              k += 1
+                # 1. simulated relative revolution frequency                                   
+                SRRF[k] = 1-1/input_params.dict['GAMMAT'] / \
+                    input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
+                # 2. simulated revolution frequency                                            
+                SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
+                Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
+                hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
+                # 3.                                                                           hSRRF
+                SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
+                Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
+                hSRRF.SetBinContent(Nx_SRRF[k], 1)
+                #fout                                                                          
+                fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
+                    input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t\
+', SRF, ' MHz,  \t', lise[5])
+                k += 1
+                print(k)
         fout.close()
         gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
-        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRRF)
+        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,Frequence_Tl)
         SimTOF.print_out_or_not(Frequence_Rel,Frequence_Tl,Harmonic)
       
       
