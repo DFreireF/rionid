@@ -85,7 +85,7 @@ class SimTOF():
     return gZ, gA, gCharge, gmoq, gi
         
   @staticmethod
-  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,Frequence_Tl):
+  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT):
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
@@ -153,7 +153,7 @@ class SimTOF():
     c_4.Update()
       
   @staticmethod
-  def print_out_or_not(Frequence_Rel,Frequence_Tl,Harmonic):
+  def print_out_or_not(input_params,canvas,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,Harmonic):
     gSystem.ProcessEvents()
     gSystem.Sleep(10)
     print('Frequence_Rel = ', Frequence_Rel)
@@ -163,20 +163,21 @@ class SimTOF():
     print('exit or not? introduce exit')
     Flag=input('Enter exit to finish Brho manual adjustment:')
     if Flag=='exit':
-      fout_root = TFile.Open(('simtof_%d.tof',input_params.dict['Harmonic']),'recreate')
+      fout_root = TFile.Open('simtof_'+str(int(Harmonic))+'.tof','recreate')
       h.Write()
       h_ref.Write()
       hSRRF.Write()
       hSRF.Write()
       fout_root.Close()
-      c.Print('result.pdf')
+      cvfmt.canvas_print(canvas)
     else: input_params=InputParams(params_file) #reads input again after modification
     
 # ================== execution =====================
 def main():
   filename='data/410-j'
   frequence_center=0
-  Frequence_Tl=243.2712156 
+  Frequence_Tl=243.2712156
+  ring=Ring('ESR', 108.5)
   # 1. Import ame 
   ame = AMEData()
   ame.init_ame_db
@@ -205,55 +206,62 @@ def main():
       r3, c0, c, c_1, c_2,c_2_1, c_2_2, c_3,c_4 = mycanvas.setup_tpad()
       nbins, frequence_min, frequence_max, y_max,h=SimTOF.fft_root(file[:-1])
       h_ref, hSRF, hSRRF=SimTOF.root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl)
-      gCharge, gZ, gA, gmoq, gi, gSim=SimTOF.root_graph()
-      
+      gCharge, gZ, gA, gmoq, gi, gSim=SimTOF.root_graph()      
       Flag = ''
       while Flag != 'exit':
         m=[]
         moq=[]
-        SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
+        SRRF=[]
+        SRF=[]
+        Nx_SRF=[]
+        Nx_SRRF=[]        
+       # SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
         k = 0
         fout = open('output_'+str(input_params.dict['Harmonic'])+'.tof', 'a')
         for i, lise in enumerate(lise_data):
           print(i)
           for ame in ame_data:
             if lise[0]==ame[6] and lise[1]==ame[5]:
-              particle_name = Particle(lise[2],lise[3],AMEData(),Ring('ESR', 108.5))
+              particle_name = Particle(lise[2],lise[3],AMEData(),ring)
               m.append(AMEData.to_mev(particle_name.get_ionic_mass_in_u()))
               moq.append(particle_name.get_ionic_moq_in_u())
+              print('m y moq',m,'  ',moq)
               gZ   .SetPoint(k, moq[k], lise[2])
               gA   .SetPoint(k, moq[k], lise[1])
               gCharge.SetPoint(k, moq[k], lise[4])
               gmoq .SetPoint(k, moq[k], moq[k])
               gi   .SetPoint(k, moq[k], lise[5])
-              if (lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==input_params.dict['ReferenceIsotopeCharge']):
+              #print('lise[0]=',str(int(lise[2]))+lise[0],'  ',input_params.dict['ReferenceIsotope'],'   lise[4]=',int(lise[4]),' ',input_params.dict['ReferenceIsotopeCharge'])
+              if (str(int(lise[1]))+lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==int(input_params.dict['ReferenceIsotopeCharge'])):
                 moq_Rel = moq[k]
-                gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]/AMEData.CC/m,2)+1) # c was wrong (relations + unit analysis)                                                
+                gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]*AMEData.CC/m[k],2)+1) # c was wrong (relations + unit analysis)                                                
                 beta          = sqrt(gamma * gamma - 1)/gamma
                 velocity      = AMEData.CC * beta
-                Frequence_Rel = 1000/(OrbitalLength / velocity)
+                print(velocity,beta,gamma,moq_Rel)
+                Frequence_Rel = ring.circumference / velocity
       
                 # 1. simulated relative revolution frequency                                   
-                SRRF[k] = 1-1/input_params.dict['GAMMAT'] / \
-                    input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel
+                SRRF.append(1-1/input_params.dict['GAMMAT'] / \
+                    input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel)
                 # 2. simulated revolution frequency                                            
-                SRF[k] = SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic'])
-                Nx_SRF[k] = hSRF.GetXaxis().FindBin(SRF[k])
+                SRF.append(SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic']))
+                Nx_SRF.append(hSRF.GetXaxis().FindBin(SRF[k]))
                 hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
                 # 3.                                                                           hSRRF
-                SRRF[k] = SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic']))
-                Nx_SRRF[k] = hSRRF.GetXaxis().FindBin(SRRF[k])
+                SRRF.append(SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic'])))
+                Nx_SRRF.append(hSRRF.GetXaxis().FindBin(SRRF[k]))
                 hSRRF.SetBinContent(Nx_SRRF[k], 1)
                 #fout                                                                          
-                fout.write(lise[0], '\t', lise[2], '\t', lise[1], '\t', lise[4], '\t', int(
-                    input_params.dict['Harmonic']), '\t', moq[k], ' ue,\t f/f0 = ', SRRF, ' \t\
-', SRF, ' MHz,  \t', lise[5])
+                fout.write(str(lise[0])+'\t'+str(lise[2])+'\t'+str(lise[1])+'\t'
+                           +str(lise[4])+'\t'+str(input_params.dict['Harmonic'])
+                           +'\t'+str(moq[k])+' u/e,\t f/f0 = '+str(SRRF[k])+'\t'
+                           +str(SRF[k])+ 'MHz \t'+str(lise[5]))
                 k += 1
                 print(k)
         fout.close()
         gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
-        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,Frequence_Tl)
-        SimTOF.print_out_or_not(Frequence_Rel,Frequence_Tl,Harmonic)
+        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT)
+        SimTOF.print_out_or_not(input_params,mycanvas,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,input_params.dict['Harmonic'])
       
       
 #this tests when program is run  

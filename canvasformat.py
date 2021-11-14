@@ -79,6 +79,9 @@ class CanvasFormat():
 
         return r3, c0, c, c_1,c_2, c_2_1, c_2_2, c_3, c_4
     
+    def canvas_print(self,canvas):
+        canvas.Print('result.pdf')
+    
     @staticmethod
     def set_canvas_format(canvas):
         canvas.SetFillColor(0)
