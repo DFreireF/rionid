@@ -5,7 +5,7 @@ from amedata import *
 from particle import *
 from ring import Ring
 from inputparams import *
-import canvasformat as cvfmt
+from canvasformat import *
 from lisereader import *
 
 class SimTOF():
@@ -172,7 +172,7 @@ class SimTOF():
       hSRRF.Write()
       hSRF.Write()
       fout_root.Close()
-      cvfmt.canvas_print(canvas)
+      c.Print('result.pdf')
     else: input_params=InputParams(params_file) #reads input again after modification
     
 # ================== execution =====================
@@ -197,7 +197,7 @@ def main():
     for file in files:      
       SimTOF(file[:-1])
       # canvas:
-      mycanvas=cvfmt.CanvasFormat()
+      mycanvas=CanvasFormat()
       mycanvas.set_latex_format()
       mycanvas.set_latex_labels()
       # gstyle:
@@ -218,7 +218,7 @@ def main():
         SRF=[]
         Nx_SRF=[]
         Nx_SRRF=[]        
-       # SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
+        SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
         k = 0
         fout = open('output_'+str(input_params.dict['Harmonic'])+'.tof', 'a')
         for i, lise in enumerate(lise_data):
