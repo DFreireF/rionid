@@ -5,7 +5,7 @@ from amedata import *
 from particle import *
 from ring import Ring
 from inputparams import *
-import canvasformat as cvfmt
+from canvasformat import *
 from lisereader import *
 
 class SimTOF():
@@ -153,7 +153,7 @@ class SimTOF():
     c_4.Update()
       
   @staticmethod
-  def print_out_or_not(input_params,canvas,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,Harmonic):
+  def print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,Harmonic):
     gSystem.ProcessEvents()
     gSystem.Sleep(10)
     print('Frequence_Rel = ', Frequence_Rel)
@@ -169,7 +169,7 @@ class SimTOF():
       hSRRF.Write()
       hSRF.Write()
       fout_root.Close()
-      cvfmt.canvas_print(canvas)
+      c.Print('result.pdf')
     else: input_params=InputParams(params_file) #reads input again after modification
     
 # ================== execution =====================
@@ -194,7 +194,7 @@ def main():
     for file in files:      
       SimTOF(file[:-1])
       # canvas:
-      mycanvas=cvfmt.CanvasFormat()
+      mycanvas=CanvasFormat()
       mycanvas.set_latex_format()
       mycanvas.set_latex_labels()
       # gstyle:
@@ -215,7 +215,7 @@ def main():
         SRF=[]
         Nx_SRF=[]
         Nx_SRRF=[]        
-       # SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
+        SimTOF.remove_point(gZ,gA,gCharge,gmoq, gi)
         k = 0
         fout = open('output_'+str(input_params.dict['Harmonic'])+'.tof', 'a')
         for i, lise in enumerate(lise_data):
@@ -260,8 +260,8 @@ def main():
                 print(k)
         fout.close()
         gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
-        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT)
-        SimTOF.print_out_or_not(input_params,mycanvas,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,input_params.dict['Harmonic'])
+        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h#_ref,hSRF,hSRRF,input_params,frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT)
+        SimTOF.print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,input_params.dict['Harmonic'])
       
       
 #this tests when program is run  
