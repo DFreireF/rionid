@@ -163,7 +163,7 @@ class SimTOF():
     c_4.Update()
       
   @staticmethod
-  def print_out_or_not(input_params,canvas,h,h_ref,hSRRF,hSRF,Frequence_Rel,
+  def print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,
                        Frequence_Tl,Harmonic):
     gSystem.ProcessEvents()
     gSystem.Sleep(10)
@@ -242,6 +242,7 @@ def main():
               gCharge.SetPoint(k, moq[k], lise[4])
               gmoq .SetPoint(k, moq[k], moq[k])
               gi   .SetPoint(k, moq[k], lise[5])
+              print('gi=',gi,'gZ=',gZ)
               #print('lise[0]=',str(int(lise[2]))+lise[0],'  ',input_params.dict['ReferenceIsotope'],'   lise[4]=',int(lise[4]),' ',input_params.dict['ReferenceIsotopeCharge'])
               if (str(lise[1])+lise[0] == input_params.dict['ReferenceIsotope']
                   and lise[4] == input_params.dict['ReferenceIsotopeCharge']):
@@ -249,7 +250,7 @@ def main():
                 gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]*AMEData.CC/m[k],2)+1) # c was wrong (relations + unit analysis)                                                
                 beta          = sqrt(gamma * gamma - 1)/gamma
                 velocity      = AMEData.CC * beta
-                print(velocity,beta,gamma,moq_Rel)
+                #print(velocity,beta,gamma,moq_Rel)
                 Frequence_Rel = ring.circumference / velocity
       
                 # 1. simulated relative revolution frequency                                   
@@ -271,12 +272,9 @@ def main():
                 k += 1
                 print(k)
         fout.close()
-        gZ, gA, gCharge, gmoq, gi = SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
-        SimTOF.make_graphs(c_1, c_2, c_2_1, c_2_2, c_3, c_4, h, h_ref, hSRF, hSRRF, input_params,
-                           frequence_center, frequence_min, frequence_max, Frequence_Tl, gGAMMAT)
-        SimTOF.print_out_or_not(input_params, mycanvas, h, h_ref, hSRRF,
-                                hSRF, Frequence_Rel, Frequence_Tl, input_params.dict['Harmonic'])
-
+        gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
+        SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT)
+        SimTOF.print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,input_params.dict['Harmonic'])
       
 #this tests when program is run  
 if __name__ == '__main__':
