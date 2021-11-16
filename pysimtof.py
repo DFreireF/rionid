@@ -1,5 +1,13 @@
-from iqtools import *
-from ROOT import *
+from iqtools import * #read_samples, TIQData, get_fft
+from ROOT import * # (TH1D, TH1F, TGraph, Draw, Update, Scale, cd,
+                  # Tfile,Print,
+                  # SetBinContent, GetNbins,
+                  # SetLineStyle, SetLineColor, SetName, SetLimits,
+                  # SetRangeUser, SetBottomMargin, SetTopMargin,
+                  # SetLabelFont, SetLabelSize, SetTitleFont, SetTitleSize,
+                  # SetTitleOffset, SetNdivisions,
+                  # RemovePoint, Sort, SetOptStat,SetOptTitle,
+                  # GetXaxis, GetYaxis,GetXmin, GetXmax, GetYmin, GetYmax)
 import numpy as np
 from amedata import *
 from particle import *
