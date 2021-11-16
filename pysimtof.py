@@ -239,14 +239,15 @@ def main():
               
               m.append(AMEData.to_mev(particle_name.get_ionic_mass_in_u()))
               moq.append(particle_name.get_ionic_moq_in_u())
-              print('m y moq',m,'  ',moq)
+              # print('m y moq',m,'  ',moq)
               
               gZ   .SetPoint(k, moq[k], lise[2])
               gA   .SetPoint(k, moq[k], lise[1])
               gCharge.SetPoint(k, moq[k], lise[4])
               gmoq .SetPoint(k, moq[k], moq[k])
               gi   .SetPoint(k, moq[k], lise[5])
-              print('gi=',gi,'gZ=',gZ)
+              # print('gi=',gi,'gZ=',gZ)
+              # gZ.Draw()
               
               if (str(lise[1])+lise[0] == input_params.dict['ReferenceIsotope']
                   and lise[4] == input_params.dict['ReferenceIsotopeCharge']):
@@ -348,7 +349,9 @@ def main():
         gGAMMAT.GetXaxis().SetLimits((frequence_center+frequence_min)/Frequence_Tl,
                                     (frequence_center+frequence_max)/Frequence_Tl)
         gGAMMAT.GetYaxis().SetRangeUser(2.412, 2.432)
-        c_4.Update()  
+        c_4.Update()
+          
+        hSRF.Draw()
               
         # SimTOF.print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,
         #                         Frequence_Tl,input_params.dict['Harmonic'])
