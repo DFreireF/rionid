@@ -361,7 +361,7 @@ def main():
         print('exit or not? introduce exit')
         Flag=input('Enter exit to finish Brho manual adjustment:')
         if Flag=='exit':
-          fout_root = TFile.Open('simtof_'+str(input_params['Harmonic'])+'.tof','recreate')
+          fout_root = TFile.Open(f'simtof_{input_params.dict["Harmonic"]}.tof','recreate')
           h.Write()
           h_ref.Write()
           hSRRF.Write()
