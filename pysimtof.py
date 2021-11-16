@@ -85,11 +85,13 @@ class SimTOF():
     return gZ, gA, gCharge, gmoq, gi
         
   @staticmethod
-  def make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT):
+  def make_graphs(c_1, c_2, c_2_1, c_2_2, c_3, c_4, h, h_ref, hSRF, hSRRF, input_params,
+                  frequence_center, frequence_min, frequence_max, Frequence_Tl, gGAMMAT):
     c_1.cd()
     gPad.SetBottomMargin(0.08)
     h.Draw()
-    h.GetXaxis().SetRangeUser(input_params.dict['RefRangeMin1'],input_params.dict['RefRangeMax1'])
+    h.GetXaxis().SetRangeUser(
+        input_params.dict['RefRangeMin1'], input_params.dict['RefRangeMax1'])
     hSRF.Draw('same')
     hSRF.SetLineColor(3)
     c_1.Update()
@@ -153,7 +155,8 @@ class SimTOF():
     c_4.Update()
       
   @staticmethod
-  def print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,Harmonic):
+  def print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,
+                       Frequence_Tl,Harmonic):
     gSystem.ProcessEvents()
     gSystem.Sleep(10)
     print('Frequence_Rel = ', Frequence_Rel)
@@ -233,7 +236,8 @@ def main():
               gi   .SetPoint(k, moq[k], lise[5])
               print('gi=',gi,'gZ=',gZ)
               #print('lise[0]=',str(int(lise[2]))+lise[0],'  ',input_params.dict['ReferenceIsotope'],'   lise[4]=',int(lise[4]),' ',input_params.dict['ReferenceIsotopeCharge'])
-              if (str(int(lise[1]))+lise[0]==input_params.dict['ReferenceIsotope'] and lise[4]==int(input_params.dict['ReferenceIsotopeCharge'])):
+              if (str(lise[1])+lise[0] == input_params.dict['ReferenceIsotope']
+                  and lise[4] == input_params.dict['ReferenceIsotopeCharge']):
                 moq_Rel = moq[k]
                 gamma         = sqrt(pow(input_params.dict['Brho']*lise[4]*AMEData.CC/m[k],2)+1) # c was wrong (relations + unit analysis)                                                
                 beta          = sqrt(gamma * gamma - 1)/gamma
@@ -248,7 +252,7 @@ def main():
                 SRF.append(SRRF[k]*Frequence_Rel*(input_params.dict['Harmonic']))
                 Nx_SRF.append(hSRF.GetXaxis().FindBin(SRF[k]))
                 hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
-                # 3.                                                                           hSRRF
+                # 3.hSRRF
                 SRRF.append(SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic'])))
                 Nx_SRRF.append(hSRRF.GetXaxis().FindBin(SRRF[k]))
                 hSRRF.SetBinContent(Nx_SRRF[k], 1)
@@ -263,7 +267,6 @@ def main():
         gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
         SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT)
         SimTOF.print_out_or_not(params_file,input_params,c,h,h_ref,hSRRF,hSRF,Frequence_Rel,Frequence_Tl,input_params.dict['Harmonic'])
-      
       
 #this tests when program is run  
 if __name__ == '__main__':
