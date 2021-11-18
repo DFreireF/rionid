@@ -181,7 +181,9 @@ class SimTOF():
       hSRF.Write()
       fout_root.Close()
       c.Print('result.pdf')
-    else: input_params=InputParams(params_file) #reads input again after modification
+    else: 
+      input_params=InputParams(params_file) #reads input again after modification
+      return input_params
     
 # ================== execution =====================
 def main():
@@ -244,17 +246,6 @@ def main():
               moq.append(particle_name.get_ionic_moq_in_u())
               # print('m y moq',m,'  ',moq)
               
-<<<<<<< HEAD
-              #gZ   .SetPoint(k, moq[k], lise[2])
-              #gA   .SetPoint(k, moq[k], lise[1])
-              #gCharge.SetPoint(k, moq[k], lise[4])
-              #gmoq .SetPoint(k, moq[k], moq[k])
-              #gi   .SetPoint(k, moq[k], lise[5])
-              # print('gi=',gi,'gZ=',gZ)
-              # gZ.Draw()
-              
-              print(i)
-=======
               gZ   .SetPoint(k, moq[k], lise[2])
               gA   .SetPoint(k, moq[k], lise[1])
               gCharge.SetPoint(k, moq[k], lise[4])
@@ -262,7 +253,6 @@ def main():
               gi   .SetPoint(k, moq[k], lise[5])
 
               #print(i)
->>>>>>> 249936a06a2f27da5d7755c78acd52d224c284a1
               if (str(lise[1])+lise[0] == input_params.dict['ReferenceIsotope']
                   and lise[4] == input_params.dict['ReferenceIsotopeCharge']):
                 moq_Rel = moq[i]
@@ -296,9 +286,11 @@ def main():
         fout.close()
         
         gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
-        
+
         # SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,
         #                    frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT)
+        # (commented out and placed below for debug)
+        
         #making graphs:
         c_1.cd()
         gPad.SetBottomMargin(0.08)
@@ -412,7 +404,8 @@ def main():
           hSRF.Write()
           fout_root.Close()
           c.Print('result.pdf')
-        else: input_params=InputParams(params_file) #reads input again after modification
+        else: 
+          input_params=InputParams(params_file) #reads input again after modification
       
 #this tests when program is run  
 if __name__ == '__main__':
