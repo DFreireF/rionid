@@ -22,7 +22,7 @@ class SimTOF():
       
   @staticmethod
   def fft_root(filename):
-    LFRAMES = 2**10
+    LFRAMES = 2**12
     NFRAMES = 2*4
     iq = TIQData(filename)
     iq.read_samples(LFRAMES*NFRAMES)
@@ -41,7 +41,7 @@ class SimTOF():
 
     return nbins, frequence_min, frequence_max, y_max, h
       
- # @staticmethod
+  @staticmethod
   def root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl):
     hSim = TH1F('hSim', 'hSim', 200000, 400, 700)
     # FFT px ref
@@ -204,7 +204,6 @@ def main():
   with open(filename) as f:
     files = f.readlines()
     for file in files:      
-      # SimTOF(file[:-1]) # doesn't do anything
       # canvas:
       mycanvas=CanvasFormat()
       tex=mycanvas.set_latex_format()
@@ -218,14 +217,14 @@ def main():
       gGAMMAT = mycanvas.gammat_calculator()
       #gGAMMAT.Draw()    
 
-      #r3, c0, c, c_1, c_2, c_2_1, c_2_2, c_3, c_4 = mycanvas.setup_tpad()
+      r3, c0, c, c_1, c_2, c_2_1, c_2_2, c_3, c_4 = mycanvas.setup_tpad()
       nbins, frequence_min, frequence_max, y_max, h = SimTOF.fft_root(file[:-1])
       h_ref, hSRF, hSRRF=SimTOF.root_histo(nbins, frequence_center,frequence_min,
               frequence_max, Frequence_Tl)
       #print(h_ref,  hSRF, hSRRF)
       #h_ref.Draw('axis')
       #h.Draw()
-      input('stop')
+      #input('stop')
       gCharge, gZ, gA, gmoq, gi, gSim=SimTOF.root_graph()
       
       Flag = ''
@@ -245,36 +244,34 @@ def main():
               moq.append(particle_name.get_ionic_moq_in_u())
               # print('m y moq',m,'  ',moq)
               
-              #gZ   .SetPoint(k, moq[k], lise[2])
-              #gA   .SetPoint(k, moq[k], lise[1])
-              #gCharge.SetPoint(k, moq[k], lise[4])
-              #gmoq .SetPoint(k, moq[k], moq[k])
-              #gi   .SetPoint(k, moq[k], lise[5])
-              # print('gi=',gi,'gZ=',gZ)
-              # gZ.Draw()
-              print(i)
+              gZ   .SetPoint(k, moq[k], lise[2])
+              gA   .SetPoint(k, moq[k], lise[1])
+              gCharge.SetPoint(k, moq[k], lise[4])
+              gmoq .SetPoint(k, moq[k], moq[k])
+              gi   .SetPoint(k, moq[k], lise[5])
+
+              #print(i)
               if (str(lise[1])+lise[0] == input_params.dict['ReferenceIsotope']
                   and lise[4] == input_params.dict['ReferenceIsotopeCharge']):
                 moq_Rel = moq[i]
-                # c was wrong (relations + unit analysis)
                 gamma = sqrt(pow(input_params.dict['Brho']*lise[4]*AMEData.CC/m[i], 2)+1)
                 beta = sqrt(gamma * gamma - 1)/gamma
                 velocity = AMEData.CC * beta
                 #print(velocity,beta,gamma,moq_Rel)
-                Frequence_Rel = ring.circumference / velocity
+                Frequence_Rel = velocity/ ring.circumference
                 
         for k in range(0,len(moq)):
           # 1. simulated relative revolution frequency
           SRRF.append(1-1/input_params.dict['GAMMAT'] /
                           input_params.dict['GAMMAT']*(moq[k]-moq_Rel)/moq_Rel)
-          print()
+         
           # 2. simulated revolution frequency
           SRF.append(SRRF[k]*Frequence_Rel *
                          (input_params.dict['Harmonic']))
           Nx_SRF.append(hSRF.GetXaxis().FindBin(SRF[k]))
           hSRF.SetBinContent(Nx_SRF[k], lise[5]*y_max*0.01)
           # 3.hSRRF
-          print(SRF)
+          #print(SRF)
           SRRF.append(SRF[k]/(Frequence_Rel*(input_params.dict['Harmonic'])))
                 
           Nx_SRRF.append(hSRRF.GetXaxis().FindBin(SRRF[k]))
@@ -286,7 +283,7 @@ def main():
                          +str(SRF[k])+ 'MHz \t'+str(lise[5]))
         fout.close()
         
-        #gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
+        gZ, gA, gCharge, gmoq, gi=SimTOF.root_sort(gZ, gA, gCharge, gmoq, gi)
         
         # SimTOF.make_graphs(c_1,c_2,c_2_1,c_2_2,c_3,c_4,h,h_ref,hSRF,hSRRF,input_params,
         #                    frequence_center,frequence_min,frequence_max,Frequence_Tl,gGAMMAT)
@@ -295,7 +292,7 @@ def main():
         gPad.SetBottomMargin(0.08)
         h.Draw()
         #gPad.Modified()
-       # gPad.Update()
+        #gPad.Update()
         h.GetXaxis().SetRangeUser(
             input_params.dict['RefRangeMin1'], input_params.dict['RefRangeMax1'])
         hSRF.Draw()
