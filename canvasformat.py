@@ -40,29 +40,29 @@ class CanvasFormat():
         r3 = TRandom3()
         # Tpad c0
         c0 = TCanvas('c0', 'c0', 0, 0, 1000, 300)
-        # c0 = CanvasFormat.set_canvas_format(c0)
+        c0 = CanvasFormat.set_canvas_format(c0)
         # Tpad c
         c = TCanvas('c', 'c', 0, 0, 1000, 880)
         c = CanvasFormat.set_canvas_format(c)
         c.cd()
         # Tpad c_1
         c_1 = TPad('c_1', 'c_1', 0.00, 0.75, 0.99, 0.99)
-        # c_1 = CanvasFormat.set_pad_format(c_1)
+        c_1 = CanvasFormat.set_pad_format(c_1)
         c.cd()
         # Tpad c_2
         c_2 = TPad('c_2', 'c_2', 0.0, 0.50, 0.99, 0.75)
-        # c_2 = CanvasFormat.set_pad_format(c_2)
+        c_2 = CanvasFormat.set_pad_format(c_2)
         c.cd()
         # Tpad c_2_1
         c_2_1 = TPad('c_2_1', 'c_2_1', 0.70, 0.6, 0.86, 0.7189711)
-        # CanvasFormat.set_pad_format(c_2_1)
+        CanvasFormat.set_pad_format(c_2_1)
         c_2_1.SetLeftMargin(0.02857143)
         c_2_1.SetRightMargin(0.02857143)
         c_2_1.SetTopMargin(0.01851852)
         c_2_1.SetBottomMargin(0.01851852)
         # Tpad c_2_2
         c_2_2 = TPad('c_2_2', 'c_2_2', 0.45, 0.6, 0.61, 0.7189711)
-        # CanvasFormat.set_pad_format(c_2_2)
+        CanvasFormat.set_pad_format(c_2_2)
         c_2_2.SetLeftMargin(0.02857143)
         c_2_2.SetRightMargin(0.02857143)
         c_2_2.SetTopMargin(0.01851852)
@@ -70,11 +70,11 @@ class CanvasFormat():
         c.cd()
         # Tpad c_3
         c_3 = TPad('c_3', 'c_3', 0.0, 0.25, 0.99, 0.50)
-        # c_3 = CanvasFormat.set_pad_format(c_3)
+        c_3 = CanvasFormat.set_pad_format(c_3)
         c.cd()
         # Tpad c_4
         c_4 = TPad('c_4', 'c_4', 0.0, 0.0, 0.99, 0.25)
-        # c_4 = CanvasFormat.set_pad_format(c_4)
+        c_4 = CanvasFormat.set_pad_format(c_4)
         c_4.SetLogy(0)
 
         return r3, c0, c, c_1,c_2, c_2_1, c_2_2, c_3, c_4
