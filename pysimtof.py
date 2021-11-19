@@ -42,26 +42,6 @@ class SimTOF():
     return nbins, frequence_min, frequence_max, y_max, h
       
   @staticmethod
-  def root_histo(nbins, frequence_center, frequence_min, frequence_max, Frequence_Tl):
-    hSim = TH1F('hSim', 'hSim', 200000, 400, 700)
-    # FFT px ref
-    h_ref = TH1F('h_ref', 'h_ref',
-                 nbins, (frequence_center+frequence_min)/Frequence_Tl,
-                 (frequence_center+frequence_max)/Frequence_Tl)
-    # SRF
-    hSRF = TH1F('hSRF', 'simulated revolution frequence',
-                nbins, (frequence_center+frequence_min),
-                (frequence_center+frequence_max))
-    # SRRF
-    hSRRF = TH1F('hSRRF', 'simulated relative revolution frequence',
-                 nbins, (frequence_center+frequence_min)/Frequence_Tl,
-                 (frequence_center+frequence_max)/Frequence_Tl)
-    hSRF.SetLineStyle(2)
-    #hSRF.Draw()
-    hSRRF.SetLineStyle(2)
-    return h_ref, hSRF, hSRRF #no hSim?
-      
-  @staticmethod
   def root_graph():
     gCharge = TGraph()
     gZ   = TGraph()
