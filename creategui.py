@@ -2,7 +2,8 @@ from ROOT import *
 
 
 class CreateGUI():
-    def __init__(self):
+    def __init__(self,filename):
+        self.filename = filename
         # (eventually will be input)
         self.freq_min = 10
         self.freq_max = 280
