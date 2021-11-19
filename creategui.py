@@ -1,7 +1,7 @@
 from ROOT import *
 
 
-class Canvas():
+class CreateGUI():
     def __init__(self):
         # (eventually will be input)
         self.freq_min = 10
@@ -10,6 +10,7 @@ class Canvas():
         self.create_canvas()
         self.create_histograms()
         self.histogram_fill()
+        self.create_latex_labels()
 
         # prevents gui closing in pyroot. must go last in init!
         gApplication.Run()
@@ -18,7 +19,6 @@ class Canvas():
         self.canvas_main = TCanvas(
             'canvas_main', 'Frequency Histograms', 800, 800)
         self.canvas_main.Divide(2, 2)
-        print('Canvas created.')
 
     def create_histograms(self):
         self.freq_center = 0
@@ -27,8 +27,6 @@ class Canvas():
         # setting normalised histogram range:
         normalised_min = (self.freq_center + self.freq_min)/self.freq_tl
         normalised_max = (self.freq_center + self.freq_max)/self.freq_tl
-
-        # note: TH1F('name', 'title', int: nbinsx, xlow, xup)
 
         # hSim simulated histogram?
         h_sim = TH1F('h_sim', 'Simulated Histogram', int(200e3), 400, 700)
@@ -43,7 +41,6 @@ class Canvas():
                              normalised_min, normalised_max)
 
         self.hist_list = [h_sim, h_ref, h_simfreq, h_rel_simfreq]
-        print('histograms created')
 
     def histogram_fill(self):
         # filling with data, placeholder method
@@ -51,18 +48,11 @@ class Canvas():
             self.canvas_main.cd(i+1)
             histogram.FillRandom('gaus', 1000)
             histogram.Draw()
-
-            # debugging - remove after
-            print(f'filling histogram {i+1}')
-            print(histogram)
-            print('         ---         ')
-
         self.canvas_main.Update()
-        print('Histograms filled.')
 
 
 def test():
-    mycanvas = Canvas()
+    mycanvas = CreateGUI()
 
 
 if __name__ == '__main__':
