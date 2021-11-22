@@ -9,10 +9,10 @@ from inputparams import*
 
 
 class ImportData():
-    def __init__(self,filename):
+    def __init__(self, filename):
         self.filename = filename
         self.ring = Ring('ESR', 108.5)  # have to add more functionalities here
-        
+
         self._import()
 
     def _import(self):
@@ -20,16 +20,16 @@ class ImportData():
         ame = AMEData()
         ame.init_ame_db
         self.ame_data = ame.ame_table
-        
+
         # import input params
         self.params_file = 'data/InputParameters.txt'
         self.input_params = InputParams(self.params_file)
-        
+
         # Load LISE file
         lise_file = lread.LISEreader(self.input_params.lisefile)
         self.lise_data = lise_file.get_info_all()
         self.m, self.moq, self.SRRF, self.SRF, self.Nx_SRF, self.Nx_SRRF = \
-            ([] for i in range(6)) 
+            ([] for i in range(6))
 
     def fft_root(self):
         # reading samples
@@ -37,12 +37,12 @@ class ImportData():
         NFRAMES = 2*4
         iq = TIQData(self.filename)
         iq.read_samples(LFRAMES*NFRAMES)
-        
+
         self.ff, self.pp, _ = iq.get_fft()  # 1D frec and power
         self.pp = self.pp / self.pp.max()  # normalized
         self.h = TH1D('h', 'h', len(self.ff), iq.center +
                       self.ff[0], iq.center + self.ff[-1])
-        
+
         for i in range(len(self.ff)):
             self.h.SetBinContent(i, self.pp[i])
         self.nbins = self.h.GetXaxis().GetNbins()
@@ -105,4 +105,3 @@ def main():
 # this tests when program is run
 if __name__ == '__main__':
     main()
-

@@ -2,8 +2,7 @@ from ROOT import *
 
 
 class CreateGUI():
-    def __init__(self,filename):
-        self.filename = filename
+    def __init__(self):
         # (eventually will be input)
         self.freq_min = 10
         self.freq_max = 280
@@ -11,7 +10,7 @@ class CreateGUI():
         self.create_canvas()
         self.create_histograms()
         self.histogram_fill()
-        self.create_latex_labels()
+        # self.create_latex_labels()
 
         # prevents gui closing in pyroot. must go last in init!
         gApplication.Run()
@@ -19,7 +18,7 @@ class CreateGUI():
     def create_canvas(self):
         self.canvas_main = TCanvas(
             'canvas_main', 'Frequency Histograms', 800, 800)
-        self.canvas_main.Divide(2, 2)
+        self.canvas_main.Divide(1, 4)
 
     def create_histograms(self):
         self.freq_center = 0
