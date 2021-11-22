@@ -40,13 +40,14 @@ class ImportData():
         self.lise_data = lise_file.get_info_all()
         
     def data(self):
-        LFRAMES = 2**10
-        NFRAMES = 2*4
-        iq = TIQData(self.filename)
+        LFRAMES=2**15
+        NFRAMES=2*4
+        iq=TIQData(self.filename)
         iq.read_samples(LFRAMES*NFRAMES)
-
-        self.ff, self.pp, _ = iq.get_fft()  # 1D frec and power
-        self.pp = self.pp / self.pp.max()  # normalized
+        self.fcenter=iq.center
+        xx, yy, zz = iq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)#yy time
+        self.ff=xx[0] #frecuency
+        self.pp = zz[0]/zz[0].max()  #power normalized
         self.h = TH1D('h', 'h', len(self.ff), iq.center +
                       self.ff[0], iq.center + self.ff[-1])
 
@@ -83,7 +84,8 @@ class ImportData():
                      for k, element in enumerate(self.m)]
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k, element in enumerate(self.m)]
-
+        
+        print('self.pp.argmax()',self.pp.argmax(),'self.ff[self.pp.argmax()]',self.ff[self.pp.argmax()]+self.fcenter,'SRF[aux]',self.SRF[self.aux])
         print(f'Brho initial: {self.BRho}')
         self.BRhoCorrection()
         print(f'Brho final: {self.BRho}')
@@ -92,15 +94,20 @@ class ImportData():
         for k in range(0, len(self.m)):  # Calculate new simulated frecuency sample spectrum
             self.SRF[k] = self.SRRF[k]*self.Frequence_Rel*self.Harmonic
 
-    def tominimize(self, x):  # function to minimize (x=Brho); yup, it's big
-        tominimize = abs(self.ff[self.pp.argmax()]-((1-1/self.GammaT/self.GammaT*(self.moq[self.aux]-self.moq_Rel)/self.moq_Rel)*((AMEData.CC*(sqrt((sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))*(sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))-1)/(sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))))/self.ring.circumference)*self.Harmonic))
+    def tominimize(self,x):#function to minimize (x=Brho); yup, it's big
+        a=sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
+        b=sqrt(a*a-1)/a
+        c=AMEData.CC*b
+        d=c/self.ring.circumference
+        e=d*self.Harmonic*self.SRRF[self.aux]
+        tominimize=abs((self.ff[self.pp.argmax()]+self.fcenter)-e)
         return tominimize
-
-    # Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]
-    def BRhoCorrection(self):
-        self.BRho=minimize(tominimize, [self.BRho])
-        self.gamma=sqrt(
-            pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux], 2)+1)
+   # def gamma()                
+    def BRhoCorrection(self):#Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]      
+        print('function to minimize before minimizing: ',self.tominimize(self.BRho))
+        self.BRho=minimize(self.tominimize,[self.BRho],method='CG').x[0]
+        print('function to minimized: ',self.tominimize(self.BRho))
+        self.gamma=sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
         self.beta=sqrt(self.gamma*self.gamma-1)/self.gamma
         self.velocity=AMEData.CC*self.beta
         self.Frequence_Rel=self.velocity/self.ring.circumference
