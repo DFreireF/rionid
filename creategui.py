@@ -24,6 +24,7 @@ class CreateGUI():
         self.freq_center = 0
         self.freq_tl = 243.2712156  # check what this value should be, prob should be variable
         self.nbins = int(1e2)  # placeholder value, should be variable
+        
         # setting normalised histogram range:
         normalised_min = (self.freq_center + self.freq_min)/self.freq_tl
         normalised_max = (self.freq_center + self.freq_max)/self.freq_tl
