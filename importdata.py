@@ -62,12 +62,12 @@ class ImportData():
     def samples(self):
 
         self.m = [AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
-                  for ame in self.ame_data for i, lise in enumerate(self.lise_data) if lise[0] == ame[6] and lise[1] == ame[5]]
+                  for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
         self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u()
-                    for ame in self.ame_data for i, lise in enumerate(self.lise_data) if lise[0] == ame[6] and lise[1] == ame[5]]
+                    for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
 
         for i, lise in enumerate(self.lise_data):
-            # if reference particle, calculate variables
+            # if reference particle, calculate variables with lise data
             if (str(lise[1])+lise[0] == self.RefIso and lise[4] == self.RefQ):
                 self.aux = i
                 self.moq_Rel = self.moq[i]
@@ -87,9 +87,13 @@ class ImportData():
         self.BRhoCorrection()
         print(f'Brho final: {self.BRho}')
 
+
         for k in range(0, len(self.m)):  # Calculate new simulated frecuency sample spectrum
             self.SRF[k] = self.SRRF[k]*self.Frequence_Rel*self.Harmonic
 
+        # or do like this?
+        # self.newSRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic for k in enumerate(self.m)]
+        
     def tominimize(self,x):#function to minimize (x=Brho); yup, it's big
         a=sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
         b=sqrt(a*a-1)/a
@@ -98,7 +102,7 @@ class ImportData():
         e=d*self.Harmonic*self.SRRF[self.aux]
         tominimize=abs((self.ff[self.pp.argmax()]+self.fcenter)-e)
         return tominimize
-   # def gamma()                
+   
     def BRhoCorrection(self):#Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]      
         print('function to minimize before minimizing: ',self.tominimize(self.BRho))
         self.BRho=minimize(self.tominimize,[self.BRho],method='CG').x[0]
