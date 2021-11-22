@@ -38,7 +38,7 @@ class ImportData():
         # Load LISE file
         lise_file = lread.LISEreader(input_params.lisefile)
         self.lise_data = lise_file.get_info_all()
-        
+
     def data(self):
         LFRAMES = 2**10
         NFRAMES = 2*4
@@ -59,15 +59,13 @@ class ImportData():
         self.h.GetXaxis().SetLimits(self.frequence_min, self.frequence_max)
 
     def samples(self):
-        self.m, self.moq = ([] for i in range(2))
+
+        self.m = [AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
+                  for ame in self.ame_data for i, lise in enumerate(self.lise_data) if lise[0] == ame[6] and lise[1] == ame[5]]
+        self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u()
+                    for ame in self.ame_data for i, lise in enumerate(self.lise_data) if lise[0] == ame[6] and lise[1] == ame[5]]
+
         for i, lise in enumerate(self.lise_data):
-            for ame in self.ame_data:
-                # calculating mass and moq using ame and lise data together
-                if lise[0]==ame[6] and lise[1]==ame[5]:
-                    particle_name=Particle(lise[2],lise[3],self.ame,self.ring)
-                    self.m.append(AMEData.to_mev(particle_name.get_ionic_mass_in_u()))
-                    self.moq.append(particle_name.get_ionic_moq_in_u())
-        
             # if reference particle, calculate variables
             if (str(lise[1])+lise[0] == self.RefIso and lise[4] == self.RefQ):
                 self.aux = i
@@ -84,37 +82,39 @@ class ImportData():
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k, element in enumerate(self.m)]
 
-        print(f'Brho initial: {self.BRho}')
-        self.BRhoCorrection()
-        print(f'Brho final: {self.BRho}')
+        # print(f'Brho initial: {self.BRho}')
+        # self.BRhoCorrection()
+        # print(f'Brho final: {self.BRho}')
 
-        # why do you need this one?
         for k in range(0, len(self.m)):  # Calculate new simulated frecuency sample spectrum
             self.SRF[k] = self.SRRF[k]*self.Frequence_Rel*self.Harmonic
 
-    def tominimize(self, x):  # function to minimize (x=Brho); yup, it's big
-        tominimize = abs(self.ff[self.pp.argmax()]-((1-1/self.GammaT/self.GammaT*(self.moq[self.aux]-self.moq_Rel)/self.moq_Rel)*((AMEData.CC*(sqrt((sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))*(sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))-1)/(sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))))/self.ring.circumference)*self.Harmonic))
-        return tominimize
+    # def tominimize(self, x):  # function to minimize (x=Brho); yup, it's big
+    #     tominimize = abs(self.ff[self.pp.argmax()]-((1-1/self.GammaT/self.GammaT*(self.moq[self.aux]-self.moq_Rel)/self.moq_Rel)*((AMEData.CC*(sqrt((sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))*(sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))-1)/(sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux], 2))))/self.ring.circumference)*self.Harmonic))
+    #     return tominimize
 
     # Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]
     def BRhoCorrection(self):
-        self.BRho=minimize(tominimize, [self.BRho])
-        self.gamma=sqrt(
+        self.BRho = minimize(tominimize, [self.BRho])
+        self.gamma = sqrt(
             pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux], 2)+1)
-        self.beta=sqrt(self.gamma*self.gamma-1)/self.gamma
-        self.velocity=AMEData.CC*self.beta
-        self.Frequence_Rel=self.velocity/self.ring.circumference
-        
+        self.beta = sqrt(self.gamma*self.gamma-1)/self.gamma
+        self.velocity = AMEData.CC*self.beta
+        self.Frequence_Rel = self.velocity/self.ring.circumference
+
 # ================== execution =====================
+
+
 def main():
     # filename='data/245-m'
-    filename='data/410-j'
+    filename = 'data/410-j'
     with open(filename) as f:
-        files=f.readlines()
+        files = f.readlines()
         for file in files:
-            test=ImportData(file[:-1])  # initialization
+            test = ImportData(file[:-1])  # initialization
             test.data()
             test.samples()
+
 
 if __name__ == '__main__':
     main()
