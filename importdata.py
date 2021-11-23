@@ -62,7 +62,7 @@ class ImportData():
         self.h = TH1D('h', 'h', len(self.ff),
                       iq.center +self.ff[0],iq.center + self.ff[-1])
 
-        # setting variables from data
+        # setting variables from tiq data
         for i in range(len(self.ff)):
             self.h.SetBinContent(i, self.pp[i])
         self.nbins = self.h.GetXaxis().GetNbins()
