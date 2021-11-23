@@ -63,6 +63,7 @@ class ImportData():
         self.frequence_max = self.h.GetXaxis().GetXmax()/1000+245
         self.y_max = self.h.GetMaximum()
         self.h.GetXaxis().SetLimits(self.frequence_min, self.frequence_max)
+        #self.h.Draw()
 
     def _calculate(self):
         
@@ -71,8 +72,9 @@ class ImportData():
                   for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
         self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
                     for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
-
-        # if reference particle, calculate variables with lise data
+        yieldd = [lise[5] for lise in self.lise_data]
+        self.yieldd=[element/max(yieldd) for element in yieldd]
+        #if reference particle, calculate variables with lise data
         for i, lise in enumerate(self.lise_data):
             if (str(lise[1])+lise[0] == self.RefIso and lise[4] == self.RefQ):
                 self.aux = i
@@ -87,7 +89,7 @@ class ImportData():
                      for k, element in enumerate(self.m)]
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k, element in enumerate(self.m)]
-        #print(self.SRF,self.SRRF)
+        print(self.SRF,self.ff)
         #print('self.pp.argmax()',self.pp.argmax(),'self.ff[self.pp.argmax()]',self.ff[self.pp.argmax()]+self.fcenter,'SRF[aux]',self.SRF[self.aux])
         #print(f'Brho initial: {self.BRho}')
         self.BRhoCorrection()
