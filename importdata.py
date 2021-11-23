@@ -77,8 +77,8 @@ class ImportData():
             if (str(lise[1])+lise[0] == self.RefIso and lise[4] == self.RefQ):
                 self.aux = i
                 self.moq_Rel = self.moq[i]
-                self.gamma = sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[i], 2)+1)
-                self.beta = sqrt(self.gamma*self.gamma-1)/self.gamma
+                self.gamma = np.sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[i], 2)+1)
+                self.beta = np.sqrt(self.gamma*self.gamma-1)/self.gamma
                 self.velocity = AMEData.CC*self.beta
                 self.Frequence_Rel = self.velocity/self.ring.circumference
 
