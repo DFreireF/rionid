@@ -63,7 +63,7 @@ class ImportData():
 
         self.m = [AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
                   for ame in self.ame_data for i, lise in enumerate(self.lise_data) if lise[0] == ame[6] and lise[1] == ame[5]]
-        self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u()
+        self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
                     for ame in self.ame_data for i, lise in enumerate(self.lise_data) if lise[0] == ame[6] and lise[1] == ame[5]]
 
         for i, lise in enumerate(self.lise_data):
@@ -81,15 +81,22 @@ class ImportData():
                      for k, element in enumerate(self.m)]
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k, element in enumerate(self.m)]
-        
-        print('self.pp.argmax()',self.pp.argmax(),'self.ff[self.pp.argmax()]',self.ff[self.pp.argmax()]+self.fcenter,'SRF[aux]',self.SRF[self.aux])
-        print(f'Brho initial: {self.BRho}')
+        #print(self.SRF,self.SRRF)
+        #print('self.pp.argmax()',self.pp.argmax(),'self.ff[self.pp.argmax()]',self.ff[self.pp.argmax()]+self.fcenter,'SRF[aux]',self.SRF[self.aux])
+        #print(f'Brho initial: {self.BRho}')
         self.BRhoCorrection()
-        print(f'Brho final: {self.BRho}')
+        #print(f'Brho final: {self.BRho}')
 
         for k in range(0, len(self.m)):  # Calculate new simulated frecuency sample spectrum
-            self.SRF[k] = self.SRRF[k]*self.Frequence_Rel*self.Harmonic
-
+            self.SRF[k] =self.SRRF[k]*self.Frequence_Rel*self.Harmonic
+        
+        #a=sqrt(pow(-6.68661919947497e-05*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
+        #b=sqrt(a*a-1)/a
+        #c=AMEData.CC*b
+        #d=c/self.ring.circumference
+        #e=d*self.Harmonic*self.SRRF[self.aux]
+        #print(abs((self.ff[self.pp.argmax()]+self.fcenter)-e))
+        
     def tominimize(self,x):#function to minimize (x=Brho); yup, it's big
         a=sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
         b=sqrt(a*a-1)/a
@@ -97,12 +104,13 @@ class ImportData():
         d=c/self.ring.circumference
         e=d*self.Harmonic*self.SRRF[self.aux]
         tominimize=abs((self.ff[self.pp.argmax()]+self.fcenter)-e)
+        print('a=',a,'b=',b,'c=',c,'d=',d,'e=',e,'tominimize=',tominimize,'BRho=',x)
         return tominimize
    # def gamma()                
     def BRhoCorrection(self):#Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]      
-        print('function to minimize before minimizing: ',self.tominimize(self.BRho))
-        self.BRho=minimize(self.tominimize,[self.BRho],method='CG').x[0]
-        print('function to minimized: ',self.tominimize(self.BRho))
+        #print('function to minimize before minimizing: ',self.tominimize(self.BRho))
+        self.BRho=minimize(self.tominimize,[self.BRho],method='Powell',bounds=[(6.900,6.910)],tol=1e-5).x[0]
+        #print('function minimized: ',self.tominimize(self.BRho))
         self.gamma=sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
         self.beta=sqrt(self.gamma*self.gamma-1)/self.gamma
         self.velocity=AMEData.CC*self.beta
@@ -112,15 +120,14 @@ class ImportData():
 
 
 def main():
-    # filename='data/245-m'
-    filename = 'data/410-j'
+    filename='data/245-m'
+    #filename = 'data/410-j'
     with open(filename) as f:
         files = f.readlines()
         for file in files:
             test = ImportData(file[:-1])  # initialization
             test.data()
             test.samples()
-
 
 if __name__ == '__main__':
     main()
