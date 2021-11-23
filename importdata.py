@@ -76,7 +76,7 @@ class ImportData():
         # return mass and moq from barion
         self.m = [AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
                   for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
-        self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u()
+        self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
                     for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
 
         # if reference particle, calculate variables with lise data
@@ -112,14 +112,15 @@ class ImportData():
         d=c/self.ring.circumference
         e=d*self.Harmonic*self.SRRF[self.aux]
         tominimize=abs((self.ff[self.pp.argmax()]+self.fcenter)-e)
+        print('a=',a,'b=',b,'c=',c,'d=',d,'e=',e,'tominimize=',tominimize,'BRho=',x)
         return tominimize
-   
-    def BRhoCorrection(self): # Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]
-        print('function to minimize before minimizing: ',self.tominimize(self.BRho))
-        self.BRho=minimize(self.tominimize,[self.BRho],method='CG').x[0]
-        print('function to minimized: ',self.tominimize(self.BRho))
-        self.gamma=np.sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
-        self.beta=np.sqrt(self.gamma*self.gamma-1)/self.gamma
+   # def gamma()                
+    def BRhoCorrection(self):#Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]      
+        #print('function to minimize before minimizing: ',self.tominimize(self.BRho))
+        self.BRho=minimize(self.tominimize,[self.BRho],method='Powell',bounds=[(6.900,6.910)],tol=1e-5).x[0]
+        #print('function minimized: ',self.tominimize(self.BRho))
+        self.gamma=sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
+        self.beta=sqrt(self.gamma*self.gamma-1)/self.gamma
         self.velocity=AMEData.CC*self.beta
         self.Frequence_Rel=self.velocity/self.ring.circumference
 
@@ -127,7 +128,7 @@ class ImportData():
 # main could be console user interface until gui is made
 def main():
     # specified file is list of filenames
-    # filename='data/245-m'
+    # filename='data/245test'
     filename = 'data/410-j'
     test=ImportData(filename)
 
