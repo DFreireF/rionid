@@ -2,10 +2,13 @@ from ROOT import *
 
 
 class CreateGUI():
-    def __init__(self):
-        # (eventually will be input)
-        self.freq_min = 10
-        self.freq_max = 280
+    def __init__(self, frequency_data, power_data, srf_data, frequency_min, frequency_max, nbins):
+        self.frequency_data = frequency_data
+        self.power_data = power_data
+        self.srf_data = srf_data
+        self.freq_min = frequency_min
+        self.freq_max = frequency_max
+        self.nbins = nbins
 
         self.create_canvas()
         self.create_histograms()
@@ -23,8 +26,7 @@ class CreateGUI():
     def create_histograms(self):
         self.freq_center = 0
         self.freq_tl = 243.2712156  # check what this value should be, prob should be variable
-        self.nbins = int(1e2)  # placeholder value, should be variable
-        
+
         # setting normalised histogram range:
         normalised_min = (self.freq_center + self.freq_min)/self.freq_tl
         normalised_max = (self.freq_center + self.freq_max)/self.freq_tl
@@ -44,16 +46,24 @@ class CreateGUI():
         self.hist_list = [h_sim, h_ref, h_simfreq, h_rel_simfreq]
 
     def histogram_fill(self):
-        # filling with data, placeholder method
+        # # filling with data, placeholder method
+        # for i, histogram in enumerate(self.hist_list):
+        #     self.canvas_main.cd(i+1)
+        #     histogram.FillRandom('gaus', 1000)
+        #     histogram.Draw()
+        # self.canvas_main.Update()
+
+        # filling with simulated data:\
         for i, histogram in enumerate(self.hist_list):
             self.canvas_main.cd(i+1)
-            histogram.FillRandom('gaus', 1000)
+            for i,element in enumerate(self.frequency_data):
+                histogram.Fill(self.frequency_data[i], self.power_data[i])
             histogram.Draw()
         self.canvas_main.Update()
 
 
 def test():
-    mycanvas = CreateGUI()
+    mycanvas = CreateGUI(10, 10, 10, 10, 10)
 
 
 if __name__ == '__main__':
