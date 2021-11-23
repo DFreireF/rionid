@@ -11,12 +11,19 @@ from scipy.optimize import minimize
 
 class ImportData():
     def __init__(self, filename):
-        self.filename = filename
+        self.master_filename = filename
         self.ring = Ring('ESR', 108.5)  # have to add more functionalities here
         
+        self._read_masterfile()
         self._import()
         self._read_data()
         self._calculate()
+        
+    def _read_masterfile(self):
+        # reads list filenames with experiment data. [:-1] to remove eol sequence.
+        self.file_list = [file[:-1] for file in open(self.master_filename).readlines()]
+        # and for now:
+        self.filename = self.file_list[0]
 
     def _import(self):
         # import ame from barion:
@@ -50,7 +57,7 @@ class ImportData():
         self.fcenter=iq.center
         # import xx:frequency , yy:time, zz:power
         xx, yy, zz = iq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
-        self.ff=xx[0] #frequency
+        self.ff=xx[0] #frequency, index 0 as xx is 2d array
         self.pp = zz[0]/zz[0].max()  #normalized power
         self.h = TH1D('h', 'h', len(self.ff),
                       iq.center +self.ff[0],iq.center + self.ff[-1])
@@ -88,17 +95,19 @@ class ImportData():
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k, element in enumerate(self.m)]
         
-        print('self.pp.argmax()',self.pp.argmax(),'self.ff[self.pp.argmax()]',self.ff[self.pp.argmax()]+self.fcenter,'SRF[aux]',self.SRF[self.aux])
+        print(f"self.pp.argmax():{self.pp.argmax()}, self.ff[self.pp.argmax()]:{self.ff[self.pp.argmax()]+self.fcenter}, SRF[aux]:{self.SRF[self.aux]}")
         print(f'Brho initial: {self.BRho}')
-        self.BRhoCorrection()
+        # self.BRhoCorrection() #commented out so pysimtof can run
         print(f'Brho final: {self.BRho}')
 
         # Calculate new simulated frecuency sample spectrum
-        self.SRF = [element*self.Frequence_Rel*self.Harmonic for element in self.SRRF]
+        brho_correction = False
+        if brho_correction == True:
+            self.SRF = [element*self.Frequence_Rel*self.Harmonic for element in self.SRRF]
         
     def tominimize(self,x): # function to minimize (x=Brho); yup, it's big
-        a=sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
-        b=sqrt(a*a-1)/a
+        a=np.sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
+        b=np.sqrt(a*a-1)/a
         c=AMEData.CC*b
         d=c/self.ring.circumference
         e=d*self.Harmonic*self.SRRF[self.aux]
@@ -113,28 +122,14 @@ class ImportData():
         self.beta=np.sqrt(self.gamma*self.gamma-1)/self.gamma
         self.velocity=AMEData.CC*self.beta
         self.Frequence_Rel=self.velocity/self.ring.circumference
-        
-    def _output(self):
-        pass
-        # for example: 
-        # self.myhistogramdata = 
-        # self.myvariabledata = 
 
-# eventually should be in __init__ with filename
-# specified inside InputParameters.txt
+
 # main could be console user interface until gui is made
 def main():
     # specified file is list of filenames
     # filename='data/245-m'
     filename = 'data/410-j'
-    
-    # opens list of filenames and extracts data from each file
-    with open(filename) as f:
-        files = f.readlines()
-        for file in files:
-            #[:-1] to remove eol sequence
-            test = ImportData(file[:-1])
-
+    test=ImportData(filename)
 
 if __name__ == '__main__':
     main()
