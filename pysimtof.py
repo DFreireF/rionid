@@ -9,13 +9,12 @@ def main():
 
     # import data and process:
     mydata = importdata.ImportData(ip.dict['rawdata_filename'])
-    print(mydata.ff)
-    print(mydata.pp)
+    # print(mydata.ff)
+    # print(mydata.pp)
 
     # plot:
     mycanvas = creategui.CreateGUI(mydata.ff, mydata.pp, mydata.SRF,
-                                   mydata.frequence_min, mydata.frequence_max,
-                                   mydata.nbins)
+                                   mydata.yieldd, mydata.SRRF, mydata.fcenter)
 
 
 if __name__ == '__main__':
