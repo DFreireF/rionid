@@ -46,6 +46,8 @@ class ImportData():
         # Load LISE file
         lise_file = lread.LISEreader(input_params.lisefile)
         self.lise_data = lise_file.get_info_all()
+        self.yield_data = [element[5] for element in self.lise_data]
+        self.yield_data_normalised = [element/max(self.yield_data) for element in self.yield_data]
 
     def _read_data(self):
         LFRAMES=2**15

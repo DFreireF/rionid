@@ -35,7 +35,9 @@ class CreateGUI():
         h_sim = TH1F('h_sim', 'Simulated Histogram', int(200e3), 400, 700)
         # hFFt_px_ref (reference?)
         h_ref = TH1F('h_ref', 'Simulated Reference', self.nbins,
-                     normalised_min, normalised_max)
+                     245, 245)
+        # h_ref = TH1F('h_ref', 'Simulated Reference', self.nbins,
+        #              normalised_min, normalised_max)
         # hSRF Histogram of simulated revolution frequency
         h_simfreq = TH1F('h_simfreq', 'FFT_reference', self.nbins,
                          normalised_min, normalised_max)
