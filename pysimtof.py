@@ -1,6 +1,7 @@
 import creategui
 import inputparams
 import importdata
+import pypeaks
 
 
 def main():
@@ -9,12 +10,13 @@ def main():
 
     # import data and process:
     mydata = importdata.ImportData(ip.dict['rawdata_filename'])
+    peaks=pypeaks.FitPeaks(20,mydata.h)
     #print(mydata.ff)
     #print(mydata.pp)
 
     # plot:
-    mycanvas = creategui.CreateGUI(mydata.ff,mydata.fcenter, mydata.pp, mydata.SRF,
-                                   mydata.yieldd,mydata.SRRF)
+    #mycanvas = creategui.CreateGUI(mydata.ff,mydata.fcenter, mydata.pp, mydata.SRF,
+    #                               mydata.yieldd,mydata.SRRF)
 
 
 if __name__ == '__main__':

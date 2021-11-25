@@ -27,10 +27,10 @@ class CreateGUI():
         self.canvas_main.Divide(1, 4)
         
     def f_min(self,center,data):
-        return center+data[0]
+        return (data[0]+center)/center
     
     def f_max(self,center,data):
-        return center+data[-1]
+        return (data[-1]+center)/center
     
     def create_histograms(self):
         #self.freq_center = 0
@@ -50,7 +50,7 @@ class CreateGUI():
                      self.f_min(self.fcenter,self.frequency_data), self.f_max(self.fcenter,self.frequency_data))
         # hSRRF Histogram of simulated relative revolution frequency
         h_rel_simfreq = TH1F('h_rel_simfreq', 'Sim. Rev. Freq.', len(self.frequency_data),
-                     self.f_min(0,self.srrf_data), self.f_max(0,self.srrf_data))
+                     self.f_min(1,self.srrf_data), self.f_max(1,self.srrf_data))
 
         self.hist_list = [h_sim, h_ref, h_simfreq, h_rel_simfreq]
 

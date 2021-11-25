@@ -55,14 +55,15 @@ class ImportData():
         
         # center frequency
         self.fcenter=iq.center
+        print(self.fcenter)
         # import xx:frequency , yy:time, zz:power
         xx, yy, zz = iq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
         self.ff=xx[0] #frequency, index 0 as xx is 2d array
         self.pp = zz[0]/zz[0].max()  #normalized power
         self.h = TH1D('h', 'h', len(self.ff),
                       iq.center +self.ff[0],iq.center + self.ff[-1])
-
-        # setting variables from tiq data
+        
+        ## setting variables from tiq data
         for i in range(len(self.ff)):
             self.h.SetBinContent(i, self.pp[i])
         self.nbins = self.h.GetXaxis().GetNbins()
@@ -90,14 +91,14 @@ class ImportData():
                 self.beta = np.sqrt(self.gamma*self.gamma-1)/self.gamma
                 self.velocity = AMEData.CC*self.beta
                 self.Frequence_Rel = self.velocity/self.ring.circumference
-
+                print(self.Frequence_Rel)
         # simulated relative and non-rel revolution frequencies
         self.SRRF = [1-1/self.GammaT/self.GammaT*(self.moq[k]-self.moq_Rel)/self.moq_Rel
                      for k, element in enumerate(self.m)]
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k, element in enumerate(self.m)]
         
-        print(f"self.pp.argmax():{self.pp.argmax()}, self.ff[self.pp.argmax()]:{self.ff[self.pp.argmax()]+self.fcenter}, SRF[aux]:{self.SRF[self.aux]}")
+        #print(f"self.pp.argmax():{self.pp.argmax()}, self.ff[self.pp.argmax()]:{self.ff[self.pp.argmax()]+self.fcenter}, SRF[aux]:{self.SRF[self.aux]}")
         print(f'Brho initial: {self.BRho}')
         # self.BRhoCorrection() #commented out so pysimtof can run
         print(f'Brho final: {self.BRho}')
