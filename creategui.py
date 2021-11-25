@@ -4,6 +4,7 @@ from ROOT import *
 class CreateGUI():
     def __init__(self, frequency_data, power_data,
                  frequency_sim, power_sim, srrf_data, fcenter):
+        # setting object variables:
         self.frequency_data = frequency_data
         self.power_data = power_data
         self.frequency_sim = frequency_sim
@@ -14,8 +15,8 @@ class CreateGUI():
         self.create_canvas()
         self.create_histograms()
         self.create_stack()
+
         self.histogram_fill()
-        self.set_formatting()
         self.draw_histograms()
 
         # prevents gui closing in pyroot. must go last in init!
@@ -27,10 +28,11 @@ class CreateGUI():
         self.canvas_main.Divide(1, 3)
 
     def create_histograms(self):
-        # real data
+        # experimental data
         self.h_tiqdata = TH1F('h_tiqdata', 'tiqdata', len(self.frequency_data),
                               self.f_min(self.fcenter, self.frequency_data),
                               self.f_max(self.fcenter, self.frequency_data))
+        
         # simulated data
         self.h_simdata = TH1F('h_simdata', 'simdata', len(self.frequency_sim),
                               self.f_min(self.fcenter, self.frequency_sim),
@@ -38,15 +40,15 @@ class CreateGUI():
 
         self.hist_list = [self.h_tiqdata, self.h_simdata]
 
-    def create_stack(self):
-        self.stack_test = THStack()
-        self.stack_test.Add(self.h_tiqdata)
-        self.stack_test.Add(self.h_simdata)
+    def create_stack(self):  # histograms overlay
+        self.h_stack = THStack()
+        self.h_stack.Add(self.h_tiqdata)
+        self.h_stack.Add(self.h_simdata)
 
-        self.hist_list.append(self.stack_test)
+        self.hist_list.append(self.h_stack)
 
     def histogram_fill(self):
-        # fill tiqdata:
+        # fill with experimental data:
         for i, element in enumerate(self.frequency_data):
             self.h_tiqdata.Fill(
                 self.frequency_data[i] + self.fcenter, self.power_data[i])
@@ -59,32 +61,37 @@ class CreateGUI():
         linecolors = [kRed, kBlue, kGreen]
 
         for i, histogram in enumerate(self.hist_list):
-            self.canvas_main.cd(i+1)
+            self.canvas_main.cd(i+1)  # move to correct canvas
+            #drawing h_stack:
             if i == 2:
-                self.stack_test.SetTitle('Histogram Stack')
-                self.stack_test.Draw("nostack")
+                self.h_stack.SetTitle('Histogram Stack')
+                self.h_stack.Draw("nostack")  # "nostack" overlays histograms
+            #drawing other histograms:
             else:
                 histogram.SetLineColor(linecolors[i])
                 histogram.Draw()
-
+                
+        self.canvas_main.cd(2)
+        self.h_simdata.GetXaxis().SetRangeUser(int(244e6),int(245e6))
+        
         self.canvas_main.Update()
-        # self.canvas_main.SaveAs("p.pdf")
+        # self.canvas_main.SaveAs("histogram_plot.pdf")
 
     @staticmethod
-    def f_min(center, data):
+    def f_min(center, data): # find minimum frequency
         return center+data[0]
 
     @staticmethod
-    def f_max(center, data):
+    def f_max(center, data): # find maximum frequency
         return center+data[-1]
-
-    def set_formatting(self):
-        pass
 
 
 def test():
-    print('Please run pysimtof.py to pass data')
-    # mycanvas = CreateGUI(10, 10, 10, 10, 10)
+    import importdata
+    mydata = importdata.ImportData('data/410-j')
+    mycanvas = CreateGUI(mydata.ff, mydata.pp, mydata.SRF,
+                         mydata.yield_data_normalised,
+                         mydata.SRRF, mydata.fcenter)
 
 
 if __name__ == '__main__':

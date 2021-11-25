@@ -46,8 +46,6 @@ class ImportData():
         # Load LISE file
         lise_file = lread.LISEreader(input_params.lisefile)
         self.lise_data = lise_file.get_info_all()
-        self.yield_data = [element[5] for element in self.lise_data]
-        self.yield_data_normalised = [element/max(self.yield_data) for element in self.yield_data]
 
     def _read_data(self):
         LFRAMES=2**15
@@ -58,14 +56,14 @@ class ImportData():
         # center frequency
         self.fcenter=iq.center
         print(self.fcenter)
-        # import xx:frequency , yy:time, zz:power
+        # import xx:frequency, yy:time, zz:power
         xx, yy, zz = iq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
         self.ff=xx[0] #frequency, index 0 as xx is 2d array
-        self.pp = zz[0]/zz[0].max()  #normalized power
-        self.h = TH1D('h', 'h', len(self.ff),
-                      iq.center +self.ff[0],iq.center + self.ff[-1])
+        self.pp = zz[0]/zz[0].max() #normalized power
         
         ## setting variables from tiq data
+        self.h = TH1D('h', 'h', len(self.ff),
+                      iq.center +self.ff[0],iq.center + self.ff[-1])
         for i in range(len(self.ff)):
             self.h.SetBinContent(i, self.pp[i])
         self.nbins = self.h.GetXaxis().GetNbins()
@@ -73,17 +71,18 @@ class ImportData():
         self.frequence_max = self.h.GetXaxis().GetXmax()/1000+245
         self.y_max = self.h.GetMaximum()
         self.h.GetXaxis().SetLimits(self.frequence_min, self.frequence_max)
-        #self.h.Draw()
 
     def _calculate(self):
+        # return yield data from lise
+        yield_data = [element[5] for element in self.lise_data]
+        self.yield_data_normalised = [element/max(yield_data) for element in yield_data]
         
         # return mass and moq from barion
         self.m = [AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
                   for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
         self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
                     for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
-        yieldd = [lise[5] for lise in self.lise_data]
-        self.yieldd=[element/max(yieldd) for element in yieldd]
+        
         #if reference particle, calculate variables with lise data
         for i, lise in enumerate(self.lise_data):
             if (str(lise[1])+lise[0] == self.RefIso and lise[4] == self.RefQ):
@@ -94,13 +93,13 @@ class ImportData():
                 self.velocity = AMEData.CC*self.beta
                 self.Frequence_Rel = self.velocity/self.ring.circumference
                 print(self.Frequence_Rel)
+                
         # simulated relative and non-rel revolution frequencies
         self.SRRF = [1-1/self.GammaT/self.GammaT*(self.moq[k]-self.moq_Rel)/self.moq_Rel
-                     for k, element in enumerate(self.m)]
+                     for k in range(len(self.m))]
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
-                    for k, element in enumerate(self.m)]
+                    for k in range(len(self.m))]
         
-        #print(f"self.pp.argmax():{self.pp.argmax()}, self.ff[self.pp.argmax()]:{self.ff[self.pp.argmax()]+self.fcenter}, SRF[aux]:{self.SRF[self.aux]}")
         print(f'Brho initial: {self.BRho}')
         # self.BRhoCorrection() #commented out so pysimtof can run
         print(f'Brho final: {self.BRho}')
@@ -119,16 +118,17 @@ class ImportData():
         tominimize=abs((self.ff[self.pp.argmax()]+self.fcenter)-e)
         print('a=',a,'b=',b,'c=',c,'d=',d,'e=',e,'tominimize=',tominimize,'BRho=',x)
         return tominimize
-   # def gamma()                
+          
     def BRhoCorrection(self):#Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]      
         #print('function to minimize before minimizing: ',self.tominimize(self.BRho))
         self.BRho=minimize(self.tominimize,[self.BRho],method='Powell',bounds=[(6.900,6.910)],tol=1e-5).x[0]
         #print('function minimized: ',self.tominimize(self.BRho))
-        self.gamma=sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
-        self.beta=sqrt(self.gamma*self.gamma-1)/self.gamma
+        self.gamma=np.sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
+        self.beta=np.sqrt(self.gamma*self.gamma-1)/self.gamma
         self.velocity=AMEData.CC*self.beta
         self.Frequence_Rel=self.velocity/self.ring.circumference
 
+   # def gamma()         
 
 # main could be console user interface until gui is made
 def main():

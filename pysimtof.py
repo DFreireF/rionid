@@ -10,13 +10,12 @@ def main():
 
     # import data and process:
     mydata = importdata.ImportData(ip.dict['rawdata_filename'])
-    peaks=pypeaks.FitPeaks(5,mydata.h)
-    # print(mydata.ff)
-    # print(mydata.pp)
+    # peaks=pypeaks.FitPeaks(5,mydata.h)
 
     # plot:
     mycanvas = creategui.CreateGUI(mydata.ff, mydata.pp, mydata.SRF,
-                                   mydata.yieldd, mydata.SRRF, mydata.fcenter)
+                                   mydata.yield_data_normalised,
+                                   mydata.SRRF, mydata.fcenter)
 
 
 if __name__ == '__main__':
