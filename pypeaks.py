@@ -2,7 +2,7 @@ from ROOT import TCanvas,TMath,TH1,TH1F,TF1,TRandom,TSpectrum,TVirtualFitter
 from array import array
 from time import time
 
-def fpeaks(x,par): #necessary to define it this way for making TF1.Fit() works
+def gaussians(x,par): #necessary to define it this way for making TF1.Fit() works
     #--------------------horrible------------------------#
     i=0
     aux=1
@@ -20,6 +20,9 @@ def fpeaks(x,par): #necessary to define it this way for making TF1.Fit() works
         result += norm*TMath.Gaus(x[0],mean,sigma)
     return result
 
+def decay_curve(x,par):
+    return p[0]+p[1]*TMath.Exp(-x[0]/p[2])
+    
 class FitPeaks():
 
     def __init__(self,npeaks,histogram,tofit):
@@ -44,7 +47,7 @@ class FitPeaks():
         self.histogram.Draw()
         self.c1.Update()
         
-        self.PeakFinding() #PeakFinding finds peaks (surprise)
+        self.peak_finding() #PeakFinding finds peaks (surprise)
         
         self.set_ranges()
         
@@ -52,17 +55,18 @@ class FitPeaks():
         self.background()
         self.c1.Update()
         
-        if tofit:#if it is True
+        if self.tofit:#if it is True
             self.n_peakstofit()
-            self.fitting()
+            self.gaussians_fitting()
             
-    def PeakFinding(self):
+    def peak_finding(self):
         # Use TSpectrum to find the peak candidates
         self.s = TSpectrum(self.npeaks) #(maximum number of peaks)
         self.nfound = self.s.Search(self.histogram,2,"",0.10)
         self.xpeaks=self.s.GetPositionX()
-        print(f'Found {self.nfound} candidate peaks to fit\n')
-        print(f'at positions {self.xpeaks}')
+        print(f'Found {self.nfound} candidate peaks to fit at positions:\n')
+        for xpeak in self.xpeaks:
+            print(f'at positions {xpeak}')
         
     def background(self):
         # Estimate background using TSpectrum.Background
@@ -85,13 +89,13 @@ class FitPeaks():
                 n_peakstofit+=1
         print(f'Found {n_peakstofit} useful peaks to fit\n')
         
-    def fitting(self):
+    def gaussians_fitting(self):
         print(f'Now fitting: it takes some time \n')
         for i in range (0,10):#loop for making the thing to converge
             start_time = time()
             npars=int(len(self.par))
-            fit=TF1('fit',fpeaks,self.range_min,self.range_max,npars)
-            TVirtualFitter.Fitter(self.h2,10+npars-2)#*int(self.par[-1])
+            fit=TF1('fit',gaussians,self.range_min,self.range_max,npars)
+            TVirtualFitter.Fitter(self.h2,npars)
             fit.SetParameters(self.par)
             fit.SetNpx(1000)
             self.h2.Fit(fit)
@@ -105,6 +109,20 @@ class FitPeaks():
     def set_ranges(self):
         self.range_min = self.histogram.GetXaxis().GetXmin()
         self.range_max = self.histogram.GetXaxis().GetXmax()
+        
+    def decay_fit(self,histogram):#histogram with the interesting data
+        par=array('d',[4.5,0.05,20])#initial seeds
+        range_min=histogram.GetXaxis().GetXmin()
+        range_max=histogram.GetXaxis().GetXmax()
+        decay_fit=TF1('decay_fit',decay_curve,range_min,range_max,len(par))
+        TVirtualFitter.Fitter(histogram,len(par))
+        fit.SetParameters(par)
+        fit.SetNpx(1000)
+        histogram.Fit(decay_fit)
+        getpar = histogram.GetFunction('decay_fit')
+        for j in range(getpar.GetNumberFreeParameters()):
+            par[j] = getpar.GetParameter(j)
+        #return par? just plot?
 
       
 if __name__ == '__main__':
