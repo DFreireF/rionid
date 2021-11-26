@@ -22,9 +22,10 @@ def fpeaks(x,par): #necessary to define it this way for making TF1.Fit() works
 
 class FitPeaks():
 
-    def __init__(self,npeaks,histogram):
+    def __init__(self,npeaks,histogram,tofit):
         self.par = array('d',[]) #has to be this way for ROOT Fit() to work
         self.npeaks=npeaks
+        self.tofit=tofit #boolean to make fitting or not (if not, does peak finding etc)
         self.histogram=histogram
         self.h2=histogram
         self.peaks()
@@ -42,38 +43,45 @@ class FitPeaks():
         self.c1.cd(1)
         self.histogram.Draw()
         self.c1.Update()
+        
+        self.PeakFinding() #PeakFinding finds peaks (surprise)
+        
+        self.set_ranges()
+        
+        self.c1.cd(2)
+        self.background()
+        self.c1.Update()
+        
+        if tofit:#if it is True
+            self.n_peakstofit()
+            self.fitting()
+            
+    def PeakFinding(self):
         # Use TSpectrum to find the peak candidates
         self.s = TSpectrum(self.npeaks) #(maximum number of peaks)
         self.nfound = self.s.Search(self.histogram,2,"",0.10)
+        self.xpeaks=self.s.GetPositionX()
         print(f'Found {self.nfound} candidate peaks to fit\n')
+        print(f'at positions {self.xpeaks}')
         
-        if self.npeaks<0: #if you dont want any fitting, just the peaks found
-            return None
-        
-        self.c1.cd(2)
+    def background(self):
         # Estimate background using TSpectrum.Background
         hb = self.s.Background(self.histogram,20,"same") #This function calculates the background spectrum in the input histogram, returned as a histogram.  
-        self.set_ranges()
         # estimate linear background using a fitting method, predefined ROOT pol1
         self.fline = TF1('fline','pol1',self.range_min,self.range_max) 
         self.histogram.Fit('fline','qn')
-        self.c1.Update()
-        self.n_peakstofit()
-        self.fitting()
         
     def n_peakstofit(self):# Loop on all found peaks. Eliminate peaks at the background level    
         n_peakstofit=0
-        xpeaks=self.s.GetPositionX()
         self.par.append(self.fline.GetParameter(0)) #par[0] 
         self.par.append(self.fline.GetParameter(1)) #par[1]
-        for p in range(0,self.nfound):
-            xp=xpeaks[p]
-            bin=self.histogram.GetXaxis().FindBin(xp) 
-            yp=self.histogram.GetBinContent(bin)
-            if (abs(yp-TMath.Sqrt(yp)) > self.fline.Eval(xp)):#compares if peak is over the background or not
-                self.par.append(yp)  #"height"
-                self.par.append(xp)  #"mean"
-                self.par.append(100) #"sigma"
+        for xpeak in (self.xpeaks):
+            bin=self.histogram.GetXaxis().FindBin(xpeak) 
+            ypeak=self.histogram.GetBinContent(bin)
+            if (abs(yp-TMath.Sqrt(ypeak)) > self.fline.Eval(xpeak)):#compares if peak is over the background or not
+                self.par.append(ypeak)  #"height"
+                self.par.append(xpeak)  #"mean"
+                self.par.append(100) #"sigma" initial estimation
                 n_peakstofit+=1
         print(f'Found {n_peakstofit} useful peaks to fit\n')
         
