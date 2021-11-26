@@ -71,8 +71,9 @@ class CreateGUI():
                 histogram.SetLineColor(linecolors[i])
                 histogram.Draw()
                 
-        self.canvas_main.cd(2)
-        self.h_simdata.GetXaxis().SetRangeUser(int(244e6),int(245e6))
+        # self.canvas_main.cd(3)
+        # self.hist_list[2].GetXaxis().SetRangeUser(int(244e6),int(245e6))
+        # self.h_simdata.Draw()
         
         self.canvas_main.Update()
         # self.canvas_main.SaveAs("histogram_plot.pdf")
