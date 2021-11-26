@@ -10,6 +10,8 @@ def main():
 
     # import data and process:
     mydata = importdata.ImportData(ip.dict['rawdata_filename'])
+    peaks=pypeaks.FitPeaks(1,mydata.h,False)
+    #peaks()
     # peaks=pypeaks.FitPeaks(5,mydata.h)
 
     # plot:
