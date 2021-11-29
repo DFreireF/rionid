@@ -4,7 +4,7 @@ class LifeTime():
     #going to take data from a spectogram
     #maybe averaged
     #look for the region of interest(in time) (injection)
-    #look for the region of interest in frequency
+    #look for the region of interest in frequency ()
     #look for small peaks and track their evol. with time (area and power)
     #area--> number of isomeric states produced
     #power-> decay, fit of the decay curve, lifetime-->Money
