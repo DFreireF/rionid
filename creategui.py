@@ -63,18 +63,18 @@ class CreateGUI():
         for i, histogram in enumerate(self.hist_list):
             self.canvas_main.cd(i+1)  # move to correct canvas
             #drawing h_stack:
-            if i == 2:
-                self.h_stack.SetTitle('Histogram Stack')
-                self.h_stack.Draw("nostack")  # "nostack" overlays histograms
+            if i+1 == 3:
+                histogram.SetTitle('Histogram Stack')
+                histogram.Draw("nostack")  # "nostack" overlays histograms
             #drawing other histograms:
             else:
                 histogram.SetLineColor(linecolors[i])
                 histogram.Draw()
-                
-        # self.canvas_main.cd(3)
-        # self.hist_list[2].GetXaxis().SetRangeUser(int(244e6),int(245e6))
-        # self.h_simdata.Draw()
-        
+                if i+1 == 2: #changing range
+                    histogram.GetXaxis().SetLimits(int(240e6),int(250e6))
+                    # .SetRangeUser not working on this histogram for some reason
+                    histogram.Draw()
+                        
         self.canvas_main.Update()
         # self.canvas_main.SaveAs("histogram_plot.pdf")
 
