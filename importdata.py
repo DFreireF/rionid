@@ -55,12 +55,11 @@ class ImportData():
         
         # center frequency
         self.fcenter=iq.center
-        print(self.fcenter)
+        #print(self.fcenter)
         # import xx:frequency, yy:time, zz:power
         xx, yy, zz = iq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
         self.ff=xx[0] #frequency, index 0 as xx is 2d array
-        self.pp = zz[0]/zz[0].max() #normalized power
-        
+        self.pp = zz[0]/np.sum(zz[0]) #normalized power
         ## setting variables from tiq data
         self.h = TH1D('h', 'h', len(self.ff),
                       iq.center +self.ff[0],iq.center + self.ff[-1])
@@ -69,7 +68,7 @@ class ImportData():
         self.nbins = self.h.GetXaxis().GetNbins()
         self.frequence_min = self.h.GetXaxis().GetXmin()/1000+245
         self.frequence_max = self.h.GetXaxis().GetXmax()/1000+245
-        self.y_max = self.h.GetMaximum()
+        #self.y_max = self.h.GetMaximum()
         self.h.GetXaxis().SetLimits(self.frequence_min, self.frequence_max)
 
     def _calculate(self):
@@ -96,9 +95,9 @@ class ImportData():
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k in range(len(self.m))]
         
-        print(f'before: {self.SRF}')
+        #print(f'before: {self.SRF}')
         #self.SRF=self.set_range_SRF_to_analyzer(self.SRF)
-        print(f'after: {self.SRF}')
+        #print(f'after: {self.SRF}')
 
         # Calculate new simulated frecuency sample spectrum
         brho_correction = False
@@ -128,15 +127,18 @@ class ImportData():
         self.velocity=self.velocity(self.beta)
         self.Frequence_Rel=self.frequence_rel(self.velocity)
         
-    def set_range_SRF_to_analyzer(self,SRF):
-        return SRF[(SRF>self.frequence_min)*(SRF<self.frequence_max)]
+    def set_range_SRF_to_analyzer(self):
+        return self.SRF[(self.SRF>self.frequence_min)*(self.SRF<self.frequence_max)]
         
     def gamma(self,x):
         return np.sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
+    
     def beta(self,gamma):
         return np.sqrt(gamma*gamma-1)/gamma
+    
     def velocity(self,beta):
-        return AMEData.CC*beta 
+        return AMEData.CC*beta
+    
     def frequence_rel(self,velocity):
         return velocity/self.ring.circumference
     

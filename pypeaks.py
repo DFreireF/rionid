@@ -1,6 +1,6 @@
 from ROOT import TCanvas,TMath,TH1,TH1F,TF1,TRandom,TSpectrum,TVirtualFitter 
 from time import time
-from numpy import array,append
+from numpy import array,append,argsort
 
 def gaussians(x,par): #necessary to define it this way for making TF1.Fit() works
     #--------------------horrible------------------------#
@@ -21,7 +21,7 @@ def gaussians(x,par): #necessary to define it this way for making TF1.Fit() work
     return result
 
 def decay_curve(x,par):#for the lifetime calculation
-    return p[0]+p[1]*TMath.Exp(-x[0]/p[2])
+    return par[0]+par[1]*TMath.Exp(-x[0]/par[2])
     
 class FitPeaks():
 
@@ -48,7 +48,6 @@ class FitPeaks():
         self.c1.Update()
         
         self.peak_finding() #PeakFinding finds peaks (surprise)
-        
         self.set_ranges()
         
         self.c1.cd(2)
@@ -56,21 +55,21 @@ class FitPeaks():
         self.c1.Update()
         
         if self.tofit:#if it is True
-            self.n_peakstofit()
-            self.gaussians_fitting()
+            n_peaks=self.n_peakstofit()
+            info_peaks=self.peaks_info(n_peaks)
+            print(info_peaks)
+            #self.gaussians_fitting()
             
     def peak_finding(self):
         # Use TSpectrum to find the peak candidates
-        self.s = TSpectrum(self.npeaks) #(maximum number of peaks)
-        self.nfound = self.s.Search(self.histogram,2,"",0.10)
-        self.xpeaks=self.s.GetPositionX()
-        print(f'Found {self.nfound} candidate peaks to fit at positions:\n')
-        #for xpeak in self.xpeaks:
-         #   print(f'at positions {xpeak}')
+        self.peak = TSpectrum(self.npeaks) #(maximum number of peaks)
+        self.nfound = self.peak.Search(self.histogram,2,"",0.10)
+        self.xpeaks=self.peak.GetPositionX()
+        self.xpeaks=array([self.xpeaks[i] for i in range(0,self.nfound)])#We convert xpeaks wierd ROOT array to np.array
         
     def background(self):
         # Estimate background using TSpectrum.Background
-        hb = self.s.Background(self.histogram,20,"same") #This function calculates the background spectrum in the input histogram, returned as a histogram.  
+        hb = self.peak.Background(self.histogram,20,"same") #This function calculates the background spectrum in the input histogram, returned as a histogram.  
         # estimate linear background using a fitting method, predefined ROOT pol1
         self.fline = TF1('fline','pol1',self.range_min,self.range_max) 
         self.histogram.Fit('fline','qn')
@@ -81,16 +80,21 @@ class FitPeaks():
         for xpeak in (self.xpeaks):
             bin=self.histogram.GetXaxis().FindBin(xpeak) 
             ypeak=self.histogram.GetBinContent(bin)
-            if (abs(ypeak-TMath.Sqrt(ypeak)) > self.fline.Eval(xpeak)):#compares if peak is over the background or not
-                self.par=append(self.par,[ypeak,xpeak,100])#height,mean,sigma;initial seeds for the fitting
+            if (ypeak) > self.fline.Eval(xpeak):#compares if peak is over the background or not
+                self.par=append(self.par,[ypeak,xpeak,100])#mean,height,sigma;initial seeds for the fitting
                 n_peakstofit+=1
         print(f'Found {n_peakstofit} useful peaks to fit\n')
+        return n_peakstofit
         
-    def peaks_info(self):
-        aux=delete(self.par,[0,1])
-        for i in range(0,self.npeaks):
-           aux=append(aux,[par[3*i],par[3*i+1]])
-        return aux
+    def peaks_info(self,npeaks):#return array with ypeak, xpeak of each peak, sorted in decreasing order
+        height,position,aux2=(array([]) for _ in range(3))
+        for i in range(0,npeaks):
+           height=append(height,[self.par[3*i+2]])
+           position=append(position,[self.par[3*i+3]])
+        aux=argsort(height)
+        for index in aux:
+            aux2=append(aux2,[height[index],position[index]])
+        return aux2[::-1]
             
     def gaussians_fitting(self):
         print(f'Now fitting: it takes some time \n')
