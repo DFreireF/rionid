@@ -32,7 +32,7 @@ class CreateGUI():
         self.h_tiqdata = TH1F('h_tiqdata', 'tiqdata', len(self.frequency_data),
                               self.f_min(self.fcenter, self.frequency_data),
                               self.f_max(self.fcenter, self.frequency_data))
-        
+
         # simulated data
         self.h_simdata = TH1F('h_simdata', 'simdata', len(self.frequency_sim),
                               self.f_min(self.fcenter, self.frequency_sim),
@@ -40,7 +40,8 @@ class CreateGUI():
 
         self.hist_list = [self.h_tiqdata, self.h_simdata]
 
-    def create_stack(self):  # histograms overlay
+    def create_stack(self):
+        # overlaying histograms
         self.h_stack = THStack()
         self.h_stack.Add(self.h_tiqdata)
         self.h_stack.Add(self.h_simdata)
@@ -56,34 +57,43 @@ class CreateGUI():
         # filling with simulated data:
         for i, element in enumerate(self.frequency_sim):
             self.h_simdata.Fill(self.frequency_sim[i], self.power_sim[i])
-
+            #Nx_SRF=self.h_simdata.GetXaxis().FindBin(self.frequency_sim[i])
+            #self.h_simdata.SetBinContent(Nx_SRF,self.power_sim[i])
+            
     def draw_histograms(self):
         linecolors = [kRed, kBlue, kGreen]
 
         for i, histogram in enumerate(self.hist_list):
             self.canvas_main.cd(i+1)  # move to correct canvas
-            #drawing h_stack:
-            if i == 2:
-                self.h_stack.SetTitle('Histogram Stack')
-                self.h_stack.Draw("nostack")  # "nostack" overlays histograms
-            #drawing other histograms:
+            # drawing h_stack:
+            if i+1 == 3:
+                histogram.SetTitle('Histogram Stack')
+                histogram.Draw("nostack")  # "nostack" overlays histograms
+                histogram.SetMaximum(2)
+                histogram.Draw("nostack")  # "nostack" overlays
+            # drawing other histograms:
             else:
                 histogram.SetLineColor(linecolors[i])
                 histogram.Draw()
-                
-        # self.canvas_main.cd(3)
-        # self.hist_list[2].GetXaxis().SetRangeUser(int(244e6),int(245e6))
-        # self.h_simdata.Draw()
-        
+                if i+1 == 2:  # changing range
+                    pass
+                    # for range of tiqdata:
+                    # histogram.GetXaxis().SetLimits(
+                    #     self.h_tiqdata.GetXaxis().GetXmin(),self.h_tiqdata.GetXaxis().GetXmax())
+
+                    # for arbitrary range:
+                    # .SetRangeUser not working on this histogram for some reason
+                    # histogram.Draw()
+
         self.canvas_main.Update()
         # self.canvas_main.SaveAs("histogram_plot.pdf")
 
     @staticmethod
-    def f_min(center, data): # find minimum frequency
+    def f_min(center, data):  # find minimum frequency
         return center+data[0]
 
     @staticmethod
-    def f_max(center, data): # find maximum frequency
+    def f_max(center, data):  # find maximum frequency
         return center+data[-1]
 
 

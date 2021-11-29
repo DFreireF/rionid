@@ -413,11 +413,12 @@ void simtof()
       
       gSystem->ProcessEvents();
       gSystem->Sleep(10);
-      cout<<"exit or not? [Exit,exit]"<<endl;
       cout<<"Frequence_Rel = "<<Frequence_Rel<<endl;
       cout<<"Harmonic = "<<Harmonic<<endl;
       cout<<"Frequence_Rel*(Harmonic) = "<<Frequence_Rel*(Harmonic)<<endl;
       cout<<"Frequence_Tl  = "<<Frequence_Tl<<endl;
+      cout<<"Nx_SRF = "<<Nx_SRF<<endl;
+      cout<<"exit or not? [Exit,exit]"<<endl;
       cin>>Flag;
       cout<<Flag<<endl;
 
