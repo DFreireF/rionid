@@ -1,6 +1,6 @@
 from ROOT import TCanvas,TMath,TH1,TH1F,TF1,TRandom,TSpectrum,TVirtualFitter 
-from array import array
 from time import time
+from numpy import array,append
 
 def gaussians(x,par): #necessary to define it this way for making TF1.Fit() works
     #--------------------horrible------------------------#
@@ -9,7 +9,7 @@ def gaussians(x,par): #necessary to define it this way for making TF1.Fit() work
     while aux>1e-6 and aux<1e10: #this part is awful but it works
         aux=abs(par[i])
         i=i+1
-    npeakstofit=int((i-1-2)/3) #whatever it takes phylosophy
+    npeakstofit=int((i-1-2)/3) #whatever it takes philosophy
     #--------------------------------------------------#
     result = par[0] + par[1]*x[0] #line
     for p in range(0,npeakstofit):#for each peak 3 parameters
@@ -20,13 +20,13 @@ def gaussians(x,par): #necessary to define it this way for making TF1.Fit() work
         result += norm*TMath.Gaus(x[0],mean,sigma)
     return result
 
-def decay_curve(x,par):
+def decay_curve(x,par):#for the lifetime calculation
     return p[0]+p[1]*TMath.Exp(-x[0]/p[2])
     
 class FitPeaks():
 
     def __init__(self,npeaks,histogram,tofit):
-        self.par = array('d',[]) #has to be this way for ROOT Fit() to work
+        self.par=array([],dtype='d')
         self.npeaks=npeaks
         self.tofit=tofit #boolean to make fitting or not (if not, does peak finding etc)
         self.histogram=histogram
@@ -65,8 +65,8 @@ class FitPeaks():
         self.nfound = self.s.Search(self.histogram,2,"",0.10)
         self.xpeaks=self.s.GetPositionX()
         print(f'Found {self.nfound} candidate peaks to fit at positions:\n')
-        for xpeak in self.xpeaks:
-            print(f'at positions {xpeak}')
+        #for xpeak in self.xpeaks:
+         #   print(f'at positions {xpeak}')
         
     def background(self):
         # Estimate background using TSpectrum.Background
@@ -77,18 +77,21 @@ class FitPeaks():
         
     def n_peakstofit(self):# Loop on all found peaks. Eliminate peaks at the background level    
         n_peakstofit=0
-        self.par.append(self.fline.GetParameter(0)) #par[0] 
-        self.par.append(self.fline.GetParameter(1)) #par[1]
+        self.par=append(self.par,[self.fline.GetParameter(0),self.fline.GetParameter(1)])
         for xpeak in (self.xpeaks):
             bin=self.histogram.GetXaxis().FindBin(xpeak) 
             ypeak=self.histogram.GetBinContent(bin)
-            if (abs(yp-TMath.Sqrt(ypeak)) > self.fline.Eval(xpeak)):#compares if peak is over the background or not
-                self.par.append(ypeak)  #"height"
-                self.par.append(xpeak)  #"mean"
-                self.par.append(100) #"sigma" initial estimation
+            if (abs(ypeak-TMath.Sqrt(ypeak)) > self.fline.Eval(xpeak)):#compares if peak is over the background or not
+                self.par=append(self.par,[ypeak,xpeak,100])#height,mean,sigma;initial seeds for the fitting
                 n_peakstofit+=1
         print(f'Found {n_peakstofit} useful peaks to fit\n')
         
+    def peaks_info(self):
+        aux=delete(self.par,[0,1])
+        for i in range(0,self.npeaks):
+           aux=append(aux,[par[3*i],par[3*i+1]])
+        return aux
+            
     def gaussians_fitting(self):
         print(f'Now fitting: it takes some time \n')
         for i in range (0,10):#loop for making the thing to converge
@@ -111,7 +114,7 @@ class FitPeaks():
         self.range_max = self.histogram.GetXaxis().GetXmax()
         
     def decay_fit(self,histogram):#histogram with the interesting data
-        par=array('d',[4.5,0.05,20])#initial seeds
+        par=array([4.5,0.05,20],dtype='d',)#initial seeds
         range_min=histogram.GetXaxis().GetXmin()
         range_max=histogram.GetXaxis().GetXmax()
         decay_fit=TF1('decay_fit',decay_curve,range_min,range_max,len(par))
@@ -127,6 +130,6 @@ class FitPeaks():
       
 if __name__ == '__main__':
   try:  
-    pass
+      pass
   except:
-    raise
+      raise

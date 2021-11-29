@@ -88,11 +88,7 @@ class ImportData():
             if (str(lise[1])+lise[0] == self.RefIso and lise[4] == self.RefQ):
                 self.aux = i
                 self.moq_Rel = self.moq[i]
-                self.gamma = np.sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[i], 2)+1)
-                self.beta = np.sqrt(self.gamma*self.gamma-1)/self.gamma
-                self.velocity = AMEData.CC*self.beta
-                self.Frequence_Rel = self.velocity/self.ring.circumference
-                print(self.Frequence_Rel)
+                self.calculate_ion_parameters(self.BRho)
                 
         # simulated relative and non-rel revolution frequencies
         self.SRRF = [1-1/self.GammaT/self.GammaT*(self.moq[k]-self.moq_Rel)/self.moq_Rel
@@ -100,36 +96,50 @@ class ImportData():
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.Harmonic
                     for k in range(len(self.m))]
         
-        print(f'Brho initial: {self.BRho}')
-        # self.BRhoCorrection() #commented out so pysimtof can run
-        print(f'Brho final: {self.BRho}')
+        print(f'before: {self.SRF}')
+        #self.SRF=self.set_range_SRF_to_analyzer(self.SRF)
+        print(f'after: {self.SRF}')
 
         # Calculate new simulated frecuency sample spectrum
         brho_correction = False
         if brho_correction == True:
+            print(f'Brho initial: {self.BRho}')
+            self.BRhoCorrection() #commented out so pysimtof can run
+            print(f'Brho final: {self.BRho}')
+            self.calculate_ion_parameters(self.BRho)
             self.SRF = [element*self.Frequence_Rel*self.Harmonic for element in self.SRRF]
         
     def tominimize(self,x): # function to minimize (x=Brho); yup, it's big
-        a=np.sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
-        b=np.sqrt(a*a-1)/a
-        c=AMEData.CC*b
-        d=c/self.ring.circumference
-        e=d*self.Harmonic*self.SRRF[self.aux]
-        tominimize=abs((self.ff[self.pp.argmax()]+self.fcenter)-e)
-        print('a=',a,'b=',b,'c=',c,'d=',d,'e=',e,'tominimize=',tominimize,'BRho=',x)
+        self.calculate_ion_parameters(x)
+        SRF=self.Frequence_rel*self.Harmonic*self.SRRF[self.aux]
+        tominimize=abs((self.ff[self.pp.argmax()]+self.fcenter)-SRF)
+        print(f'tominimize={tominimize}, BRho={x}')
         return tominimize
-          
+
     def BRhoCorrection(self):#Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]      
-        #print('function to minimize before minimizing: ',self.tominimize(self.BRho))
+        print(f'function to minimize before minimizing: {self.tominimize(self.BRho)}')
         self.BRho=minimize(self.tominimize,[self.BRho],method='Powell',bounds=[(6.900,6.910)],tol=1e-5).x[0]
-        #print('function minimized: ',self.tominimize(self.BRho))
-        self.gamma=np.sqrt(pow(self.BRho*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
-        self.beta=np.sqrt(self.gamma*self.gamma-1)/self.gamma
-        self.velocity=AMEData.CC*self.beta
-        self.Frequence_Rel=self.velocity/self.ring.circumference
-
-   # def gamma()         
-
+        print(f'function minimized: {self.tominimize(self.BRho)}')
+        self.calculate_ion_parameters(self.BRho)
+        
+    def calculate_ion_parameters(self,x):
+        self.gamma=self.gamma(self.BRho)
+        self.beta=self.beta(self.gamma)
+        self.velocity=self.velocity(self.beta)
+        self.Frequence_Rel=self.frequence_rel(self.velocity)
+        
+    def set_range_SRF_to_analyzer(self,SRF):
+        return SRF[(SRF>self.frequence_min)*(SRF<self.frequence_max)]
+        
+    def gamma(self,x):
+        return np.sqrt(pow(x*self.RefQ*AMEData.CC/self.m[self.aux],2)+1)
+    def beta(self,gamma):
+        return np.sqrt(gamma*gamma-1)/gamma
+    def velocity(self,beta):
+        return AMEData.CC*beta 
+    def frequence_rel(self,velocity):
+        return velocity/self.ring.circumference
+    
 # main could be console user interface until gui is made
 def main():
     # specified file is list of filenames
