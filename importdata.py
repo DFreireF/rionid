@@ -49,7 +49,7 @@ class ImportData():
 
         # center frequency
         self.fcenter = iq.center
-        
+
         # import xx:frequency, yy:time, zz:power
         xx, yy, zz = iq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
         self.ff = xx[0]  # frequency, index 0 as xx is 2d array
@@ -69,7 +69,8 @@ class ImportData():
     def _calculate(self):
         # return yield data from lise
         yield_data = [element[5] for element in self.lise_data]
-        self.yield_data_normalised = [element/max(yield_data) for element in yield_data]
+        self.yield_data_normalised = [
+            element/max(yield_data) for element in yield_data]
 
         # return mass and moq from barion
         self.m = [AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
@@ -79,10 +80,11 @@ class ImportData():
 
         # if reference particle, calculate variables with lise data
         for i, lise in enumerate(self.lise_data):
-            if (str(lise[1])+lise[0] == self.pdict['ReferenceIsotope'] 
-                and lise[4] == self.pdict['ReferenceIsotopeCharge']):
+            if (str(lise[1])+lise[0] == self.pdict['ReferenceIsotope']
+                    and lise[4] == self.pdict['ReferenceIsotopeCharge']):
                 self.aux = i
                 self.moq_Rel = self.moq[i]
+                # self.moq_Rel = 2.247018203 #from simtof.cxx
                 self.calculate_ion_parameters(self.pdict['Brho'])
 
         # simulated relative and non-rel revolution frequencies
@@ -91,8 +93,12 @@ class ImportData():
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.pdict['Harmonic']
                     for k in range(len(self.m))]
 
-        # print(f'before: {self.SRF}')
-        # self.SRF=self.set_range_SRF_to_analyzer(self.SRF)
+        # debugging:
+        self.SRF = self.set_range_SRF_to_analyzer()
+        print(
+            f"SRF range: from {round(min(self.SRF))/1e3/1e3} to {round(max(self.SRF)/1e3)/1e3}")
+        # print(
+        #     f"SRF: {[round(x/1e3)/1e3 for x in self.SRF if 244e6 < x and x < 245e6]}")
         # print(f'after: {self.SRF}')
 
         # Calculate new simulated frequency sample spectrum
@@ -114,9 +120,10 @@ class ImportData():
 
     # Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]
     def BRhoCorrection(self):
-        print(f"function to minimize before minimizing: {self.tominimize(self.pdict['Brho'])}")
+        print(
+            f"function to minimize before minimizing: {self.tominimize(self.pdict['Brho'])}")
         self.pdict['Brho'] = minimize(self.tominimize, [self.pdict['Brho']], method='Powell', bounds=[
-                             (6.900, 6.910)], tol=1e-5).x[0]
+            (6.900, 6.910)], tol=1e-5).x[0]
         print(f"function minimized: {self.tominimize(self.pdict['Brho'])}")
         self.calculate_ion_parameters(self.pdict['Brho'])
 
@@ -126,8 +133,17 @@ class ImportData():
         self.velocity = self.velocity(self.beta)
         self.Frequence_Rel = self.frequence_rel(self.velocity)
 
-    def set_range_SRF_to_analyzer(self, SRF):
-        return SRF[(SRF > self.frequence_min)*(SRF < self.frequence_max)]
+    def set_range_SRF_to_analyzer(self):
+        # find range
+        srf_range = max(self.SRF) - min(self.SRF)
+        data_range = max(self.ff) - min(self.ff)
+        # normalise srf data:
+        normalised_srf = [x*(data_range/srf_range)for x in self.SRF]
+        # find center of normalised data:
+        normalised_center = min(normalised_srf) + \
+            (max(normalised_srf)-min(normalised_srf))/2
+        # move new srf data to center of tiqdata
+        return [x*(data_range/srf_range) - normalised_center + self.fcenter for x in self.SRF]
 
     def gamma(self, x):
         return np.sqrt(pow(x*self.pdict['ReferenceIsotopeCharge']*AMEData.CC/self.m[self.aux], 2)+1)
