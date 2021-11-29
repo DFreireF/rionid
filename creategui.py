@@ -40,7 +40,8 @@ class CreateGUI():
 
         self.hist_list = [self.h_tiqdata, self.h_simdata]
 
-    def create_stack(self):  # histograms overlay
+    def create_stack(self):
+        # overlaying histograms
         self.h_stack = THStack()
         self.h_stack.Add(self.h_tiqdata)
         self.h_stack.Add(self.h_simdata)
