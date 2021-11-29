@@ -94,7 +94,7 @@ class ImportData():
                     for k in range(len(self.m))]
 
         # debugging:
-        self.SRF = self.set_range_SRF_to_analyzer()
+        self.set_range_SRF_to_analyzer()
         print(
             f"SRF range: from {round(min(self.SRF))/1e3/1e3} to {round(max(self.SRF)/1e3)/1e3}")
         # print(
@@ -143,7 +143,7 @@ class ImportData():
         normalised_center = min(normalised_srf) + \
             (max(normalised_srf)-min(normalised_srf))/2
         # move new srf data to center of tiqdata
-        return [x*(data_range/srf_range) - normalised_center + self.fcenter for x in self.SRF]
+        self.SRF = [x*(data_range/srf_range) - normalised_center + self.fcenter for x in self.SRF]
 
     def gamma(self, x):
         return np.sqrt(pow(x*self.pdict['ReferenceIsotopeCharge']*AMEData.CC/self.m[self.aux], 2)+1)
@@ -157,12 +157,8 @@ class ImportData():
     def frequence_rel(self, velocity):
         return velocity/self.ring.circumference
 
-# main could be console user interface until gui is made
-
-
 def main():
     # specified file is list of filenames
-    # filename='data/245test'
     filename = 'data/410-j'
     test = ImportData(filename)
 

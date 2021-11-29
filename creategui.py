@@ -45,7 +45,7 @@ class CreateGUI():
         self.h_stack = THStack()
         self.h_stack.Add(self.h_tiqdata)
         self.h_stack.Add(self.h_simdata)
-
+        # add to list of histograms:
         self.hist_list.append(self.h_stack)
 
     def histogram_fill(self):
@@ -53,35 +53,29 @@ class CreateGUI():
         for i, element in enumerate(self.frequency_data):
             self.h_tiqdata.Fill(
                 self.frequency_data[i] + self.fcenter, self.power_data[i])
-
+            
         # filling with simulated data:
         for i, element in enumerate(self.frequency_sim):
-            self.h_simdata.Fill(self.frequency_sim[i], self.power_sim[i])
+            self.h_simdata.Fill(
+                self.frequency_sim[i], self.power_sim[i])
 
     def draw_histograms(self):
         linecolors = [kRed, kBlue, kGreen]
 
         for i, histogram in enumerate(self.hist_list):
             self.canvas_main.cd(i+1)  # move to correct canvas
+    
             # drawing h_stack:
             if i+1 == 3:
                 histogram.SetTitle('Histogram Stack')
                 histogram.Draw("nostack")  # "nostack" overlays histograms
                 histogram.SetMaximum(2)
                 histogram.Draw("nostack")  # "nostack" overlays
+                
             # drawing other histograms:
             else:
                 histogram.SetLineColor(linecolors[i])
                 histogram.Draw()
-                if i+1 == 2:  # changing range
-                    pass
-                    # for range of tiqdata:
-                    # histogram.GetXaxis().SetLimits(
-                    #     self.h_tiqdata.GetXaxis().GetXmin(),self.h_tiqdata.GetXaxis().GetXmax())
-
-                    # for arbitrary range:
-                    # .SetRangeUser not working on this histogram for some reason
-                    # histogram.Draw()
 
         self.canvas_main.Update()
         # self.canvas_main.SaveAs("histogram_plot.pdf")
