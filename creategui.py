@@ -2,13 +2,17 @@ from ROOT import *
 
 
 class CreateGUI():
-    def __init__(self, frequency_data, power_data,
-                 frequency_sim, power_sim, srrf_data, fcenter):
+    def __init__(self, analayzers_data, NTCAP_data,
+                  simulated_data, fcenter, harmonics):
         # setting object variables:
+        
         self.frequency_data = frequency_data
         self.power_data = power_data
+        
         self.frequency_sim = frequency_sim
-        self.power_sim = power_sim
+        self.power_sim=
+        self.harmonics=harmonics
+        
         self.srrf_data = srrf_data
         self.fcenter = fcenter
 
@@ -26,17 +30,25 @@ class CreateGUI():
         self.canvas_main = TCanvas(
             'canvas_main', 'Frequency Histograms', 800, 800)
         self.canvas_main.Divide(1, 3)
-
+        
+        self.canvas_NTCAP=TCanvas(
+            'canvas_NTCAP', 'Frequency Histograms', 800, 800)
+        self.canvas_NTCAP.Divide(1,4)
+        
     def create_histograms(self):
         # experimental data
         self.h_tiqdata = TH1F('h_tiqdata', 'tiqdata', len(self.frequency_data),
                               self.f_min(self.fcenter, self.frequency_data),
                               self.f_max(self.fcenter, self.frequency_data))
 
-        # simulated data
-        self.h_simdata = TH1F('h_simdata', 'simdata', len(self.frequency_sim),
+        # simulated data, list with the different harmonic's sim data 
+        self.h_simdata = [TH1F('h_simdata', 'simdata', len(self.frequency_sim),
                               self.f_min(self.fcenter, self.frequency_sim),
-                              self.f_max(self.fcenter, self.frequency_sim))
+                               self.f_max(self.fcenter, self.frequency_sim)) for k in range(0,len(self.harmonics))]
+
+        self.h_NTCAP=TH1F('h_NTCAP', 'NTCAPdata', len(self.f_data_NTCAP),
+                              self.f_min(self.fcenter, self.f_data_NTCAP),
+                              self.f_max(self.fcenter, self.f_data_NTCAP))
 
         self.hist_list = [self.h_tiqdata, self.h_simdata]
 
@@ -60,7 +72,7 @@ class CreateGUI():
                 self.frequency_sim[i], self.power_sim[i])
 
     def draw_histograms(self):
-        linecolors = [kRed, kBlue, kGreen]
+        linecolors = [kRed, kBlue, kGreen, KBlack, KYellow]
 
         for i, histogram in enumerate(self.hist_list):
             self.canvas_main.cd(i+1)  # move to correct canvas
