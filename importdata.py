@@ -18,6 +18,7 @@ class ImportData():
         self._import()
         self._read_data()
         self._calculate()
+        self.new_calculate_method()
 
     def _read_masterfile(self):
         # reads list filenames with experiment data. [:-1] to remove eol sequence.
@@ -61,9 +62,10 @@ class ImportData():
         for i in range(len(self.ff)):
             self.h.SetBinContent(i, self.pp[i])
         self.nbins = self.h.GetXaxis().GetNbins()
-        self.frequence_min = self.h.GetXaxis().GetXmin()/1000+245
-        self.frequence_max = self.h.GetXaxis().GetXmax()/1000+245
-        #self.y_max = self.h.GetMaximum()
+
+        self.frequence_min = self.h.GetXaxis().GetXmin()/1000+self.fcenter  # why /1000?
+        self.frequence_max = self.h.GetXaxis().GetXmax()/1000+self.fcenter
+        self.y_max = self.h.GetMaximum()
         self.h.GetXaxis().SetLimits(self.frequence_min, self.frequence_max)
 
     def _calculate(self):
@@ -71,33 +73,29 @@ class ImportData():
         yield_data = [element[5] for element in self.lise_data]
         self.yield_data_normalised = [
             element/max(yield_data) for element in yield_data]
+        # IMPORTANT: make sure this is linear scale and not db(log) scale
+        # until it is plotted.
 
         # return mass and moq from barion
-        self.m = [AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
-                  for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
-        self.moq = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
-                    for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]]
-
-        # if reference particle, calculate variables with lise data
-        for i, lise in enumerate(self.lise_data):
-            if (str(lise[1])+lise[0] == self.pdict['ReferenceIsotope']
-                    and lise[4] == self.pdict['ReferenceIsotopeCharge']):
-                self.aux = i
-                self.moq_Rel = self.moq[i]
-                # self.moq_Rel = 2.247018203 #from simtof.cxx
-                print(self.moq_Rel)
-                self.calculate_ion_parameters(self.pdict['Brho'])
+        self.mass = np.array([AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
+                             for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
+        self.moq = np.array([Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
+                             for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
+        self.aux=[i for i,lise in enumerate(self.lise_data) for ame in self.ame_data if (lise[0] ==
+                             ame[6] and lise[1] == ame[5] and str(lise[1])+lise[0] == self.pdict['ReferenceIsotope'])]
+        self.moq_Rel = self.moq[self.aux]
+        self.calculate_ion_parameters(self.pdict['Brho'])
 
         # simulated relative and non-rel revolution frequencies
-        self.SRRF = [1-1/self.pdict['GAMMAT']/self.pdict['GAMMAT']*(self.moq[k]-self.moq_Rel)/self.moq_Rel
-                     for k in range(len(self.m))]
+        self.SRRF = np.array([1-1/self.pdict['GAMMAT']/self.pdict['GAMMAT']*(self.moq[k]-self.moq_Rel)/self.moq_Rel
+                              for k in range(len(self.mass))])
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.pdict['Harmonic']
-                    for k in range(len(self.m))]
-
+                    for k in range(len(self.mass))]
+        
         # debugging:
-        self.SRF = self.set_range_SRF_to_analyzer()
-        print(
-            f"SRF range: from {round(min(self.SRF))/1e3/1e3} to {round(max(self.SRF)/1e3)/1e3}")
+        #self.set_range_SRF_to_analyzer()
+        #print(
+        #    f"SRF range: from {round(min(self.SRF))/1e3/1e3} to {round(max(self.SRF)/1e3)/1e3}")
         # print(
         #     f"SRF: {[round(x/1e3)/1e3 for x in self.SRF if 244e6 < x and x < 245e6]}")
         # print(f'after: {self.SRF}')
@@ -111,6 +109,24 @@ class ImportData():
             self.calculate_ion_parameters(self.pdict['Brho'])
             self.SRF = [element*self.Frequence_Rel *
                         self.pdict['Harmonic'] for element in self.SRRF]
+
+    def new_calculate_method(self):
+        master=np.empty(3,)
+        # (after turn this into for i, harmonic in enumerate(self.harmonics):)
+        # harmonics:
+        self.harmonics = np.array([124, 125, 126])
+        # for i, harmonic in enumerate(self.harmonics): # will start here
+        # create harmonic index:
+        harmonic_index = np.ones(len(self.SRRF))*self.harmonics[0]
+        # get srf data
+        harmonic_frequency = self.SRRF*self.Frequence_Rel*self.harmonics[0]
+        # get power data from lise
+        # (already in self.yield_data_normalised, may want to move that here idk)
+        # attach harmonic, frequency and yield data together:
+        array_stack = np.stack((harmonic_index, harmonic_frequency, self.yield_data_normalised),
+                 axis=1) #axis=1 stacks vertically
+        master=np.append(master,array_stack)
+        print(master)
 
     def tominimize(self, x):  # function to minimize (x=Brho); yup, it's big
         self.calculate_ion_parameters(x)
@@ -132,7 +148,7 @@ class ImportData():
         self.gamma = self.gamma(self.pdict['Brho'])
         self.beta = self.beta(self.gamma)
         self.velocity = self.velocity(self.beta)
-        self.Frequence_Rel = self.frequence_rel(self.velocity)
+        self.Frequence_Rel = self.calc_freq_rel(self.velocity)
 
     def set_range_SRF_to_analyzer(self):
         # find range
@@ -144,10 +160,11 @@ class ImportData():
         normalised_center = min(normalised_srf) + \
             (max(normalised_srf)-min(normalised_srf))/2
         # move new srf data to center of tiqdata
-        return [x*(data_range/srf_range) - normalised_center + self.fcenter for x in self.SRF]
+        self.SRF = [x*(data_range/srf_range) -
+                    normalised_center + self.fcenter for x in self.SRF]
 
     def gamma(self, x):
-        return np.sqrt(pow(x*self.pdict['ReferenceIsotopeCharge']*AMEData.CC/self.m[self.aux], 2)+1)
+        return np.sqrt(pow(x*self.pdict['ReferenceIsotopeCharge']*AMEData.CC/self.mass[self.aux], 2)+1)
 
     def beta(self, gamma):
         return np.sqrt(gamma*gamma-1)/gamma
@@ -155,13 +172,11 @@ class ImportData():
     def velocity(self, beta):
         return AMEData.CC*beta
 
-    def frequence_rel(self, velocity):
+    def calc_freq_rel(self, velocity):
         return velocity/self.ring.circumference
 
-# main could be console user interface until gui is made
 def main():
     # specified file is list of filenames
-    # filename='data/245test'
     filename = 'data/410-j'
     test = ImportData(filename)
 
