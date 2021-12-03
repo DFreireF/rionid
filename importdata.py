@@ -6,31 +6,36 @@ from particle import *
 from ring import Ring
 import lisereader as lread
 from inputparams import*
-from scipy.optimize import minimize
 
 
 class ImportData():
-    def __init__(self, filename):
-        self.master_filename = filename
+    def __init__(self, filename_tiq):  # , filename_NTCAP
+        self.master_filename_tiq = filename_tiq
+        #self.master_filename_NTCAP = filename_NTCAP
+
         self.ring = Ring('ESR', 108.5)  # have to add more functionalities here
 
         self._read_masterfile()
         self._import()
-        self._read_data()
+        self._get_analyzer_data()
+        # self._get_ntcap_data()
         self._calculate()
-        self.new_calculate_method()
+        self._simulated_data()
 
     def _read_masterfile(self):
         # reads list filenames with experiment data. [:-1] to remove eol sequence.
-        self.file_list = [file[:-1]
-                          for file in open(self.master_filename).readlines()]
+        self.file_list_tiq = [file[:-1]
+                              for file in open(self.master_filename_tiq).readlines()]
+        # self.file_list_NTCAP = [file[:-1]
+        #                  for file in open(self.master_filename_NTCAP).readlines()]
         # and for now:
-        self.filename = self.file_list[0]
+        self.filename_tiq = self.file_list_tiq[0]
+        #self.filename_NTCAP = self.file_list_NTCAP[0]
 
     def _import(self):
         # import ame from barion:
         self.ame = AMEData()
-        self.ame.init_ame_db
+        # self.ame.init_ame_db #is this necessary? Should also eliminate the message of AME Database files are available.
         self.ame_data = self.ame.ame_table
 
         # import input params
@@ -42,111 +47,80 @@ class ImportData():
         lise_file = lread.LISEreader(input_params.lisefile)
         self.lise_data = lise_file.get_info_all()
 
-    def _read_data(self):
+    def _get_analyzer_data(self):
         LFRAMES = 2**15
-        NFRAMES = 2*4
-        iq = TIQData(self.filename)
-        iq.read_samples(LFRAMES*NFRAMES)
+        NFRAMES = 2*7
+        iq_tiq = TIQData(self.filename_tiq)
+        iq_tiq.read_samples(LFRAMES*NFRAMES)
 
         # center frequency
-        self.fcenter = iq.center
-
+        self.fcenter = iq_tiq.center
         # import xx:frequency, yy:time, zz:power
-        xx, yy, zz = iq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
-        self.ff = xx[0]  # frequency, index 0 as xx is 2d array
-        self.pp = zz[0]/zz[0].max()  # normalized power
-
+        xx, _, zz = iq_tiq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
+        # frequency, index 0 as xx is 2d array
+        ff = (xx[0]).reshape(len(xx[0]), 1)
+        pp = (zz[0]/np.sum(zz[0])).reshape(len(zz[0]), 1)  # normalized power
         # setting variables from tiq data
-        self.h = TH1D('h', 'h', len(self.ff),
-                      iq.center + self.ff[0], iq.center + self.ff[-1])
-        for i in range(len(self.ff)):
-            self.h.SetBinContent(i, self.pp[i])
-        self.nbins = self.h.GetXaxis().GetNbins()
-        self.frequence_min = self.h.GetXaxis().GetXmin()/1000+self.fcenter  # why /1000?
-        self.frequence_max = self.h.GetXaxis().GetXmax()/1000+self.fcenter
-        self.y_max = self.h.GetMaximum()
-        self.h.GetXaxis().SetLimits(self.frequence_min, self.frequence_max)
+        self.analyzer_data = (np.stack((ff, pp), axis=1)).reshape((len(ff), 2))
+        print(self.analyzer_data[:, 0])
+        # input()
+
+    def _get_ntcap_data(self):
+        LFRAMES = 2**15
+        NFRAMES = 2*7
+        iq_tdms = TDMSData(self.filename_TDMSData)
+        iq_tdms.read_samples(LFRAMES*NFRAMES)
+
+        # center frequency
+        self.fcenter = iq_tdms.center
+        # import xx:frequency, yy:time, zz:power
+        xx, _, zz = iq_tdms.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
+        # frequency, index 0 as xx is 2d array
+        ff = (xx[0]).reshape(len(xx[0]), 1)
+        pp = (zz[0]/np.sum(zz[0])).reshape(len(zz[0]), 1)  # normalized power
+        # setting variables from NTCAP data
+        self.NTCAP_data = (np.stack((ff, pp), axis=1)).reshape((len(ff), 2))
 
     def _calculate(self):
-        # return yield data from lise
-        yield_data = [element[5] for element in self.lise_data]
-        self.yield_data_normalised = [
-            element/max(yield_data) for element in yield_data]
-        # IMPORTANT: make sure this is linear scale and not db(log) scale
-        # until it is plotted.
-
-        # return mass and moq from barion
-        self.m = np.array([AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
-                           for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]])
+        # return mass and moq from barion of the particles present in LISE file
+        self.mass = np.array([AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
+                             for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
         self.moq = np.array([Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
-                             for ame in self.ame_data for lise in self.lise_data if lise[0] == ame[6] and lise[1] == ame[5]])
-
-        # if reference particle, calculate variables with lise data
-        # change to loop over ame to get correct index for aux
-        for i, lise in enumerate(self.lise_data):
-            if (str(lise[1])+lise[0] == self.pdict['ReferenceIsotope']
-                    and lise[4] == self.pdict['ReferenceIsotopeCharge']):
-                self.aux = i
-                self.moq_Rel = self.moq[i]
-                # self.moq_Rel = 2.247018203 #from simtof.cxx
-                self.calculate_ion_parameters(self.pdict['Brho'])
-
+                             for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
+        # aux is the index of the reference particle
+        self.aux = [i for i, lise in enumerate(self.lise_data) for ame in self.ame_data if (lise[0] ==
+                                                                                            ame[6] and lise[1] == ame[5] and str(lise[1])+lise[0] == self.pdict['ReferenceIsotope'])]
+        self.moq_Rel = self.moq[self.aux]
+        # calculates gamma, beta, velocity and frequency (v/d) of our reference particle
+        self.calculate_ion_parameters(self.pdict['Brho'])
         # simulated relative and non-rel revolution frequencies
         self.SRRF = np.array([1-1/self.pdict['GAMMAT']/self.pdict['GAMMAT']*(self.moq[k]-self.moq_Rel)/self.moq_Rel
-                              for k in range(len(self.m))])
+                              for k in range(len(self.mass))])
         self.SRF = [self.SRRF[k]*self.Frequence_Rel*self.pdict['Harmonic']
-                    for k in range(len(self.m))]
+                    for k in range(len(self.mass))]
 
-        # debugging:
-        self.set_range_SRF_to_analyzer()
-        print(
-            f"SRF range: from {round(min(self.SRF))/1e3/1e3} to {round(max(self.SRF)/1e3)/1e3}")
-        # print(
-        #     f"SRF: {[round(x/1e3)/1e3 for x in self.SRF if 244e6 < x and x < 245e6]}")
-        # print(f'after: {self.SRF}')
+    def _simulated_data(self):
+        self.simulated_data = np.array([])
+        # get power data from lise
+        yield_data = [element[5] for element in self.lise_data]
+        self.yield_data_normalised = np.array(
+            [[element/max(yield_data) for element in yield_data]]).T
 
-        # Calculate new simulated frequency sample spectrum
-        brho_correction = False
-        if brho_correction == True:
-            print(f"Brho initial: {self.pdict['Brho']}")
-            self.BRhoCorrection()
-            print(f"Brho final: {self.pdict['Brho']}")
-            self.calculate_ion_parameters(self.pdict['Brho'])
-            self.SRF = [element*self.Frequence_Rel *
-                        self.pdict['Harmonic'] for element in self.SRRF]
-
-    def new_calculate_method(self):
         # harmonics:
         self.harmonics = np.array([124, 125, 126])
-        # main array to append to:
-        main_data=np.zeros(len(self.harmonics),)
-        for i, harmonic in enumerate(self.harmonics): # will start here
+        for i, harmonic in enumerate(self.harmonics):  # will start here
             # create harmonic index:
-            harmonic_index = np.ones(len(self.SRRF))*self.harmonics[0]
-            # get srf data
-            harmonic_frequency = self.SRRF*self.Frequence_Rel*self.harmonics[0]
-            # get power data from lise
-            # (already in self.yield_data_normalised, may want to move that here idk)
+            harmonic_index = np.ones((len(self.SRF), 1))*harmonic
+            # get srf data for this harmonic index
+            harmonic_frequency = self.SRRF*self.Frequence_Rel*harmonic
             # attach harmonic, frequency and yield data together:
             array_stack = np.stack((harmonic_index, harmonic_frequency, self.yield_data_normalised),
-                    axis=1) #axis=1 stacks vertically
-            master=np.append(main_data,array_stack)
+                                   axis=1)  # axis=1 stacks vertically
+            self.simulated_data = np.append(self.simulated_data, array_stack)
 
-    def tominimize(self, x):  # function to minimize (x=Brho); yup, it's big
-        self.calculate_ion_parameters(x)
-        SRF = self.Frequence_rel*self.pdict['Harmonic']*self.SRRF[self.aux]
-        tominimize = abs((self.ff[self.pp.argmax()]+self.fcenter)-SRF)
-        print(f'tominimize={tominimize}, BRho={x}')
-        return tominimize
-
-    # Performs minimization of f_data[IsochroIon]-f_sample[RefIon(Brho)]
-    def BRhoCorrection(self):
-        print(
-            f"function to minimize before minimizing: {self.tominimize(self.pdict['Brho'])}")
-        self.pdict['Brho'] = minimize(self.tominimize, [self.pdict['Brho']], method='Powell', bounds=[
-            (6.900, 6.910)], tol=1e-5).x[0]
-        print(f"function minimized: {self.tominimize(self.pdict['Brho'])}")
-        self.calculate_ion_parameters(self.pdict['Brho'])
+        self.simulated_data = self.simulated_data.reshape(
+            len(self.harmonics)*len(array_stack), 3)
+        print(self.simulated_data)
 
     def calculate_ion_parameters(self, x):
         self.gamma = self.gamma(self.pdict['Brho'])
@@ -168,7 +142,8 @@ class ImportData():
                     normalised_center + self.fcenter for x in self.SRF]
 
     def gamma(self, x):
-        return np.sqrt(pow(x*self.pdict['ReferenceIsotopeCharge']*AMEData.CC/self.m[self.aux], 2)+1)
+        # /1e6 necessary for mass from MeV to eV.
+        return np.sqrt(pow(x*self.pdict['ReferenceIsotopeCharge']*(AMEData.CC/1e6)/self.mass[self.aux], 2)+1)
 
     def beta(self, gamma):
         return np.sqrt(gamma*gamma-1)/gamma
