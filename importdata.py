@@ -116,21 +116,21 @@ class ImportData():
                         self.pdict['Harmonic'] for element in self.SRRF]
 
     def new_calculate_method(self):
-        master=np.empty(3,)
-        # (after turn this into for i, harmonic in enumerate(self.harmonics):)
         # harmonics:
         self.harmonics = np.array([124, 125, 126])
-        # for i, harmonic in enumerate(self.harmonics): # will start here
-        # create harmonic index:
-        harmonic_index = np.ones(len(self.SRRF))*self.harmonics[0]
-        # get srf data
-        harmonic_frequency = self.SRRF*self.Frequence_Rel*self.harmonics[0]
-        # get power data from lise
-        # (already in self.yield_data_normalised, may want to move that here idk)
-        # attach harmonic, frequency and yield data together:
-        array_stack = np.stack((harmonic_index, harmonic_frequency, self.yield_data_normalised),
-                 axis=1) #axis=1 stacks vertically
-        master=np.append(master,array_stack)
+        # main array to append to:
+        main_data=np.zeros(len(self.harmonics),)
+        for i, harmonic in enumerate(self.harmonics): # will start here
+            # create harmonic index:
+            harmonic_index = np.ones(len(self.SRRF))*self.harmonics[0]
+            # get srf data
+            harmonic_frequency = self.SRRF*self.Frequence_Rel*self.harmonics[0]
+            # get power data from lise
+            # (already in self.yield_data_normalised, may want to move that here idk)
+            # attach harmonic, frequency and yield data together:
+            array_stack = np.stack((harmonic_index, harmonic_frequency, self.yield_data_normalised),
+                    axis=1) #axis=1 stacks vertically
+            master=np.append(main_data,array_stack)
 
     def tominimize(self, x):  # function to minimize (x=Brho); yup, it's big
         self.calculate_ion_parameters(x)
