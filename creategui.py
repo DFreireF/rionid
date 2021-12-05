@@ -43,8 +43,7 @@ class CreateGUI():
                                                    
         globals()['h_NTCAP']=TH1F('h_NTCAP', 'NTCAPdata', len(self.NTCAP_data[:,0]),
                                   self.NTCAP_data[0,0], self.NTCAP_data[-1,0])
-        
-            
+                    
     def create_stack(self):
         # overlaying histograms
         gStyle.SetPalette(kOcean)
