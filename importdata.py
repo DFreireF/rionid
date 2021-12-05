@@ -9,16 +9,16 @@ from inputparams import*
 
 
 class ImportData():
-    def __init__(self, filename_tiq):#, filename_NTCAP
+    def __init__(self, filename_tiq, filename_NTCAP):#, filename_NTCAP
         self.master_filename_tiq = filename_tiq
-        #self.master_filename_NTCAP = filename_NTCAP
+        self.master_filename_NTCAP = filename_NTCAP
         
         self.ring = Ring('ESR', 108.5)  # have to add more functionalities here
 
         self._read_masterfile()
         self._import()
         self._analyzer_data()
-        #self._NTCAP_data()
+        self._NTCAP_data()
         self._calculate()
         self._simulated_data()
 
@@ -26,11 +26,11 @@ class ImportData():
         # reads list filenames with experiment data. [:-1] to remove eol sequence.
         self.file_list_tiq = [file[:-1]
                           for file in open(self.master_filename_tiq).readlines()]
-        #self.file_list_NTCAP = [file[:-1]
-        #                  for file in open(self.master_filename_NTCAP).readlines()]
+        self.file_list_NTCAP = [file[:-1]
+                          for file in open(self.master_filename_NTCAP).readlines()]
         # and for now:
         self.filename_tiq = self.file_list_tiq[0]
-        #self.filename_NTCAP = self.file_list_NTCAP[0]
+        self.filename_NTCAP = self.file_list_NTCAP[1]
 
     def _import(self):
         # import ame from barion:
@@ -54,27 +54,27 @@ class ImportData():
         iq_tiq.read_samples(LFRAMES*NFRAMES)
 
         # center frequency
-        self.fcenter=iq_tiq.center
+        #self.fcenter=iq_tiq.center
         # import xx:frequency, yy:time, zz:power
         xx, _, zz = iq_tiq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
-        ff = (xx[0]).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
-        pp = (zz[0]/np.sum(zz[0])).reshape(len(zz[0]),1) #normalized power
+        ff = (xx[0]+iq_tiq.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
+        pp = (zz[0]/np.max(zz[0])).reshape(len(zz[0]),1) #normalized power
         # setting variables from tiq data
         self.analyzer_data=(np.stack((ff, pp), axis=1)).reshape((len(ff),2))
-        print(self.analyzer_data[:,0])
-        input()
+        #print(self.analyzer_data[:,0])
+        #input()
     def _NTCAP_data(self):
         LFRAMES = 2**15
         NFRAMES = 2*7
-        iq_tdms = TDMSData(self.filename_TDMSData)
+        iq_tdms = TDMSData(self.filename_NTCAP)
         iq_tdms.read_samples(LFRAMES*NFRAMES)
 
         # center frequency
-        self.fcenter=iq_tdms.center
+        #self.fcenter=iq_tdms.center
         # import xx:frequency, yy:time, zz:power
         xx, _, zz = iq_tdms.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
-        ff = (xx[0]).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
-        pp = (zz[0]/np.sum(zz[0])).reshape(len(zz[0]),1) #normalized power
+        ff = (xx[0]+iq_tdms.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
+        pp = (zz[0]/np.max(zz[0])).reshape(len(zz[0]),1) #normalized power
         # setting variables from NTCAP data
         self.NTCAP_data=(np.stack((ff, pp), axis=1)).reshape((len(ff),2))
 
@@ -102,14 +102,14 @@ class ImportData():
         yield_data = [element[5] for element in self.lise_data]
         self.yield_data_normalised = np.array(
             [[element/max(yield_data) for element in yield_data]]).T
-        
         # harmonics:
         self.harmonics = np.array([124, 125, 126])
         for i, harmonic in enumerate(self.harmonics): # will start here
             # create harmonic index:
             harmonic_index = (np.ones(len(self.SRF))*self.harmonics[i]).reshape(len(self.SRF),1)
             # get srf data
-            harmonic_frequency = self.SRRF*self.Frequence_Rel*self.harmonics[i] 
+            harmonic_frequency = self.SRRF*self.Frequence_Rel*self.harmonics[i]
+            #harmonic_frequency=self.set_range_SRF_to_analyzer(harmonic_frequency)
             # attach harmonic, frequency and yield data together:
             array_stack = np.stack((harmonic_index, harmonic_frequency, self.yield_data_normalised),
                                    axis=1) #axis=1 stacks vertically
@@ -122,18 +122,18 @@ class ImportData():
         self.velocity = self.velocity(self.beta)
         self.Frequence_Rel = self.calc_freq_rel(self.velocity)
 
-    def set_range_SRF_to_analyzer(self):
+    def set_range_SRF_to_analyzer(self,SRF):
         # find range
-        srf_range = max(self.SRF) - min(self.SRF)
-        data_range = max(self.ff) - min(self.ff)
+        srf_range = max(SRF) - min(SRF)
+        data_range = max(self.analyzer_data[:,0]) - min(self.analyzer_data[:,0])
         # normalise srf data:
-        normalised_srf = [x*(data_range/srf_range)for x in self.SRF]
+        normalised_srf = [x*(data_range/srf_range)for x in SRF]
         # find center of normalised data:
         normalised_center = min(normalised_srf) + \
             (max(normalised_srf)-min(normalised_srf))/2
         # move new srf data to center of tiqdata
-        self.SRF = [x*(data_range/srf_range) -
-                    normalised_center + self.fcenter for x in self.SRF]
+        return  [x*(data_range/srf_range) -
+                    normalised_center + self.fcenter for x in SRF]
 
     def gamma(self, x):
         return np.sqrt(pow(x*self.pdict['ReferenceIsotopeCharge']*(AMEData.CC/1e6)/self.mass[self.aux], 2)+1)#/1e6 necessary for mass from MeV to eV.
@@ -149,8 +149,9 @@ class ImportData():
 
 def main():
     # specified file is list of filenames
-    filename = 'data/410-j'
-    test = ImportData(filename)
+    filename_tiq = 'data/410-j'
+    filename_NTCAP = 'data/tdms-example'
+    test = ImportData(filename_tiq, filename_NTCAP)
 
 if __name__ == '__main__':
     main()

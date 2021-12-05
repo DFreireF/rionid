@@ -3,23 +3,16 @@ import numpy as np
 
 class CreateGUI():
     def __init__(self, analyzers_data,
-                  simulated_data, fcenter,harmonics):
+                  simulated_data, NTCAP_data,harmonics):
         # setting object variables: add NTCAP_data,
-        
-        self.frequency_data = analyzers_data[:,0]
-        self.power_data = analyzers_data[:,1]
-        
-        self.frequency_sim = simulated_data[:,1]
-        self.power_sim= simulated_data[:,2]
+        self.analyzers_data = analyzers_data #frec =analyzers_data[:,0]   power =analyzers_data[:,1]
+        self.simulated_data=simulated_data # harmonic= simulated_data[:,0] frec=simulated_data[:,1] power=simulated_data[:,2]
+        self.NTCAP_data=NTCAP_data
         self.harmonics=harmonics
-        
         #self.srrf_data = srrf_data
-        self.fcenter = fcenter
-
         self.create_canvas()
         self.create_histograms()
-       # self.create_stack()
-
+        #self.create_stack()
         self.histogram_fill()
         self.draw_histograms()
 
@@ -31,116 +24,107 @@ class CreateGUI():
             'canvas_main', 'Frequency Histograms', 800, 800)
         self.canvas_main.Divide(1, 3)
         
-        #self.canvas_NTCAP=TCanvas(
-        #    'canvas_NTCAP', 'Frequency Histograms', 800, 800)
-        #self.canvas_NTCAP.Divide(1,4)
+        self.canvas_NTCAP=TCanvas(
+            'canvas_NTCAP', 'Frequency Histograms', 800, 800)
+        self.canvas_NTCAP.Divide(1,4)
         
     def create_histograms(self):
         # experimental data
-        self.h_tiqdata = [TH1F('h_tiqdata', 'tiqdata', len(self.frequency_data),
-                              self.f_min(self.fcenter, self.frequency_data),
-                                        self.f_max(self.fcenter, self.frequency_data))]
-
-        # simulated data, list with the different harmonic's sim data 
-        #self.h_simdata = [TH1F('h_simdata'+str(k), 'simdata'+str(k), len(self.frequency_sim),
-        #                      self.frequency_sim[],
-        #                       self.f_max(self.fcenter, self.frequency_sim)) for k in range(0,len(self.harmonics))]
-        name='h_srf_'
-        for sim in self.simulated_data:
-            if sim[0]==self.harmonics[0]:
-                self.name+str(self.harmonics[0])=[TH1F(name+str(self.harmonics[0]),
-                        len(self.simulated_data)/len(self.harmonics), self.simulated_data[0,1],
-                                                                      self.simulated_data[-1,0])]
-            elif sim[0]==self.harmonics[1]:
-                self.(name+str(self.harmonics[1]))=[TH1F(name+str(self.harmonics[1]),
-                        len(self.simulated_data)/len(self.harmonics), self.simulated_data[0,1],
-                                                                      self.simulated_data[-1,0])]
-            elif sim[0]==self.harmonics[2]:
-                self.(name+str(self.harmonics[2]))=[TH1F(name+str(self.harmonics[2]),
-                        len(self.simulated_data)/len(self.harmonics), self.simulated_data[0,1],
-                                                                      self.simulated_data[-1,0])]                       
+        globals()['h_tiqdata'] = TH1F('h_tiqdata', 'tiqdata', len(self.analyzers_data[:,0]),
+                                      self.analyzers_data[0,0], self.analyzers_data[-1,0])
+        self.histogram_list=np.array(['h_tiqdata'])
+        #create histograms with each harmonic info
+        for harmonic in self.harmonics:
+            name='h srf '
+            name=name+str(harmonic)
+            globals()[name]=TH1F(name, name, int(len(self.simulated_data[:,0])/len(self.harmonics[:])), #for stacking change this to the same than the other
+                                 self.simulated_data[0,1], self.simulated_data[-1,1])
+            self.histogram_list=np.append(self.histogram_list,name)
                                                    
-        #self.h_NTCAP=TH1F('h_NTCAP', 'NTCAPdata', len(self.f_data_NTCAP),
-        #                      self.f_min(self.fcenter, self.f_data_NTCAP),
-        #                      self.f_max(self.fcenter, self.f_data_NTCAP))
+        globals()['h_NTCAP']=TH1F('h_NTCAP', 'NTCAPdata', len(self.NTCAP_data[:,0]),
+                                  self.NTCAP_data[0,0], self.NTCAP_data[-1,0])
         
             
-        #def create_stack(self):
-        #    # overlaying histograms
-        #    self.h_stack = THStack()
-        #    self.h_stack.Add(self.h_tiqdata[0])
-        #    [self.h_stack.Add(self.h_simdata[k]) for k,harmonic in enumerate(self.harmonics)]
-	#    self.h_stack_sim = THStack()
-        #    [self.h_stack_sim.Add(self.h_simdata[k]) for k,harmonic in enumerate(self.harmonics)]
-        #    # add to list of histograms:
-        #    self.hist_list.append(self.h_stack)
-        #
+    def create_stack(self):
+        # overlaying histograms
+        gStyle.SetPalette(kOcean)
+        globals()['h_stack_complete'] = THStack()
+        globals()['h_stack_complete'].Add(globals()['h_tiqdata'])
+        [h_stack_complete.Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
+        globals()['h_stack_sim'] = THStack()
+        [globals()['h_stack_sim'].Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
+        globals()['h_stack_NTCAP'] = THStack()
+        [globals()['h_stack_NTCAP'].Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
+        globals()['h_stack_NTCAP'].Add('h_NTCAP')
+        # add to list of histograms:
+        self.histogram_list=np.append(self.histogram_list,['h_stack_complete','h_stack_sim','h_stack_NTCAP'])
         
     def histogram_fill(self):
         # fill with experimental data:
-        [self.h_tiqdata[0].Fill(self.frequency_data[i] + self.fcenter, self.power_data[i])
-         for i,element in enumerate(self.frequency_data)]
-        name='h_srf_'
-        for sim self.simulated_data:
-            if sim[0]==self.harmonics[0]:
-                self.(name+str(self.harmonics[0])).Fill(sim[1], sim[2])
-            elif sim[0]==self.harmonics[1]:
-                self.(name+str(self.harmonics[0])).Fill(sim[1], sim[2])
-            elif sim[0]==self.harmonics[2]:
-                self.(name+str(self.harmonics[0])).Fill(sim[1], sim[2])
-                
-        # filling with simulated data:
-        #[self.h_simdata[k].Fill(self.frequency_sim[i], self.power_sim[i])
-        # for k,harmonics in enumerate(self.harmonics) for i, element in enumerate(self.frequency_sim)]
-
+        [globals()['h_tiqdata'].Fill(self.analyzers_data[i,0], self.analyzers_data[i,1])
+         for i,element in enumerate(self.analyzers_data[:,0])]
+        [globals()[name].Fill(sim[1],sim[2]) for name in self.histogram_list if 'srf' in name for h in name.split()
+         if h.isdigit() for sim in self.simulated_data if int(h)==int(sim[0])]
+        [globals()['h_NTCAP'].Fill(self.NTCAP_data[i,0], self.NTCAP_data[i,1])
+         for i,element in enumerate(self.NTCAP_data[:,0])]
+        
     def draw_histograms(self):
-        self.hist_list = [self.h_tiqdata[0],self.h_srf_124,self.h_srf_125,self.h_srf_126]
         r = TRandom()#random generator for the colors
-        for i, histogram in enumerate(self.hist_list):
+        for i, histogram in enumerate(self.histogram_list):
             color = int(((113-51)*r.Rndm()+51))
-            histogram.SetLineColor(color)
-            if i==0:
+            if 'tiq' in histogram:
+                globals()[histogram].SetLineColor(color)
                 self.canvas_main.cd(1)  # move to correct canvas
-                histogram.Draw()
-                self.canvas_main.cd(3)
-                histogram.Draw('histo same')
-            else:
-                self.canvas_main.cd(2)
-                histogram.Draw('histo same')
-                self.canvas_main.cd(3)
-                histogram.Draw('histo same')
-                
-            
-            # drawing h_stack:
-            #if i+1 == 3:
-            #    histogram.SetTitle('Histogram Stack')
-            #    histogram.Draw("nostack")  # "nostack" overlays histograms
-            #    histogram.SetMaximum(2)
-            #    histogram.SetLineColor(color)
-            #    histogram.Draw("nostack")  # "nostack" overlays
-                
-            # drawing other histograms:
-            #else:
-            #    histogram.SetLineColor(color)
-            #    histogram.Draw()
+                globals()[histogram].Draw()
+                #self.canvas_main.cd(3)
+                #globals()[histogram].Draw()
+            #if 'srf' in histogram:
+            #    if i==1:
+            #        globals()[histogram].SetLineColor(color)
+            #        self.canvas_main.cd(2)  # move to correct canvas
+            #        globals()[histogram].Draw('same')
+            #        self.canvas_main.cd(3)
+            #        globals()[histogram].Draw('same')
+            #    else:
+            #        globals()[histogram].SetLineColor(color)
+            #        self.canvas_main.cd(2)  # move to correct canvas
+            #        globals()[histogram].Draw('same')
+            #        self.canvas_main.cd(3)
+            #        globals()[histogram].GetXaxis().SetRangeUser(fmin,fmax)
+            #        globals()[histogram].Draw('same')
+            elif 'NTCAP' in histogram:
+                x=int(len(self.NTCAP_data[:,0])/4)
+                print(x)
+                self.canvas_NTCAP.cd(1)
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0,0],self.NTCAP_data[0+x*1,0])
+                globals()[histogram].Draw('plc nostack')
+                self.canvas_NTCAP.cd(2)
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+x*1,0],self.NTCAP_data[0+x*2,0])
+                globals()[histogram].Draw('plc nostack')
+                self.canvas_NTCAP.cd(3)
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+x*2,0],self.NTCAP_data[0+x*3,0])
+                globals()[histogram].Draw('plc nostack')
+                self.canvas_NTCAP.cd(4)
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+3*x,0],self.analyzers_data[-1,0])
+                globals()[histogram].Draw('plc nostack')
+            elif 'complete' in histogram:
+                self.canvas_main.cd(3)  # move to correct canvas
+                globals()[histogram].GetXaxis().SetRangeUser(self.analyzers_data[0,0],self.analyzers_data[-1,0])
+                globals()[histogram].Draw('plc nostack')
+            elif 'sim' in histogram:
+                self.canvas_main.cd(2)  # move to correct canvas
+                globals()[histogram].Draw('plc nostack')
 
         self.canvas_main.Update()
-        self.canvas_main.SaveAs("histogram_plot.pdf")
-
-    @staticmethod
-    def f_min(center, data):  # find minimum frequency
-        return center+data[0]
-
-    @staticmethod
-    def f_max(center, data):  # find maximum frequency
-        return center+data[-1]
-
-
+        self.canvas_main.SaveAs('histogram_plot.pdf')
+        self.canvas_NTCAP.Update()
+        self.canvas_NTCAP.SaveAs('NTCAP_plot.pdf')
+    
 def test():
     import importdata
-    mydata = importdata.ImportData('data/410-j')
+    mydata = importdata.ImportData('data/410-j','data/tdms-example')
     mycanvas = CreateGUI(mydata.analyzer_data, mydata.simulated_data,
-                         mydata.fcenter, mydata.harmonics)
+                         mydata.NTCAP_data, mydata.harmonics)
 
 
 if __name__ == '__main__':
