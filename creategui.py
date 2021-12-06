@@ -1,9 +1,10 @@
 from ROOT import *
 import numpy as np
 
+
 class CreateGUI():
-    def __init__(self, analyzers_data,
-                  simulated_data, fcenter,harmonics):
+    def __init__(self, analyzers_data, simulated_data,
+                 fcenter, harmonics):
         # setting object variables: add NTCAP_data,
         
         self.frequency_data = analyzers_data[:,0]
@@ -25,6 +26,9 @@ class CreateGUI():
 
         # prevents gui closing in pyroot. must go last in init!
         gApplication.Run()
+        
+    def get_data(self):
+        pass
 
     def create_canvas(self):
         self.canvas_main = TCanvas(
@@ -34,6 +38,7 @@ class CreateGUI():
         #self.canvas_NTCAP=TCanvas(
         #    'canvas_NTCAP', 'Frequency Histograms', 800, 800)
         #self.canvas_NTCAP.Divide(1,4)
+        
         
     def create_histograms(self):
         # experimental data
@@ -49,7 +54,7 @@ class CreateGUI():
         for sim in self.simulated_data:
             if sim[0] == self.harmonics[0]:
                 self.name+str(self.harmonics[0]) = [TH1F(name+str(self.harmonics[0]), len(self.simulated_data)/len(self.harmonics),
-                                                         self.simulated_data[0, 1], self.simulated_data[-1, 0])]
+                                                    self.simulated_data[0, 1], self.simulated_data[-1, 0])]
             elif sim[0] == self.harmonics[1]:
                 self.(name+str(self.harmonics[1]))=[TH1F(name+str(self.harmonics[1]),
                         len(self.simulated_data)/len(self.harmonics), self.simulated_data[0,1],
