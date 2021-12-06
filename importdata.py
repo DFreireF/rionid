@@ -29,7 +29,7 @@ class ImportData():
                           for file in open(self.master_filename_NTCAP).readlines()]
         # and for now:
         self.filename_tiq = self.file_list_tiq[0]
-        self.filename_NTCAP = self.file_list_NTCAP[1]
+        self.filename_NTCAP = self.file_list_NTCAP[53]
 
     def _import(self):
         # import ame from barion:
@@ -46,7 +46,7 @@ class ImportData():
         lise_file = lread.LISEreader(input_params.lisefile)
         self.lise_data = lise_file.get_info_all()
 
-    def _get_analyzer_data(self):
+    def _analyzer_data(self):
         LFRAMES = 2**15
         NFRAMES = 2*7
         iq_tiq = TIQData(self.filename_tiq)

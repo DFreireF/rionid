@@ -12,7 +12,7 @@ class CreateGUI():
         #self.srrf_data = srrf_data
         self.create_canvas()
         self.create_histograms()
-        #self.create_stack()
+        self.create_stack()
         self.histogram_fill()
         self.draw_histograms()
 
@@ -53,8 +53,8 @@ class CreateGUI():
         globals()['h_stack_sim'] = THStack()
         [globals()['h_stack_sim'].Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
         globals()['h_stack_NTCAP'] = THStack()
+        globals()['h_stack_NTCAP'].Add(globals()['h_NTCAP'])
         [globals()['h_stack_NTCAP'].Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
-        globals()['h_stack_NTCAP'].Add('h_NTCAP')
         # add to list of histograms:
         self.histogram_list=np.append(self.histogram_list,['h_stack_complete','h_stack_sim','h_stack_NTCAP'])
         
@@ -71,52 +71,52 @@ class CreateGUI():
         r = TRandom()#random generator for the colors
         for i, histogram in enumerate(self.histogram_list):
             color = int(((113-51)*r.Rndm()+51))
+            print(histogram)
             if 'tiq' in histogram:
                 globals()[histogram].SetLineColor(color)
                 self.canvas_main.cd(1)  # move to correct canvas
                 globals()[histogram].Draw()
-                #self.canvas_main.cd(3)
-                #globals()[histogram].Draw()
-            #if 'srf' in histogram:
-            #    if i==1:
-            #        globals()[histogram].SetLineColor(color)
-            #        self.canvas_main.cd(2)  # move to correct canvas
-            #        globals()[histogram].Draw('same')
-            #        self.canvas_main.cd(3)
-            #        globals()[histogram].Draw('same')
-            #    else:
-            #        globals()[histogram].SetLineColor(color)
-            #        self.canvas_main.cd(2)  # move to correct canvas
-            #        globals()[histogram].Draw('same')
-            #        self.canvas_main.cd(3)
-            #        globals()[histogram].GetXaxis().SetRangeUser(fmin,fmax)
-            #        globals()[histogram].Draw('same')
-            elif 'NTCAP' in histogram:
-                x=int(len(self.NTCAP_data[:,0])/4)
-                print(x)
-                self.canvas_NTCAP.cd(1)
-                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0,0],self.NTCAP_data[0+x*1,0])
-                globals()[histogram].Draw('plc nostack')
-                self.canvas_NTCAP.cd(2)
-                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+x*1,0],self.NTCAP_data[0+x*2,0])
-                globals()[histogram].Draw('plc nostack')
-                self.canvas_NTCAP.cd(3)
-                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+x*2,0],self.NTCAP_data[0+x*3,0])
-                globals()[histogram].Draw('plc nostack')
-                self.canvas_NTCAP.cd(4)
-                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+3*x,0],self.analyzers_data[-1,0])
-                globals()[histogram].Draw('plc nostack')
-            elif 'complete' in histogram:
-                self.canvas_main.cd(3)  # move to correct canvas
-                globals()[histogram].GetXaxis().SetRangeUser(self.analyzers_data[0,0],self.analyzers_data[-1,0])
-                globals()[histogram].Draw('plc nostack')
+                self.canvas_main.Update()
             elif 'sim' in histogram:
                 self.canvas_main.cd(2)  # move to correct canvas
                 globals()[histogram].Draw('plc nostack')
+                self.canvas_main.Update()
+            elif 'complete' in histogram:
+                self.canvas_main.cd(3)  # move to correct canvas
+                globals()[histogram].Draw('plc nostack')
+                globals()[histogram].GetXaxis().SetRangeUser(self.analyzers_data[0,0],self.analyzers_data[-1,0])
+                self.canvas_main.Update()
+            elif 'NTCAP' in histogram:
+                x=int(len(self.NTCAP_data[:,0])/4)
+                self.canvas_NTCAP.cd(1)
+                globals()[histogram].Draw('plc nostack')
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0,0],self.NTCAP_data[0+x*1,0])
+                self.canvas_NTCAP.Modified()
+                self.canvas_NTCAP.Update()
+                input()
+                self.canvas_NTCAP.cd(2)
+                globals()[histogram].Draw('plc nostack')
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+x*1,0],self.NTCAP_data[0+x*2,0])
+                self.canvas_NTCAP.Modified()
+                self.canvas_NTCAP.Update()
+                input()
+                self.canvas_NTCAP.cd(3)
+                globals()[histogram].Draw('plc nostack')
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+x*2,0],self.NTCAP_data[0+x*3,0])
+                self.canvas_NTCAP.Modified()
+                self.canvas_NTCAP.Update()
+                input()
+                self.canvas_NTCAP.cd(4)
+                globals()[histogram].Draw('plc nostack')
+                globals()[histogram].GetXaxis().SetRangeUser(self.NTCAP_data[0+3*x,0],self.NTCAP_data[-1,0])
+                self.canvas_NTCAP.Modified()
+                self.canvas_NTCAP.Update()
+                input()
 
-        self.canvas_main.Update()
-        self.canvas_main.SaveAs('histogram_plot.pdf')
-        self.canvas_NTCAP.Update()
+        #self.canvas_main.Update()
+        #self.canvas_main.SaveAs('histogram_plot.pdf')
+        #self.canvas_NTCAP.Update()
+        input()
         self.canvas_NTCAP.SaveAs('NTCAP_plot.pdf')
     
 def test():
