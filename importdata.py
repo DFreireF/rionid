@@ -52,8 +52,6 @@ class ImportData():
         iq_tiq = TIQData(self.filename_tiq)
         iq_tiq.read_samples(LFRAMES*NFRAMES)
 
-        # center frequency
-        #self.fcenter=iq_tiq.center
         # import xx:frequency, yy:time, zz:power
         xx, _, zz = iq_tiq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
         ff = (xx[0]+iq_tiq.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
@@ -68,8 +66,6 @@ class ImportData():
         iq_tdms = TDMSData(self.filename_NTCAP)
         iq_tdms.read_samples(LFRAMES*NFRAMES)
 
-        # center frequency
-        #self.fcenter=iq_tdms.center
         # import xx:frequency, yy:time, zz:power
         xx, _, zz = iq_tdms.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
         ff = (xx[0]+iq_tdms.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array

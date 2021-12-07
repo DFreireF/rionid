@@ -9,7 +9,6 @@ class CreateGUI():
         self.simulated_data=simulated_data # harmonic= simulated_data[:,0] frec=simulated_data[:,1] power=simulated_data[:,2]
         self.NTCAP_data=NTCAP_data
         self.harmonics=harmonics
-        #self.srrf_data = srrf_data
         self.create_canvas()
         self.create_histograms()
         self.create_stack()
