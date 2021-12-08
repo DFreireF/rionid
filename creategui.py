@@ -20,8 +20,6 @@ class CreateGUI():
         # prevents gui closing in pyroot. must go last in init!
         gApplication.Run()
         
-    def get_data(self):
-        pass
 
     def create_canvas(self):
         self.canvas_main = TCanvas(
@@ -31,7 +29,6 @@ class CreateGUI():
         self.canvas_NTCAP=TCanvas(
             'canvas_NTCAP', 'Frequency Histograms', 800, 800)
         self.canvas_NTCAP.Divide(1,4)
-        
         
     def create_histograms(self):
         # experimental data
@@ -53,12 +50,14 @@ class CreateGUI():
         # overlaying histograms
         gStyle.SetPalette(kOcean)
         globals()['h_stack_complete'] = THStack()
-        globals()['h_stack_complete'].Add(globals()['h_tiqdata'])
-        [h_stack_complete.Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
         globals()['h_stack_sim'] = THStack()
-        [globals()['h_stack_sim'].Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
         globals()['h_stack_NTCAP'] = THStack()
+        
+        globals()['h_stack_complete'].Add(globals()['h_tiqdata'])
         globals()['h_stack_NTCAP'].Add(globals()['h_NTCAP'])
+        
+        [h_stack_complete.Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
+        [globals()['h_stack_sim'].Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
         [globals()['h_stack_NTCAP'].Add(globals()[name]) for name in self.histogram_list if 'srf' in name]
         # add to list of histograms:
         self.histogram_list=np.append(self.histogram_list,['h_stack_complete','h_stack_sim','h_stack_NTCAP'])
