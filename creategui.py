@@ -35,11 +35,10 @@ class CreateGUI():
         # experimental data
         self.h_tiqdata = TH1F('h_tiqdata', 'tiqdata', len(self.analyzers_data[:, 0]),
                               self.analyzers_data[0, 0], self.analyzers_data[-1, 0])
-        self.histogram_dict = dict()
-        self.histogram_dict['h_tiqdata'] = self.h_tiqdata
+        self.histogram_dict = {'h_tiqdata':self.h_tiqdata}
         # create histograms with each harmonic info
         for harmonic in self.harmonics:
-            name = f'h srf {harmonic}'
+            name = f'h srf {harmonic}' # im pretty sure this doesn't work
             self.histogram_dict[name] = TH1F(name, name, int(len(self.simulated_data[:, 1])/len(self.harmonics[:])),
                                              self.simulated_data[0, 1], self.simulated_data[-1, 1])
         # histo with NTCAP info
