@@ -1,22 +1,23 @@
 from ROOT import *
 import numpy as np
-
+import pypeaks
+import patternfinder
 
 class CreateGUI():
     def __init__(self, analyzers_data,
-                 simulated_data, NTCAP_data, harmonics):
-        # setting object variables: add NTCAP_data,
+                 simulated_data_dict, NTCAP_data, harmonics):
+        # setting object variables:
         # frec =analyzers_data[:,0]   power =analyzers_data[:,1]
         self.analyzers_data = analyzers_data
-        # harmonic= simulated_data[:,0] frec=simulated_data[:,1] power=simulated_data[:,2], ion name=[:,3]
-        self.simulated_data = simulated_data
+        # frec=simulated_data[:,0] power=simulated_data[:,1], ion properties=[:,2,3,4]; key=harmonic number
+        self.simulated_data_dict = simulated_data_dict
         self.NTCAP_data = NTCAP_data
         self.harmonics = harmonics
+        self.npeaks = 5
 
-        self.create_canvas()
         self.create_histograms()
-        self.create_stack()
         self.histogram_fill()
+        self.create_canvas()
         self.draw_histograms()
 
         # prevents gui closing in pyroot. must go last in init!
@@ -31,135 +32,146 @@ class CreateGUI():
             'canvas_NTCAP', 'Frequency Histograms', 800, 800)
         self.canvas_NTCAP.Divide(1, 4)
 
+        self.canvas_peaks = TCanvas(
+            'canvas_peaks', 'peaks', 800, 800)
+
     def create_histograms(self):
+        nbins=int(1e5)
+        self.histogram_peak=dict()
+        
         # experimental data
-        self.h_tiqdata = TH1F('h_tiqdata', 'tiqdata', len(self.analyzers_data[:, 0]),
-                              self.analyzers_data[0, 0], self.analyzers_data[-1, 0])
-        self.histogram_dict = {'h_tiqdata':self.h_tiqdata}
+        self.histogram_dict = {'tiqdata': np.array([TH1F('h_tiqdata', 'tiqdata', nbins, self.analyzers_data[0, 0], self.analyzers_data[-1, 0]),
+                                                   self.analyzers_data], dtype='object').T}
         # create histograms with each harmonic info
-        for harmonic in self.harmonics:
-            name = f'h srf {harmonic}' # im pretty sure this doesn't work
-            self.histogram_dict[name] = TH1F(name, name, int(len(self.simulated_data[:, 1])/len(self.harmonics[:])),
-                                             self.simulated_data[0, 1], self.simulated_data[-1, 1])
+        for key in self.simulated_data_dict:
+            name = f'srf {key}'
+            self.histogram_dict[name]=np.array([TH1F(name, name, nbins, self.simulated_data_dict[key][:, 0].min(),
+                                                     self.simulated_data_dict[key][:, 0].max()), self.simulated_data_dict[key][:,:]], dtype='object').T
         # histo with NTCAP info
-        self.h_NTCAP = TH1F('h_NTCAP', 'NTCAPdata', len(self.NTCAP_data[:, 0]),
-                            self.NTCAP_data[0, 0], self.NTCAP_data[-1, 0])
-
-    def create_stack(self):
-        # overlaying histograms
-        self.h_stack_complete = THStack()
-        self.h_stack_sim = THStack()
-        self.h_stack_NTCAP = THStack()
-
-        self.h_stack_complete.Add(self.h_tiqdata)
-        self.h_stack_NTCAP.Add(self.h_NTCAP)
-
-        [self.h_stack_complete.Add(self.histogram_dict[name])
-         for name in self.histogram_dict if 'srf' in name]
-        [self.h_stack_sim.Add(self.histogram_dict[name])
-         for name in self.histogram_dict if 'srf' in name]
-        [self.h_stack_NTCAP.Add(self.histogram_dict[name])
-         for name in self.histogram_dict if 'srf' in name]
-
-        self.histogram_dict['h_stack_complete'] = self.h_stack_complete
-        self.histogram_dict['h_stack_sim'] = self.h_stack_sim
-        self.histogram_dict['h_stack_NTCAP'] = self.h_stack_NTCAP
-
+        self.histogram_dict['NTCAPdata']=  np.array([TH1F('NTCAPdata', 'NTCAPdata', nbins, self.NTCAP_data[0, 0], self.NTCAP_data[-1, 0]),
+                                          self.NTCAP_data], dtype='object').T
+        
     def histogram_fill(self):
-        # fill analyzers data:
-        [self.h_tiqdata.Fill(self.analyzers_data[i, 0], self.analyzers_data[i, 1])
-         for i, element in enumerate(self.analyzers_data[:, 0])]
-        # fill with simulated data
-        [self.histogram_dict[name].Fill(sim[1], 0.9) for name in self.histogram_dict if 'srf' in name for h in name.split()
-         if h.isdigit() for sim in self.simulated_data if int(h) == int(sim[0])]
-        # fill with NTCAP data
-        [self.h_NTCAP.Fill(self.NTCAP_data[i, 0], self.NTCAP_data[i, 1])
-         for i, element in enumerate(self.NTCAP_data[:, 0])]
-
+        for key in self.histogram_dict:
+            xbin=[self.histogram_dict[key][0].GetXaxis().FindBin(freq) for freq in self.histogram_dict[key][1][:,0]]
+            [self.histogram_dict[key][0].AddBinContent(xbin,self.histogram_dict[key][1][i,1]) for i,xbin in enumerate(xbin)]
+            
     def draw_histograms(self):
         self.Labels = dict()
-
-        for i, histogram in enumerate(self.histogram_dict):
+        
+        for i,key in enumerate(self.histogram_dict):
             # plotting tiq histo
-            if 'tiq' in histogram:
+            if 'tiq' in key:
                 self.canvas_main.cd(1)  # move to correct canvas
-                gStyle.SetPalette(kDarkRainBow)
-                self.histogram_dict[histogram].Draw('plc')
-                self.canvas_main.Update()
+                self.hist_plot_short(self.histogram_dict[key][0],i,self.canvas_main)
+                self.canvas_main.cd(3)  # move to correct canvas
+                name=str(i)+key
+                self.clone_histo(name,self.histogram_dict[key][0],self.analyzers_data[0,0], self.analyzers_data[-1,0])
+                self.hist_plot_short(globals()[name],i,self.canvas_main)
 
             # plotting data with the simulated harmonic
-            elif 'sim' in histogram:
-                self.canvas_main.cd(2)  # move to correct canvas
-                gStyle.SetPalette(kDarkRainBow)
-                gStyle.SetErrorX(0)
-                self.histogram_dict[histogram].Draw('l plc nostack')
-                gPad.BuildLegend(0.75, 0.75, 0.95, 0.95)
-                self.canvas_main.Update()
+            elif 'srf' in key:
+                name=str(i)+key
 
-            # plotting data with the harmonics + tiq data
-            elif 'complete' in histogram:
+                self.canvas_main.cd(2)  # move to correct canvas
+                self.hist_plot_short(self.histogram_dict[key][0],i,self.canvas_main)
+                #input()
+                self.create_labels(key,name,self.canvas_main,i)
+                #input()
                 self.canvas_main.cd(3)  # move to correct canvas
-                gStyle.SetPalette(kDarkRainBow)
-                self.histogram_dict[histogram].Draw()
-                self.histogram_dict[histogram].GetXaxis().SetRangeUser(
-                    self.simulated_data[0, 1], self.simulated_data[-1, 1])
-                self.histogram_dict[histogram].Draw('plc nostack')
-                self.canvas_main.Update()
+                
+                self.clone_histo(name,self.histogram_dict[key][0],
+                                 self.histogram_dict[key][1][:,0].min(),self.histogram_dict[key][1][:,0].max())
+                self.hist_plot_short(globals()[name],i,self.canvas_main)
 
             # plotting data with NTCAP + simulated harmonics
-            elif 'NTCAP' in histogram:
-                x = int(len(self.NTCAP_data[:, 0])/4)  # dividing range in 4
+            elif 'NTCAP' in key:
+                x = int(len(self.histogram_dict[key][1][:,0])/4)  # dividing range in 4
                 for j in range(0, 4):
                     self.canvas_NTCAP.cd(j+1)
-                    gStyle.SetPalette(kDarkRainBow)
-                    name = 'copy_NTCAP'+str(j)
-                    self.name = self.histogram_dict[histogram].Clone()
-                    self.name.Draw()
-                    self.name.GetXaxis().SetRangeUser(
-                        self.NTCAP_data[x*j, 0], self.NTCAP_data[x*(j+1)-1, 0])
-                    self.name.Draw('plc nostack')
-                    self.canvas_NTCAP.Update()
-                    self.create_labels(
-                        self.NTCAP_data[x*j, 0], self.NTCAP_data[x*(j+1)-1, 0])
+                    name='NTCAP_copy'+str(j)
+                    self.clone_histo(name,self.histogram_dict[key][0],
+                                 self.histogram_dict[key][1][x*j,0], self.histogram_dict[key][1][x*(j+1)-1,0])
+                    self.hist_plot_short(globals()[name],i,self.canvas_NTCAP)
+                    self.create_labels_NTCAP(
+                        self.histogram_dict[key][1][x*j,0], self.histogram_dict[key][1][x*(j+1)-1,0],self.canvas_NTCAP,j)
 
         # saving histos in pdf
-        self.canvas_main.SaveAs('histogram_plot.pdf')
-        self.canvas_NTCAP.SaveAs('NTCAP_plot.pdf')
- #       for i,name in enumerate(self.histogram_dict):
+      #  self.canvas_main.SaveAs('histogram_plot.pdf')
+      #  self.canvas_NTCAP.SaveAs('NTCAP_plot.pdf')
+      
+    def hist_plot_short(self,histogram,index,canvas):
+        histogram.SetLineColor(index+1)
+        histogram.SetLineStyle(1)
+        histogram.Draw('same')
+        gPad.BuildLegend(0.75, 0.75, 0.95, 0.95)
+        canvas.Update()
+        
+    def create_labels(self,key,name,canvas,index):
+        xpeaks=self.set_peaks(key)
+        canvas.cd(2)
+        [self.set_peak_labels(key,name,xpeak,index) for xpeak in xpeaks]
+        canvas.Update()
 
-#       =self.histogram_dict[name].Clone()
-#   for sim in self.simulated_data:
-#       aux= a.GetXaxis().FindBin(sim[1])
-#       a.SetBinContent(aux,1.5)
+    def clone_histo(self,name,histogram,range_min,range_max):
+        globals()[name]=histogram.Clone()
+        globals()[name].Draw('same')
+        globals()[name].GetXaxis().SetRangeUser(range_min, range_max)
+        
+    def create_labels_NTCAP(self, range_min, range_max,canvas,j):
+        index=0
+        for key in self.histogram_dict:
+            if 'srf' in key:
+                index+=1
+                name=key+str(index)+str(j)
+                self.clone_histo(name, self.histogram_dict[key][0],range_min,range_max)        
+                self.hist_plot_short(globals()[name],index,canvas)
+                
+                xpeaks=self.set_peaks(key)
+                for xpeak in xpeaks:
+                    if xpeak <= range_max and xpeak >= range_min:
+                        canvas.cd(j+1)
+                        self.set_peak_labels(key,name,xpeak,index)
+                        
+                self.canvas_NTCAP.Update()
+                        
+    def set_peaks(self, key):
+        self.canvas_peaks.cd()
+        peaks=pypeaks.FitPeaks(self.npeaks,self.histogram_dict[key][0].Clone(),False)
+        xpeaks= peaks.peak_finding()
+        self.canvas_peaks.Update()
+        return xpeaks
 
-    def create_labels(self, range_min, range_max):
-        for name in self.histogram_dict:
-            if 'srf' in name:
-                for h in name.split():
-                    if h.isdigit():
-                        for sim in self.simulated_data:
-                            if int(h) == int(sim[0]) and sim[1] <= range_max and sim[1] >= range_min:
-                                name = f'A:{sim[3]}Z:{sim[4]}Q:+{sim[5]}har:{h}'
-                                if sim[3] == 72.0:
-                                    print('hola')
-                                self.Labels[name] = TLatex(
-                                    sim[1], sim[2], name)
-                                self.label_format(self.Labels[name])
-                                self.canvas_NTCAP.Update()
+    def set_peak_labels(self, key,name,xpeak,index):
+        pattern=patternfinder.PatternFinder(self.histogram_dict[key][1][:,0],[xpeak])
+        tmp=pattern.get_first_match_index()
+        
+        xlabel=self.histogram_dict[key][0].GetXaxis().FindBin(self.histogram_dict[key][1][tmp,0])
+        ylabel=self.histogram_dict[key][0].GetBinContent(xlabel)
+        
+        Aion, Zion, Qion=[int(self.histogram_dict[key][1][tmp,i]) for i in range(2,5)]
+        label_name = f'{Aion}A{Zion}Z+{Qion}q{key}{name}'
+        
+        self.RefIon=False
+        if Aion==72 and Zion==32: self.RefIon=True
+        self.Labels[label_name] = TLatex(
+            self.histogram_dict[key][1][tmp,0], ylabel, label_name)
+        self.label_format(index, self.Labels[label_name])
 
-    def label_format(self, label):
+    def label_format(self,index,label):
         label.SetTextFont(110)
         label.SetTextSize(0.055)
         label.SetTextAngle(90)
-        label.SetTextColor(3)
-        label.SetLineWidth(1)
-        label.Draw('nostack')
+        label.SetTextColor(index+2)
+        if self.RefIon: label.SetTextColor(2)
+        label.SetLineWidth(3)
+        label.Draw('same')
 
 
 def test():
     import importdata
     mydata = importdata.ImportData('data/410-j', 'data/tdms-example')
-    mycanvas = CreateGUI(mydata.analyzer_data, mydata.simulated_data,
+    mycanvas = CreateGUI(mydata.analyzer_data, mydata.simulated_data_dict,
                          mydata.NTCAP_data, mydata.harmonics)
 
 

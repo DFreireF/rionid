@@ -46,25 +46,26 @@ class ImportData():
         self.lise_data = lise_file.get_info_all()
 
     def _analyzer_data(self):
-        LFRAMES = 2**15
-        NFRAMES = 2*7
-        iq_tiq = TIQData(self.filename_tiq)
-        iq_tiq.read_samples(LFRAMES*NFRAMES)
+        iq_tiq = TIQData(self.filename_tiq)        
+        #iq_tiq.read_samples(1)
+        lframes = 2**15
+        nframes = 2*7
+        iq_tiq.read_samples(nframes*lframes)
 
         # import xx:frequency, yy:time, zz:power
-        xx, _, zz = iq_tiq.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
+        xx, _, zz = iq_tiq.get_spectrogram(lframes=lframes, nframes=nframes)
         ff = (xx[0]+iq_tiq.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
         pp = (zz[0]/np.max(zz[0])).reshape(len(zz[0]),1) #normalized power
         self.analyzer_data=(np.stack((ff, pp), axis=1)).reshape((len(ff),2))
 
     def _NTCAP_data(self):
-        LFRAMES = 2**15
-        NFRAMES = 2*7
         iq_tdms = TDMSData(self.filename_NTCAP)
-        iq_tdms.read_samples(LFRAMES*NFRAMES)
-
+        lframes = 2**15
+        nframes = 2*7
+        iq_tdms.read_samples(nframes*lframes)
+        
         # import xx:frequency, yy:time, zz:power
-        xx, _, zz = iq_tdms.get_spectrogram(lframes=LFRAMES, nframes=NFRAMES)
+        xx, _, zz = iq_tdms.get_spectrogram(lframes=lframes, nframes=nframes)
         ff = (xx[0]+iq_tdms.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
         pp = (zz[0]/np.max(zz[0])).reshape(len(zz[0]),1) #normalized power
         self.NTCAP_data = (np.stack((ff, pp), axis=1)).reshape((len(ff), 2))
@@ -77,13 +78,8 @@ class ImportData():
                              for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
         # aux is the index of the reference particle
         self.aux = [i for i, lise in enumerate(self.lise_data) for ame in self.ame_data if (lise[0] ==
-<<<<<<< HEAD
-                    ame[6] and lise[1] == ame[5] and str(lise[1])+lise[0] == self.pdict['ReferenceIsotope'])]
-        self.moq_Rel = self.moq[self.aux]
-=======
                                                                                             ame[6] and lise[1] == ame[5] and str(lise[1])+lise[0] == self.pdict['ReferenceIsotope'])]
         moq_Rel = moq[self.aux]
->>>>>>> 35b63481dc94c7a55f675ba5c3f647e04bca31f6
         # calculates gamma, beta, velocity and frequency (v/d) of our reference particle
         self.calculate_ion_parameters(self.pdict['Brho'])
         # simulated relative revolution frequencies
@@ -91,7 +87,7 @@ class ImportData():
                               for k in range(len(self.mass))])
 
     def _simulated_data(self):
-        self.simulated_data = np.array([])
+        self.simulated_data_dict=dict()
         # get power data from lise
         yield_data = [lise[5] for lise in self.lise_data]
         yield_data_normalised = np.array(
@@ -102,19 +98,21 @@ class ImportData():
         ion_Q=np.array([[int(lise[4]) for lise in self.lise_data]]).T
         # harmonics:
         self.harmonics = np.array([int(harmonic) for harmonic in input(f'introduce the harmonics to simulate separated by space; e.g.: 124 125:').split()]).T
-        for i, harmonic in enumerate(self.harmonics):
+        for harmonic in self.harmonics:
+            print(harmonic)
+            simulated_data = np.array([])
+            array_stack=np.array([])
             # create harmonic index:
-            harmonic_index = (np.ones(len(self.SRRF))*self.harmonics[i]).reshape(len(self.SRRF),1)
+            name=f'{harmonic}'
             # get srf data
-            harmonic_frequency = self.SRRF*self.Frequence_Rel*self.harmonics[i]
+            harmonic_frequency = self.SRRF*self.Frequence_Rel*harmonic
             # attach harmonic, frequency, yield data and ion properties together:
-            array_stack = np.stack((harmonic_index, harmonic_frequency, yield_data_normalised, ion_A, ion_Z, ion_Q),
+            array_stack = np.stack((harmonic_frequency, yield_data_normalised, ion_A, ion_Z, ion_Q),
                                    axis=1)  # axis=1 stacks vertically
-            self.simulated_data = np.append(self.simulated_data, array_stack)
-            
-        self.simulated_data = self.simulated_data.reshape(
-            len(self.harmonics)*len(array_stack), 6)
-
+            simulated_data = np.append(simulated_data, array_stack)
+            simulated_data = simulated_data.reshape(len(array_stack), 5)
+            self.simulated_data_dict[name]=simulated_data
+        
     def calculate_ion_parameters(self, x):
         gamma = self.gamma(self.pdict['Brho'])
         beta = self.beta(gamma)
@@ -133,7 +131,7 @@ class ImportData():
 
     def calc_freq_rel(self, velocity):
         return velocity/self.ring.circumference
-
+    
 def main():
     # specified file is list of filenames
     filename_tiq = 'data/410-j'

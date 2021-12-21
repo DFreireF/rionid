@@ -1,4 +1,4 @@
-from ROOT import TCanvas, TMath, TH1, TH1F, TF1, TRandom, TSpectrum, TVirtualFitter
+from ROOT import TCanvas, TMath, TH1, TH1F, TF1, TRandom, TSpectrum, TVirtualFitter, gApplication
 from time import time
 from numpy import array,append,argsort
 
@@ -32,11 +32,11 @@ class FitPeaks():
         self.tofit = tofit
         self.histogram = histogram
         self.h2 = histogram
-        self.peaks()
+        #gApplication.Run()
 
-    # def __call__(self): #This method can be very useful.
-        # self.peaks()
-        # self.fitting()
+    #def __call__(self): #This method can be very useful.   
+        #self.peaks()
+        #self.fitting()
 
     def set_canvas(self):  # Generates canvas, 1 with found peaks, 1 with fitting
         self.c1 = TCanvas('c1', 'c1', 10, 10, 1000, 900)
@@ -55,7 +55,7 @@ class FitPeaks():
         self.c1.cd(2)
         self.background()
         self.c1.Update()
-        
+
         if self.tofit:#if it is True
             n_peaks=self.n_peakstofit()
             info_peaks=self.peaks_info(n_peaks)
@@ -67,7 +67,7 @@ class FitPeaks():
         self.peak = TSpectrum(self.npeaks) #(maximum number of peaks)
         self.nfound = self.peak.Search(self.histogram,2,"",0.10)
         self.xpeaks=self.peak.GetPositionX()
-        self.xpeaks=array([self.xpeaks[i] for i in range(0,self.nfound)])#We convert xpeaks wierd ROOT array to np.array
+        return array([self.xpeaks[i] for i in range(0,self.nfound)])#We convert xpeaks wierd ROOT array to np.array
         
     def background(self):
         # Estimate background using TSpectrum.Background
@@ -81,8 +81,8 @@ class FitPeaks():
         self.par = append(
             self.par, [self.fline.GetParameter(0), self.fline.GetParameter(1)])
         for xpeak in (self.xpeaks):
-            bin=self.histogram.GetXaxis().FindBin(xpeak) 
-            ypeak=self.histogram.GetBinContent(bin)
+            xbin=self.histogram.GetXaxis().FindBin(xpeak) 
+            ypeak=self.histogram.GetBinContent(xbin)
             if (ypeak) > self.fline.Eval(xpeak):#compares if peak is over the background or not
                 self.par=append(self.par,[ypeak,xpeak,100])#mean,height,sigma;initial seeds for the fitting
                 n_peakstofit+=1
