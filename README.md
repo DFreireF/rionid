@@ -3,7 +3,8 @@
 Work in always progress!
 
 #### Dependencies
-Requires [Barion](https://github.com/xaratustrah/barion) from [@Xaratustrah](https://github.com/xaratustrah) to pull ame data.
-Requires [LISEreader](https://github.com/gwgwhc/lisereader) from [@gwgwhc](https://github.com/gwgwhc) to pull LISE data.
+Requires [Barion](https://github.com/xaratustrah/barion) and [IQTools](https://github.com/xaratustrah/iqtools) from [@Xaratustrah](https://github.com/xaratustrah).
+
+Requires [LISEreader](https://github.com/gwgwhc/lisereader) from [@gwgwhc](https://github.com/gwgwhc).
 
 #### Code inspired in 'simtof.cxx' from Dr. Chen Rui-Jiu
