@@ -1,5 +1,5 @@
 # pySimToF
-### Developed by D. Freire-Fernández (DFreireF) and G. Hudson-Chang (gwgwhc) 
+### Developed by D. Freire-Fernández ([@DFreireF](https://github.com/DFreireF)) and G. Hudson-Chang ([@gwgwhc](https://github.com/gwgwhc)) 
 Work in always progress!
 
 #### Dependencies
