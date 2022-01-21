@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from iqtools.version import __version__
+from pysimtof.version import __version__
 
 long_description = ''
 
@@ -29,8 +29,8 @@ setup(
     description='Collection of tools for dealing with SMS data at storage rings.',
     long_description=read_md('README.md'),
     author='DFreireF // gwgwhc',
-    url='https://github.com/xaratustrah/iqtools', ##change
-    download_url=f'https://github.com/xaratustrah/iqtools/tarball/{__version__}', ##change
+    url='https://github.com/DFreireF/pysimtof',
+    download_url=f'https://github.com/DFreireF/pysimtof/tarball/{__version__}',
     entry_points={
         'console_scripts': [
             'pysimtof = pysimtof.__main__:main'
