@@ -1,8 +1,9 @@
 import argparse
 import logging as log
-from ImportData2 import *
-from creategui2 import *
 from ROOT import *
+from pysimtof.importdata import *
+from pysimtof.creategui import *
+from pysimtof.version import __version__
 
 def main():
     scriptname = 'pySimToF' 
@@ -27,7 +28,7 @@ def main():
 
     args = parser.parse_args()
     
-    print(f'Running {scriptname}')
+    print(f'Running {scriptname} V{__version__}')
     if args.verbose: log.basicConfig(level=log.DEBUG)
 
     # here we go:

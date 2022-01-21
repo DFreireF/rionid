@@ -2,7 +2,7 @@ from ROOT import *
 import numpy as np
 import pypeaks
 import patternfinder
-import ImportData2 as importdata
+import importdata as importdata
 
 
 class CreateGUI():
@@ -181,6 +181,7 @@ class CreateGUI():
         self.canvas_main.Update()
         
 def test():
+    #NEED TO BE UPDATE WITH THE NEW CHANGES
     #filename = '/lustre/ap/litv-exp/2021-07-03_E143_TwoPhotonDecay_ssanjari/analyzers/245/245MHz-2021.07.01.13.53.31.717.tiq'
     filename = '/lustre/ap/litv-exp/2021-07-03_E143_TwoPhotonDecay_ssanjari/ntcap/iq/IQ_2021-06-30_12-35-43/0000675.iq.tdms'
     LISE_filename='data/E143_TEline-ESR-72Ge.lpp'

@@ -99,6 +99,7 @@ class ImportData():
         return velocity/self.ring.circumference
     
 def main():
+    #NEED TO BE UPDATED WITH THE NEW CHANGES
     filename = 'data/245test.tiq'
     LISE_filename='data/E143_TEline-ESR-72Ge.lpp'
     harmonics=[125]
