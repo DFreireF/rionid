@@ -16,9 +16,9 @@ class CreateGUI():
         self.create_canvas(ndivs)
         self.create_histograms(exp_data, simulated_data_dict, nbins)
         self.create_stack(exp_data, simulated_data_dict, nbins, ndivs)
+        self.histogram_fill()
         
     def __call__(self):
-        self.histogram_fill()
         self.draw_histograms()
         self.canvas_peaks.Close()
         gSystem.ProcessEvents()

@@ -8,8 +8,8 @@ from pysimtof.version import __version__
 def main():
     scriptname = 'pySimToF' 
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename', type=str, default='data/245test.tiq', help='Name of the input file.')
-    parser.add_argument('-l', '--lise_file', type=str, nargs='?', default='data/E143_TEline-ESR-72Ge.lpp', help='Name of the LISE file.')
+    parser.add_argument('filename', type=str, help='Name of the input file.')
+    parser.add_argument('-l', '--lise_file', type=str, nargs='?', default='test/lise72GeESR.lpp', help='Name of the LISE file.')
     parser.add_argument('-hdr', '--header-filename', nargs='?', type=str, default=None,
                         help='Name of header file.')
     
