@@ -8,11 +8,11 @@ import lisereader as lread
 
 
 class ImportData():
-    def __init__(self, filename, LISE_filename, harmonics, Brho, Gammat, ref_iso, ref_charge):
+    def __init__(self, filename, lisefilename, harmonics, brho, gammat, ref_iso, ref_charge):
         self.ring = Ring('ESR', 108.4)
-        self._import(LISE_filename)
+        self._import(lisefilename)
         self._exp_data(filename)
-        self._calculate(Brho, Gammat, ref_iso, ref_charge)
+        self._calculate(brho, gammat, ref_iso, ref_charge)
         self._simulated_data(harmonics)
 
     def _import(self, lisefile):
@@ -42,7 +42,7 @@ class ImportData():
             pp = (zz[0]).reshape(len(zz[0]),1) #power
             self.exp_data=(np.stack((ff, pp), axis=1)).reshape((len(ff),2))
 
-    def _calculate(self, Brho, Gammat, ref_isotope, ref_charge):
+    def _calculate(self, brho, gammat, ref_isotope, ref_charge):
         # return mass and moq from barion of the particles present in LISE file
         self.mass = np.array([AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
                              for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
@@ -53,9 +53,9 @@ class ImportData():
                                                                                             ame[6] and lise[1] == ame[5] and str(lise[1])+lise[0] == ref_isotope)]
         moq_Rel = moq[self.aux]
         # calculates gamma, beta, velocity and frequency (v/d) of our reference particle
-        self.calculate_ion_parameters(Brho, ref_charge)
+        self.calculate_ion_parameters(brho, ref_charge)
         # simulated relative revolution frequencies
-        self.SRRF = np.array([1-1/Gammat/Gammat*(moq[k]-moq_Rel)/moq_Rel
+        self.SRRF = np.array([1-1/gammat/gammat*(moq[k]-moq_Rel)/moq_Rel
                               for k in range(len(self.mass))])
         
     def _simulated_data(self, harmonics):
@@ -79,15 +79,15 @@ class ImportData():
             self.simulated_data_dict[name]=simulated_data
             #self.simulated_data_dict[name]=simulated_data[simulated_data[:, 0].argsort()] #sorting by frec
 
-    def calculate_ion_parameters(self, Brho, ref_charge):
-        gamma = self.gamma(Brho, ref_charge)
+    def calculate_ion_parameters(self, brho, ref_charge):
+        gamma = self.gamma(brho, ref_charge)
         beta = self.beta(gamma)
         velocity = self.velocity(beta)
         self.Frequence_Rel = self.calc_freq_rel(velocity)
 
-    def gamma(self, Brho, ref_charge):
+    def gamma(self, brho, ref_charge):
         # /1e6 necessary for mass from MeV to eV.
-        return np.sqrt(pow(Brho*ref_charge*(AMEData.CC/1e6)/self.mass[self.aux], 2)+1)
+        return np.sqrt(pow(brho*ref_charge*(AMEData.CC/1e6)/self.mass[self.aux], 2)+1)
 
     def beta(self, gamma):
         return np.sqrt(gamma*gamma-1)/gamma
@@ -103,11 +103,11 @@ def main():
     filename = 'data/245test.tiq'
     LISE_filename='data/E143_TEline-ESR-72Ge.lpp'
     harmonics=[125]
-    Brho=6.90922    
-    Gammat=1.395
+    brho=6.90922    
+    gammat=1.395
     ref_iso='72Ge'
     ref_charge=32
-    ImportData(filename, LISE_filename, harmonics, Brho, Gammat, ref_iso, ref_charge)
+    ImportData(filename, LISE_filename, harmonics, brho, gammat, ref_iso, ref_charge)
 
 
 if __name__ == '__main__':
