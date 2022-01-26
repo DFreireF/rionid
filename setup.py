@@ -4,9 +4,9 @@ from pysimtof.version import __version__
 long_description = ''
 
 try:
-    from pypandoc import convert
+    from pypandoc import convert_file
 
-    read_md = lambda f: convert(f, 'rst', 'md')
+    read_md = lambda f: convert_file(f, 'rst', 'md')
 except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
