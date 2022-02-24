@@ -1,17 +1,15 @@
 import argparse
 import logging as log
-from ROOT import *
-from pysimtof.importdata import *
-from pysimtof.creategui import *
-from pysimtof.version import __version__
+from datetime import datetime
+import os
+from importdata import *
+from creategui import *
 
 def main():
     scriptname = 'pySimToF' 
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename', type=str, help='Name of the input file.')
-    parser.add_argument('-l', '--lise_file', type=str, nargs='?', default='test/lise72GeESR.lpp', help='Name of the LISE file.')
-    parser.add_argument('-hdr', '--header-filename', nargs='?', type=str, default=None,
-                        help='Name of header file.')
+    parser.add_argument('filename', type=str, nargs='+', help='Name of the input file.')
+    parser.add_argument('-l', '--lise_file', type=str, help='Name of the LISE file.')
     
     parser.add_argument('-hrm', '--harmonics', type=int, nargs='+', help='Harmonics to simulate')
     parser.add_argument('-b', '--brho', type=float, default=6.90922, help='Brho value of the reference ion beam at ESR')
@@ -19,29 +17,59 @@ def main():
     
     parser.add_argument('-i', '--refisotope', type=str, default='72Ge', help='Isotope of study')
     parser.add_argument('-c', '--refcharge', type=float, default=32, help='Charge state of the studied isotope')
+    parser.add_argument('-d', '--ndivs', type=int, nargs='?', default=4, help='Number of divisions in the display')
+    parser.add_argument('-o', '--dops', type=int, default=1, help='Display of srf data options. 0-> constant height, else->scaled')
+    parser.add_argument('-t', '--time', type=float, nargs='?', default=1, help='Analysis time from the begining')
+    parser.add_argument('-sk', '--skip', type=float, nargs='?', default=0, help='Start of the analysis')
 
     parser.add_argument('-v', '--verbose',
                         help='Increase output verbosity', action='store_true')
     
-    parser.add_argument("-s", "--spdf",
-                        help="Save canvas to pdf.", action="store_true")
+    parser.add_argument('-s', '--spdf',
+                        help='Save canvas to pdf.', action='store_true')
+    
+    parser.add_argument('-r', '--sroot',
+                        help='Save canvas to root.', action='store_true')
+    
+    parser.add_argument('-out', '--outdir', type=str, default='.',
+                                                help='output directory.')
 
     args = parser.parse_args()
-    
-    print(f'Running {scriptname} V{__version__}')
+
+    print(f'Running {scriptname}')
     if args.verbose: log.basicConfig(level=log.DEBUG)
+    if args.outdir: outfilepath = os.path.join(args.outdir, '')
 
     # here we go:
     log.info(f'File {args.filename} passed for processing the information of {args.refisotope}+{args.refcharge}.')
     
+    if ('txt') in args.filename[0]:
+        filename_list=read_masterfile(args.filename[0])
+        for filename in filename_list:do_your_stuff(filename[0], args.lise_file, args.harmonics, args.brho, args.gammat, args.refisotope, args.refcharge, args.ndivs, args.dops, args.spdf, args.sroot, args.time, args.skip)
+    else:
+        for file in args.filename:
+            do_your_stuff(file, args.lise_file, args.harmonics, args.brho, args.gammat, args.refisotope, args.refcharge, args.ndivs, args.dops, args.spdf, args.sroot, args.time, args.skip)
+            gApplication.Run()
     
-    mydata=ImportData(args.filename, args.lise_file, args.harmonics, args.brho, args.gammat, args.refisotope, args.refcharge)
-    mycanvas = CreateGUI(mydata.exp_data, mydata.simulated_data_dict, args.refisotope, mydata.nuclei_names)
-    mycanvas()
+def read_masterfile(master_filename):
+    # reads list filenames with experiment data. [:-1] to remove eol sequence.
+    return [file[:-1] for file in open(master_filename).readlines()]
+    
+def do_your_stuff(filename, lise_file, harmonics, brho, gammat, refisotope, refcharge, ndivs, dops, spdf, sroot, time, skip):
+    mydata=ImportData()
+    mydata._set_args(filename, lise_file, harmonics, brho, gammat, refisotope, refcharge, time, skip)
+    mycanvas = CreateGUI(mydata.exp_data, mydata.simulated_data_dict, refisotope, mydata.nuclei_names, ndivs, filename)
+    mycanvas._set_args(dops)
         
-        
-    if args.spdf: mycanvas.save_plot_pdf()##have to change this
-    gApplication.Run()    
+    date_time=datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
+    info_name=f'{outfilepath}{date_time}_b{brho}_g{gammat}'
+    if spdf: mycanvas.save_pdf(info_name)
+    if sroot: mycanvas.save_root(info_name)
 
 if __name__ == '__main__':
     main()
+    #/lustre/ap/litv-exp/2020-04-14_E121_rchen/NTCAP/iq/IQ_2020-04-06_00-59-38/0000126.iq.tdms
+    #python __main__.py frec_rui.root -l Tl205.lpp -hrm 124 125 126 127 -b 7.892305 -g 2.4234 -i 205Tl -c 81 -s -r
+    #python __main__.py /lustre/ap/litv-exp/2020-04-14_E121_rchen/NTCAP/iq/IQ_2020-04-06_00-59-38/0000126.iq.tdms -l Tl205.lpp -hrm 124 125 126 127 -b 7.892305 -g 2.4234 -i 205Tl -c 81 -s -r
+    #python __main__.py -l data/E143_TEline-ESR-72Ge.lpp -hrm 208 209 210 -g 1.395 -i 72Ge -c 32 -o 0 -d 1 -b 6.930373 /lustre/ap/litv-exp/2021-05-00_E143_TwoPhotonDeday_ssanjari/analyzers/410MHz/E143-410MHz-2021.05.08.21.18.07.820
+    #python __main__.py -l data/E143_TEline-ESR-72Ge.lpp -hrm 208 209 210 -g 1.395 -i 72Ge -c 32 -o 0 -d 1 -b 6.930373 410-isomer.txt

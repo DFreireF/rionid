@@ -27,16 +27,11 @@ class FitPeaks():
 
     def __init__(self, npeaks, histogram, tofit):
         self.par = array([], dtype='d')
-        self.npeaks = npeaks
+        self.npeaks = int(npeaks)
         # boolean to make fitting or not (if not, does peak finding etc)
         self.tofit = tofit
         self.histogram = histogram
         self.h2 = histogram
-        #gApplication.Run()
-
-    #def __call__(self): #This method can be very useful.   
-        #self.peaks()
-        #self.fitting()
 
     def set_canvas(self):  # Generates canvas, 1 with found peaks, 1 with fitting
         self.c1 = TCanvas('c1', 'c1', 10, 10, 1000, 900)
@@ -56,7 +51,7 @@ class FitPeaks():
         self.background()
         self.c1.Update()
 
-        if self.tofit:#if it is True
+        if self.tofit:
             n_peaks=self.n_peakstofit()
             info_peaks=self.peaks_info(n_peaks)
             print(info_peaks)
@@ -65,13 +60,61 @@ class FitPeaks():
     def peak_finding(self):
         # Use TSpectrum to find the peak candidates
         self.peak = TSpectrum(self.npeaks) #(maximum number of peaks)
-        self.nfound = self.peak.Search(self.histogram,2,"",0.10)
+        self.nfound = self.peak.Search(self.histogram, 1,"", 0.0001)
+        self.histogram.Draw()
         self.xpeaks=self.peak.GetPositionX()
-        return array([self.xpeaks[i] for i in range(0,self.nfound)])#We convert xpeaks wierd ROOT array to np.array
+        return array([self.xpeaks[i] for i in range(0,self.nfound)])
+
+    def peak_finding_background(self):
+        #search for peaks once the background is substracted
+        self.peakb=TSpectrum(self.npeaks) #(maximum number of peaks)
+        self.histogram_background = self.peakb.Background(self.histogram, 20, 'same')
+        self.histogram.Add(self.histogram_background,-1)
+        self.nfound=self.peakb.Search(self.histogram, 1,"",0.0001)
+        xpeaks=self.peakb.GetPositionX()
+        return array([xpeaks[i] for i in range(0, self.nfound)])
+    
+    @staticmethod
+    def get_background_average(histogram_list):
+        hback_list=array([TSpectrum.Background(histogram,20,'same') for histogram in histogram_list])
+        hback=[hback_list[0].Add(hback_list[i]) for i in range(1,len(hback_list))]
+        return hback[0]/len(hback_list)
+    
+    @staticmethod
+    def peak_finding2(histogram):
+        source, dest, fPositionX, fPositionY = [array([]) for i in range(0,4)]
+        nbins=histogram.GetNbinsX()
+        histogram.SetTitle('High resolution peak searching, number of iterations = 3')
+        histogram.GetXaxis().SetRange(1,nbins)
+        histogram_d=TH1F('dest','', nbins, 0, nbins)
+        print(nbins)
+        for i in range(0, nbins):
+            source=append(source, histogram.GetBinContent(i+1)) 
+        spectrum=TSpectrum()
+        nfound=spectrum.SearchHighRes(source, dest, nbins, 8, 2, True, 3, True, 3)
+        print('B')
+        xpeaks=spectrum.GetPositionX()
+        for peak in xpeaks:
+            bin = 1+int(peak+0.5)
+            fPositionX=append(fPositionX, histogram.GetBinCenter(bin))
+            fPositionY=append(fPositionY, histogram.GetBinContent(bin))
+        
+        pm = TPolyMarker(nfound, fPositionX, fPositionY)
+        histogram.GetListOfFunctions().Add(pm)
+        pm.SetMarkerStyle(23)
+        pm.SetMarkerColor(kRed)
+        pm.SetMarkerSize(1.3)
+ 
+        [histogram_d.SetBinContent(i+1, dest[i]) for i in range(0, nbins)]
+        histogram_d.SetLineColor(kRed)
+        histogram_d.Draw('SAME')
+        input('asdasd')
+#        for i in range(0, nfound):
+#            calculate distance, barion
         
     def background(self):
         # Estimate background using TSpectrum.Background
-        hb = self.peak.Background(self.histogram,20,"same") #This function calculates the background spectrum in th
+        self.histogram_background = self.peak.Background(self.histogram, 20, 'same') #This function calculates the background spectrum in histogram
         # estimate linear background using a fitting method, predefined ROOT pol1
         self.fline = TF1('fline', 'pol1', self.range_min, self.range_max)
         self.histogram.Fit('fline', 'qn')
@@ -101,21 +144,21 @@ class FitPeaks():
 
     def gaussians_fitting(self):
         print(f'Now fitting: it takes some time \n')
+        self.hcopy=self.histogram.Copy()
         for i in range(0, 10):  # loop for making the thing to converge
             start_time = time()
             npars = int(len(self.par))
             fit = TF1('fit', gaussians, self.range_min, self.range_max, npars)
-            TVirtualFitter.Fitter(self.h2, npars)
+            TVirtualFitter.Fitter(self.hcopy, npars)
             fit.SetParameters(self.par)
             fit.SetNpx(1000)
-            self.h2.Fit(fit)
+            self.hcopy.Fit(fit)
             self.c1.Update()
-            getpar = self.h2.GetFunction('fit')
+            getpar = self.hcopy.GetFunction('fit')
             for j in range(getpar.GetNumberFreeParameters()):
                 self.par[j] = getpar.GetParameter(j)
-            # print(self.par)
-            print(f"it took {time()-start_time} seconds, not that bad")
-
+            print(f'it took {time()-start_time} seconds, not that bad')
+    
     def set_ranges(self):
         self.range_min = self.histogram.GetXaxis().GetXmin()
         self.range_max = self.histogram.GetXaxis().GetXmax()
@@ -134,10 +177,3 @@ class FitPeaks():
         for j in range(getpar.GetNumberFreeParameters()):
             par[j] = getpar.GetParameter(j)
         # return par? just plot?
-
-
-if __name__ == '__main__':
-    try:
-        pass
-    except:
-        raise

@@ -1,15 +1,9 @@
 from setuptools import setup, find_packages
 from pysimtof.version import __version__
+from pathlib import Path
 
-long_description = ''
-
-try:
-    from pypandoc import convert_file
-
-    read_md = lambda f: convert_file(f, 'rst', 'md')
-except ImportError:
-    print("warning: pypandoc module not found, could not convert Markdown to RST")
-    read_md = lambda f: open(f, 'r').read()
+this_directory=Path(__file__).parent
+long_description=(this_directory / 'README.md').read_text()
 
 classifiers = [
     'Environment :: Console',
@@ -27,7 +21,8 @@ setup(
     packages=find_packages(),
     version=__version__,
     description='Collection of tools for dealing with SMS data at storage rings.',
-    long_description=read_md('README.md'),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='DFreireF // gwgwhc',
     url='https://github.com/DFreireF/pysimtof',
     download_url=f'https://github.com/DFreireF/pysimtof/tarball/{__version__}',
