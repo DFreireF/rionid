@@ -67,19 +67,17 @@ class ImportData():
         else: sys.exit()
 
     def _calculate(self, brho, gammat, ref_isotope, ref_charge):
-        # return mass and moq from barion of the particles present in LISE file
-        self.mass = np.array([AMEData.to_mev(Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_mass_in_u())
-                             for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
-        moq = np.array([Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
+        # return moq from barion of the particles present in LISE file
+        self.moq = np.array([Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
                              for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
         self.ref_index = [i for i, lise in enumerate(self.lise_data) for ame in self.ame_data if (lise[0] ==
                                                                                             ame[6] and lise[1] == ame[5] and str(lise[1])+lise[0] == ref_isotope)]
-        moq_rel = moq[self.ref_index]
+        moq_rel = self.moq[self.ref_index]
         # calculates gamma, beta, velocity and frequency (v/d) of our reference particle
-        self.frequence_rel=ImportData.calculate_ion_parameters(brho, ref_charge, self.mass[self.ref_index], self.ring.circumference)
+        self.frequence_rel=ImportData.calculate_ion_parameters(brho, ref_charge, self.moq[self.ref_index]*ref_charge, self.ring.circumference)
         # simulated relative revolution frequencies
-        self.srrf = np.array([1-1/gammat/gammat*(moq[k]-moq_rel)/moq_rel
-                              for k in range(len(self.mass))])
+        self.srrf = np.array([1-1/gammat/gammat*(self.moq[k]-moq_rel)/moq_rel
+                              for k in range(len(self.moq))])
         
     def _simulated_data(self, harmonics):
         self.simulated_data_dict=dict()
