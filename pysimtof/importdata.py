@@ -12,14 +12,13 @@ class ImportData():
         
     def set_ref_ion(self, ref_iso, ref_charge):
         self.ref_ion=ref_iso+str(ref_charge)
-        
+
     def _set_args(self, filename, lise_filename, harmonics, brho, gammat, ref_iso, ref_charge, time, skip):
+        self.set_ref_ion(ref_iso, ref_charge)
         self._import(lise_filename)
         self._exp_data(filename, time, skip)
         self._calculate(brho, gammat, ref_charge)
         self._simulated_data(harmonics)
-        self.set_ref_ion(ref_iso, ref_charge)
-        
 
     def _import(self, lisefile):
         # import ame from barion:
@@ -76,19 +75,21 @@ class ImportData():
         self.moq= dict()
         for lise in self.lise_data:
             nuclei_name=str(lise[1])+lise[0]+str(lise[4][0])
-            self.moq[nuclei_name]=np.array([Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
-                                            for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
-        mass_ref=AMEData.to_mev(self.moq[self.ref_ion]*ref_charge)
-        self.frequence_rel=ImportData.calculate_ion_parameters(brho, ref_charge, mass_ref, self.ring.circumference)
+            self.moq[nuclei_name]=np.array([[Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
+                                   for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]]]).T
+        self.mass_ref=AMEData.to_mev(self.moq[self.ref_ion][0]*ref_charge)
+        self.frequence_rel=ImportData.calculate_ion_parameters(brho, ref_charge, self.mass_ref, self.ring.circumference)
         # simulated relative revolution frequencies
-        self.srrf = np.array([1-1/gammat/gammat*(self.moq[name]-self.moq[self.ref_ion])/self.moq[self.ref_ion]
+        self.srrf = np.array([1-1/gammat/gammat*(self.moq[name][0]-self.moq[self.ref_ion][0])/self.moq[self.ref_ion][0]
                               for name in self.moq])
         
     def _simulated_data(self, harmonics):
         self.simulated_data_dict=dict()
-        yield_data = np.array([[lise[5] for lise in self.lise_data]]).t
+        yield_data = np.array([[lise[5] for lise in self.lise_data]]).T
+        print(len(self.moq), yield_data)
+        input()
         #get nuclei name for labels
-        self.nuclei_names=[f'{lise[1]}'+particle(lise[2], lise[3], self.ame, self.ring).tbl_name+f'+{lise[4][0]}' for lise in self.lise_data]
+        self.nuclei_names=[f'{lise[1]}'+Particle(lise[2], lise[3], self.ame, self.ring).tbl_name+f'+{lise[4][0]}' for lise in self.lise_data]
         # harmonics:
         for harmonic in harmonics:
             simulated_data = np.array([])

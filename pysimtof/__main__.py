@@ -16,7 +16,7 @@ def main():
     parser.add_argument('-g', '--gammat', type=float, default=1.395, help='GammaT value of ESR')
     
     parser.add_argument('-i', '--refisotope', type=str, default='72Ge', help='Isotope of study')
-    parser.add_argument('-c', '--refcharge', type=float, default=32, help='Charge state of the studied isotope')
+    parser.add_argument('-c', '--refcharge', type=int, default=32, help='Charge state of the studied isotope')
     parser.add_argument('-d', '--ndivs', type=int, nargs='?', default=4, help='Number of divisions in the display')
     parser.add_argument('-o', '--dops', type=int, default=1, help='Display of srf data options. 0-> constant height, else->scaled')
     parser.add_argument('-t', '--time', type=float, nargs='?', default=1, help='Analysis time from the begining')
