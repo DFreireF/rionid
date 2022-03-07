@@ -15,6 +15,7 @@ class ImportData():
         self._exp_data(filename, time, skip)
         self._calculate(brho, gammat, ref_iso, ref_charge)
         self._simulated_data(harmonics)
+        self.ref_ion=ref_iso+str(ref_charge)
 
     def _import(self, lisefile):
         # import ame from barion:
@@ -68,22 +69,22 @@ class ImportData():
 
     def _calculate(self, brho, gammat, ref_isotope, ref_charge):
         # return moq from barion of the particles present in LISE file
-        self.moq = np.array([Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
-                             for lise in self.lise_data for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
-        self.ref_index = [i for i, lise in enumerate(self.lise_data) for ame in self.ame_data if (lise[0] ==
-                                                                                            ame[6] and lise[1] == ame[5] and str(lise[1])+lise[0] == ref_isotope)]
-        moq_rel = self.moq[self.ref_index]
-        # calculates gamma, beta, velocity and frequency (v/d) of our reference particle
-        self.frequence_rel=ImportData.calculate_ion_parameters(brho, ref_charge, self.moq[self.ref_index]*ref_charge, self.ring.circumference)
+        self.moq= dict()
+        for lise in self.lise_data:
+            nuclei_name=str(lise[1])+lise[0]+str(lise[4][0])
+            self.moq[nuclei_name]=np.array([Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
+                                            for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]])
+
+        self.frequence_rel=ImportData.calculate_ion_parameters(brho, ref_charge, self.moq[self.ref_ion]*ref_charge, self.ring.circumference)
         # simulated relative revolution frequencies
-        self.srrf = np.array([1-1/gammat/gammat*(self.moq[k]-moq_rel)/moq_rel
-                              for k in range(len(self.moq))])
+        self.srrf = np.array([1-1/gammat/gammat*(self.moq[name]-self.moq[self.ref_ion])/self.moq[self.ref_ion]
+                              for name in self.moq])
         
     def _simulated_data(self, harmonics):
         self.simulated_data_dict=dict()
-        yield_data = np.array([[lise[5] for lise in self.lise_data]]).T
+        yield_data = np.array([[lise[5] for lise in self.lise_data]]).t
         #get nuclei name for labels
-        self.nuclei_names=[f'{lise[1]}'+Particle(lise[2], lise[3], self.ame, self.ring).tbl_name+f'+{lise[4][0]}' for lise in self.lise_data]
+        self.nuclei_names=[f'{lise[1]}'+particle(lise[2], lise[3], self.ame, self.ring).tbl_name+f'+{lise[4][0]}' for lise in self.lise_data]
         # harmonics:
         for harmonic in harmonics:
             simulated_data = np.array([])
@@ -100,16 +101,16 @@ class ImportData():
             
     @staticmethod
     def calculate_ion_parameters(brho, ref_charge, ref_mass, ring_circumference):
-        gamma = ImportData.gamma(brho, ref_charge, ref_mass)
-        beta = ImportData.beta(gamma)
-        velocity = ImportData.velocity(beta)
-        frequence_rel = ImportData.calc_freq_rel(velocity, ring_circumference)
+        gamma = importdata.gamma(brho, ref_charge, ref_mass)
+        beta = importdata.beta(gamma)
+        velocity = importdata.velocity(beta)
+        frequence_rel = importdata.calc_freq_rel(velocity, ring_circumference)
         return frequence_rel
         
     @staticmethod
     def gamma(brho, ref_charge, ref_mass):
-        # /1e6 necessary for mass from MeV to eV.
-        return np.sqrt(pow(brho*ref_charge*(AMEData.CC/1e6)/ref_mass, 2)+1)        
+        # /1e6 necessary for mass from mev to ev.
+        return np.sqrt(pow(brho*ref_charge*(amedata.cc/1e6)/ref_mass, 2)+1)        
     
     @staticmethod
     def beta(gamma):
@@ -117,7 +118,7 @@ class ImportData():
     
     @staticmethod
     def velocity(beta):
-        return AMEData.CC*beta
+        return amedata.cc*beta
     
     @staticmethod
     def calc_freq_rel(velocity, ring_circumference):

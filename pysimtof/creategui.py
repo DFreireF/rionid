@@ -10,7 +10,7 @@ class CreateGUI():
         self.create_canvas(ndivs)
         self.create_histograms(exp_data, simulated_data_dict, filename)
         self.histogram_fill()
-        self.create_stack(exp_data, simulated_data_dict,ndivs)
+        self.create_stack(exp_data, simulated_data_dict, ndivs)
         
     def _set_args(self, idx_case):
         self.histogram_scale(idx_case)
