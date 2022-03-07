@@ -13,7 +13,7 @@ class ImportData():
     def _set_args(self, filename, lise_filename, harmonics, brho, gammat, ref_iso, ref_charge, time, skip):
         self._import(lise_filename)
         self._exp_data(filename, time, skip)
-        self._calculate(brho, gammat, ref_iso, ref_charge)
+        self._calculate(brho, gammat, ref_charge)
         self._simulated_data(harmonics)
         self.ref_ion=ref_iso+str(ref_charge)
 
@@ -67,7 +67,7 @@ class ImportData():
         elif 'tdms' in filename: self.exp_data=ImportData.exp_data_ntcap(filename)
         else: sys.exit()
 
-    def _calculate(self, brho, gammat, ref_isotope, ref_charge):
+    def _calculate(self, brho, gammat, ref_charge):
         # return moq from barion of the particles present in LISE file
         self.moq= dict()
         for lise in self.lise_data:
