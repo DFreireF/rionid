@@ -86,8 +86,6 @@ class ImportData():
     def _simulated_data(self, harmonics):
         self.simulated_data_dict=dict()
         yield_data = np.array([[lise[5] for lise in self.lise_data]]).T
-        print(len(self.moq), yield_data)
-        input()
         #get nuclei name for labels
         self.nuclei_names=[f'{lise[1]}'+Particle(lise[2], lise[3], self.ame, self.ring).tbl_name+f'+{lise[4][0]}' for lise in self.lise_data]
         # harmonics:
