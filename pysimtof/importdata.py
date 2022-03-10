@@ -6,6 +6,7 @@ from ROOT import *
 from iqtools import *
 import sys
 
+
 class ImportData():
     '''
     Model (MVC)
@@ -19,7 +20,7 @@ class ImportData():
         self.brho = brho
         self.gammat = gammat
 
-    def _set_secondary_args(self, filename, lise_filename, harmonics, data_time, skip_time, binning, f = None, p = None):
+    def _set_secondary_args(self, filename, lise_filename, harmonics, data_time, skip_time, binning):
 
         self.filename = filename
         self.lise = lise_filename
@@ -27,7 +28,6 @@ class ImportData():
         self.data_time = data_time
         self.skip_time = skip_time
         self.lframes = binning
-        if f: self.introduce_exp_f_p(f, p)
         
     def _import(self):
         # import ame from barion:
@@ -38,9 +38,6 @@ class ImportData():
         lise_file = LISEreader(self.lise)
         self.lise_data = lise_file.get_info_all()
 
-    def introduce_exp_f_p (self, f, p):
-        self.exp_data = (np.stack((f, p), axis = 1)).reshape((len(f), 2))
-        
     def exp_data_root(self):
         
         ##This part may need to be changed to have the same frecuency "units"
