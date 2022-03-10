@@ -4,15 +4,22 @@ from pysimtof.pypeaks import *
 from pysimtof.importdata import *
 
 class CreateGUI():
+    '''
+    View (MVC)
+    '''
+    
     def __init__(self, exp_data, simulated_data_dict, ref_ion, nuclei_names, ndivs, filename):
-        self.ref_ion=ref_ion
-        self.nuclei_names=nuclei_names
+        
+        self.ref_ion = ref_ion
+        self.nuclei_names = nuclei_names
+        
         self.create_canvas(ndivs)
         self.create_histograms(exp_data, simulated_data_dict, filename)
         self.histogram_fill()
         self.create_stack(exp_data, simulated_data_dict, ndivs)
         
     def _set_args(self, idx_case):
+        
         self.histogram_scale(idx_case)
         self.draw_histograms()
         self.canvas_peaks.Close()
@@ -26,7 +33,7 @@ class CreateGUI():
         self.canvas_main.Divide(1, ndivs)
         self.canvas_peaks = TCanvas('canvas_peaks_srf', 'canvas_peaks_srf',
                                     500, 500)
-        
+
     def create_histograms(self, exp_data, simulated_data_dict, filename):
         self.histogram_dict = {'exp_data': np.array([TH1D('h_exp_data', filename, len(exp_data[:,0]),
                                                           exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype='object').T}
@@ -36,7 +43,7 @@ class CreateGUI():
                                                      simulated_data_dict[key][:, 0].min(), simulated_data_dict[key][:, 0].max()), simulated_data_dict[key][:,:]], dtype='object').T
             
         [self.histogram_format(self.histogram_dict[key][0], color, key) for color, key in enumerate(self.histogram_dict)]
-            
+
     def histogram_fill(self):
         for key in self.histogram_dict:
             xbin=[self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:,0]]
