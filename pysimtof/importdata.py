@@ -20,11 +20,14 @@ class ImportData():
         self.brho = brho
         self.gammat = gammat
 
-    def _set_secondary_args(self, filename, lise_filename, harmonics, data_time, skip_time, binning):
+    def _set_secondary_args(self, lise_filename, harmonics):
 
-        self.filename = filename
         self.lise = lise_filename
         self.harmonics = harmonics
+
+    def _set_tertiary_args(self, filename, data_time, skip_time, binning):
+        
+        self.filename = filename    
         self.data_time = data_time
         self.skip_time = skip_time
         self.lframes = binning
@@ -120,7 +123,8 @@ class ImportData():
             simulated_data = np.append(simulated_data, array_stack)
             simulated_data = simulated_data.reshape(len(array_stack), 2)
             name = f'{harmonic}'            
-            self.simulated_data_dict[name] = simulated_data
+#            self.simulated_data_dict[name] = simulated_data
+            self.simulated_data_dict[name] = simulated_data[simulated_data[:, 0].argsort()]
             
     @staticmethod
     def calculate_ion_parameters(brho, ref_charge, ref_mass, ring_circumference):

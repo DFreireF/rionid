@@ -57,13 +57,14 @@ def read_masterfile(master_filename):
 def controller(filename, lise_file, harmonics, brho, gammat, ref_nuclei, ref_charge, ndivs, dops, spdf, sroot, time, skip, binning):
     
     mydata = ImportData(ref_nuclei, ref_charge, brho, gammat)
-    mydata._set_secondary_args(filename, lise_file, harmonics, time, skip, binning)
+    mydata._set_secondary_args(lise_file, harmonics)
+    mydata._set_tertiary_args(filename, time, skip, binning)
     mydata._exp_data() # -> exp_data
     mydata._calculate_srrf() # -> moq ; srrf
     mydata._simulated_data() # -> simulated frecs
     
-    mycanvas = CreateGUI(mydata.exp_data, mydata.simulated_data_dict, ref_nuclei, mydata.nuclei_names, ndivs, filename)
-    mycanvas._set_args(dops)
+    mycanvas = CreateGUI(ref_nuclei, mydata.nuclei_names, ndivs, dops)
+    mycanvas._view(mydata.exp_data, mydata.simulated_data_dict, filename)
         
     date_time=datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
     info_name=f'{outfilepath}{date_time}_b{brho}_g{gammat}'
