@@ -123,8 +123,8 @@ class ImportData():
             simulated_data = np.append(simulated_data, array_stack)
             simulated_data = simulated_data.reshape(len(array_stack), 2)
             name = f'{harmonic}'            
-#            self.simulated_data_dict[name] = simulated_data
-            self.simulated_data_dict[name] = simulated_data[simulated_data[:, 0].argsort()]
+            self.simulated_data_dict[name] = simulated_data
+#            self.simulated_data_dict[name] = simulated_data[simulated_data[:, 0].argsort()]
             
     @staticmethod
     def calculate_ion_parameters(brho, ref_charge, ref_mass, ring_circumference):

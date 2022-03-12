@@ -15,6 +15,7 @@ class CreateGUI():
         self.nuclei_names = nuclei_names
         self.ndivs = ndivs
         self.idx_case = idx_case
+        self.root = False
 
     def _view(self, exp_data, simulated_data_dict, filename = 'Spectrum'):
         
@@ -37,8 +38,8 @@ class CreateGUI():
         self.canvas_peaks = TCanvas('canvas_peaks_srf', 'canvas_peaks_srf', 500, 500)
 
     def create_histograms(self, exp_data, simulated_data_dict, filename):
-        
         if 'root' in exp_data:
+            self.root = True
             self.myFile = TFile.Open(exp_data)
             histogram = self.myFile.th1f
             self.histogram_dict = {'exp_data': [histogram]}
@@ -55,16 +56,20 @@ class CreateGUI():
     def histogram_fill(self):
         
         for key in self.histogram_dict:
-            if 'srf' in key:
+            if not self.root:
                 xbin = [self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:,0]]
                 [self.histogram_dict[key][0].AddBinContent(xbin, self.histogram_dict[key][1][i,1]) for i, xbin in enumerate(xbin)]
+            else:    
+                if 'srf' in key:
+                    xbin = [self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:,0]]
+                    [self.histogram_dict[key][0].AddBinContent(xbin, self.histogram_dict[key][1][i,1]) for i, xbin in enumerate(xbin)]
             
     def set_xranges(self):
         
         self.xrange_divs = dict()
         x = int ( self.histogram_dict['exp_data'][0].GetNbinsX() / self.ndivs )
         for j in range (0, self.ndivs):
-           self.xrange_divs[str(j)] = np.array([int(x * j + 1), int(x * ( j + 1 ) - 1)])
+           self.xrange_divs[str(j)] = np.array([int(x * j + 1), int(x * ( j + 1 ))])
            
     def set_yscales(self):
         
@@ -85,7 +90,7 @@ class CreateGUI():
                             if self.idx_case == 0:
                                 self.histogram_dict[key][0].SetBinContent(xbin, maximum)
                             else:
-                                scaled = self.histogram_dict[key][0].GetBinContent(xbin) / maximum
+                                scaled = self.histogram_dict[key][0].GetBinContent(xbin) * maximum /  self.histogram_dict[key][0].GetMaximum()
                                 self.histogram_dict[key][0].SetBinContent(xbin, scaled)
         
     def create_stack(self, simulated_data_dict):
@@ -100,12 +105,12 @@ class CreateGUI():
            
     def set_xy_ranges(self, stack, rang):
         
-        self.exp_dict[stack].SetMinimum(rang[0] / 50)
-        self.exp_dict[stack].SetMaximum(rang[0] * 100)
+        self.exp_dict[stack].SetMinimum(rang[0] / 30)
+        self.exp_dict[stack].SetMaximum(rang[0] * 30)
         self.exp_dict[stack].GetXaxis().SetRange(rang[1], rang[2])
         
-        self.stack[stack][0].SetMinimum(rang[0] / 50)
-        self.stack[stack][0].SetMaximum(rang[0] * 100)
+        self.stack[stack][0].SetMinimum(rang[0] / 30)
+        self.stack[stack][0].SetMaximum(rang[0] * 30)
         self.stack[stack][0].GetXaxis().SetRange(rang[1], rang[2])
     
             
