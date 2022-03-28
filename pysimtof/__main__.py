@@ -35,7 +35,7 @@ def main():
     args = parser.parse_args()
 
     print(f'Running {scriptname}')
-    if args.verbose: log.basicConfig(level=log.DEBUG)
+    if args.verbose: log.basicConfig(level = log.DEBUG)
     if args.outdir: outfilepath = os.path.join(args.outdir, '')
 
     # here we go:
@@ -66,8 +66,8 @@ def controller(filename, lise_file, harmonics, brho, gammat, ref_nuclei, ref_cha
     mycanvas = CreateGUI(ref_nuclei, mydata.nuclei_names, ndivs, dops)
     mycanvas._view(mydata.exp_data, mydata.simulated_data_dict, filename)
         
-    date_time=datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
-    info_name=f'{outfilepath}{date_time}_b{brho}_g{gammat}'
+    date_time = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
+    info_name = f'{outfilepath}{date_time}_b{brho}_g{gammat}'
     if spdf: mycanvas.save_pdf(info_name)
     if sroot: mycanvas.save_root(info_name)
 

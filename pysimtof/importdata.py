@@ -53,7 +53,6 @@ class ImportData():
     def exp_data_analyser(self):
 
         iq = get_iq_object(self.filename)
-        iq.read_samples(1)
         nframes = int(self.data_time * iq.fs / self.lframes)
         sframes = int(self.skip_time * iq.fs / self.lframes)
         iq.read(nframes = nframes, lframes = self.lframes, sframes = sframes)
@@ -68,22 +67,24 @@ class ImportData():
         '''
         Needs to be modified
         '''
-        nframes = 50
-        iq.read_samples(nframes * self.lframes)
+        nframes = 4096
+        lframes = 2e18
         # import xx:frequency, yy:time, zz:power
-        xx, _, zz = iq.get_spectrogram(nframes, self.lframes)
+        xx, _, zz = iq.get_spectrogram(nframes, lframes)
         ff = (xx[0] + iq.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
         pp = (zz[0]).reshape(len(zz[0]),1) #power
         pp = pp / pp.max()
         return (np.stack((ff, pp), axis = 1)).reshape((len(ff), 2))
         
     def _exp_data(self):
+        
         if 'root' in self.filename: self.exp_data = self.exp_data_root()
         elif 'tiq' in self.filename: self.exp_data = self.exp_data_analyser()
         elif 'tdms' in self.filename: self.exp_data = self.exp_data_ntcap()
         else: sys.exit()
 
     def calculate_moqs(self, particles = None):
+        
         # return moq from barion of the particles present in LISE file, or of the particles introduced
         self.moq = dict()
         if particles:
@@ -98,6 +99,7 @@ class ImportData():
                                                    for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]]]).T
                 
     def _calculate_srrf(self, particles = None):
+        
         self.calculate_moqs(particles)
         self.mass_ref = AMEData.to_mev(self.moq[self.ref_ion][0] * self.ref_charge)
         self.frequence_rel = ImportData.calculate_ion_parameters(self.brho, self.ref_charge, self.mass_ref, self.ring.circumference)
