@@ -26,7 +26,7 @@ class CreateGUI():
         self.set_yscales()
         self.create_stack(simulated_data_dict)
         self.draw_histograms()
-        self.canvas_peaks.Close()
+        #self.canvas_peaks.Close()
         gSystem.ProcessEvents()
         gApplication.Run() #only if you want to see 1 plot
         

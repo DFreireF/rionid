@@ -60,6 +60,7 @@ def controller(filename, lise_file, harmonics, brho, gammat, ref_nuclei, ref_cha
     mydata._set_secondary_args(lise_file, harmonics)
     mydata._set_tertiary_args(filename, time, skip, binning)
     mydata._exp_data() # -> exp_data
+    mydata.calculate_moqs()
     mydata._calculate_srrf() # -> moq ; srrf
     mydata._simulated_data() # -> simulated frecs
     
