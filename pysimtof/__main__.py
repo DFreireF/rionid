@@ -1,11 +1,13 @@
 import argparse
+import os
 import logging as log
 from datetime import datetime
-import os
 from pysimtof.importdata import *
 from pysimtof.creategui import *
 
+
 def main():
+    
     scriptname = 'pySimToF' 
     parser = argparse.ArgumentParser()
     

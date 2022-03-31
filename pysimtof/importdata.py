@@ -65,15 +65,16 @@ class ImportData():
     
     def exp_data_ntcap(self):
         
-        '''
-        Needs to be modified
-        '''
-        nframes = 4096
-        lframes = 2e18
+        iq = get_iq_object(self.filename)
+        iq.read_samples(1)
+        nframes = int(self.data_time * iq.fs / self.lframes)
+        sframes = int(self.skip_time * iq.fs / self.lframes)
+        iq.read(nframes = nframes, lframes = self.lframes, sframes = sframes)        
         # import xx:frequency, yy:time, zz:power
-        xx, _, zz = iq.get_spectrogram(nframes, lframes)
-        ff = (xx[0] + iq.center).reshape(len(xx[0]),1) #frequency, index 0 as xx is 2d array
-        pp = (zz[0]).reshape(len(zz[0]),1) #power
+        xx, yy, zz = iq.get_spectrogram(nframes = nframes, lframes = self.lframes)
+        axx, ayy, azz = get_averaged_spectrogram(xx, yy, zz, len(xx[:,0]))
+        ff = (axx[0, :] + iq.center).reshape(len(axx[0, :]),1) #frequency, index 0 as xx is 2d array
+        pp = (azz[0, :]).reshape(len(azz[0, :]),1) #power
         pp = pp / pp.max()
         return (np.stack((ff, pp), axis = 1)).reshape((len(ff), 2))
         
@@ -96,15 +97,17 @@ class ImportData():
             self._import()
             for lise in self.lise_data:
                 nuclei_name = f'{lise[1]}{lise[0]}+{lise[4][0]}'
-                self.moq[nuclei_name] = [Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
-                                                   for ame in self.ame_data if lise[0] == ame[6] and lise[1] == ame[5]]
+                for ame in self.ame_data:
+                    if lise[0] == ame[6] and lise[1] == ame[5]:
+                        self.moq[nuclei_name] = Particle(lise[2], lise[3], self.ame, self.ring).get_ionic_moq_in_u()
 
     def _calculate_srrf(self, moqs = None):
         
         if moqs:
             self.moq = moqs
             self.moq[self.ref_ion] = Particle(32, 40, AMEData(), self.ring).get_ionic_moq_in_u()
-            
+        print(self.moq[self.ref_ion] * self.ref_charge, self.ref_charge, self.ref_ion)
+        
         self.mass_ref = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
         self.frequence_rel = ImportData.calculate_ion_parameters(self.brho, self.ref_charge, self.mass_ref, self.ring.circumference)
         # simulated relative revolution frequencies
@@ -114,7 +117,7 @@ class ImportData():
     def _simulated_data(self, particles = False):
         self.simulated_data_dict = dict()
         if particles: yield_data = [1 for i in range(len(self.moq))]
-        else: yield_data = np.array([[lise[5] for lise in self.lise_data]]).T
+        else: yield_data = [lise[5] for lise in self.lise_data]
         #get nuclei name for labels
         self.nuclei_names = [nuclei_name for nuclei_name in self.moq]
         # harmonics:
