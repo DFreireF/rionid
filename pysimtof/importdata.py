@@ -11,23 +11,24 @@ class ImportData():
     '''
     Model (MVC)
     '''
-    def __init__(self, ref_nuclei, ref_charge, brho, gammat):
+    def __init__(self, filename, harmonics, ref_nuclei, ref_charge, brho, gammat):
         
-        self.ring = Ring('ESR', 108.43)
+        self.ring = Ring('ESR', 108.4) # 108.43 Ge
         self.ref_nuclei = ref_nuclei
         self.ref_charge = ref_charge
         self.ref_ion = f'{ref_nuclei}+{ref_charge}'
         self.brho = brho
         self.gammat = gammat
-
-    def _set_secondary_args(self, lise_filename, harmonics):
+        self.harmonics = harmonics
+        self.filename = filename
+        
+    def _set_secondary_args(self, lise_filename):
 
         self.lise = lise_filename
-        self.harmonics = harmonics
 
-    def _set_tertiary_args(self, filename, data_time, skip_time, binning):
+
+    def _set_tertiary_args(self, data_time, skip_time, binning):
         
-        self.filename = filename    
         self.data_time = data_time
         self.skip_time = skip_time
         self.lframes = binning
@@ -77,12 +78,24 @@ class ImportData():
         pp = (azz[0, :]).reshape(len(azz[0, :]),1) #power
         pp = pp / pp.max()
         return (np.stack((ff, pp), axis = 1)).reshape((len(ff), 2))
+    
+    def exp_data_specan(self):
+        
+        f, p, _ = read_rsa_specan_xml(self.filename)
+        p = p - p.min()
+        p = p / p.max()
+        print(p)
+
+        input()
+        return (np.stack((f, p), axis = 1)).reshape((len(f), 2))
+        
         
     def _exp_data(self):
         
         if 'root' in self.filename: self.exp_data = self.exp_data_root()
         elif 'tiq' in self.filename: self.exp_data = self.exp_data_analyser()
         elif 'tdms' in self.filename: self.exp_data = self.exp_data_ntcap()
+        elif 'Specan' in self.filename : self.exp_data = self. exp_data_specan()
         else: sys.exit()
 
     def calculate_moqs(self, particles = None):
@@ -105,9 +118,11 @@ class ImportData():
         
         if moqs:
             self.moq = moqs
-            self.moq[self.ref_ion] = Particle(32, 40, AMEData(), self.ring).get_ionic_moq_in_u()
-        print(self.moq[self.ref_ion] * self.ref_charge, self.ref_charge, self.ref_ion)
-        
+            #ref_p = Particle(90, 139, AMEData(), self.ring)
+            #ref_p.qq = 89
+            #self.moq[self.ref_ion] = ref_p.get_ionic_moq_in_u()
+#        print(self.moq[self.ref_ion] * self.ref_charge, self.ref_charge, self.ref_ion)
+#        print(self.exp_data)
         self.mass_ref = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
         self.frequence_rel = ImportData.calculate_ion_parameters(self.brho, self.ref_charge, self.mass_ref, self.ring.circumference)
         # simulated relative revolution frequencies
@@ -126,8 +141,8 @@ class ImportData():
             array_stack = np.array([])
             # get srf data
             harmonic_frequency = self.srrf * self.frequence_rel * harmonic
+            print(harmonic_frequency, harmonic, self.frequence_rel * harmonic)
             # attach harmonic, frequency, yield data and ion properties together:
-            print(harmonic_frequency, yield_data)
             array_stack = np.stack((harmonic_frequency, yield_data),
                                    axis=1)  # axis=1 stacks vertically
             simulated_data = np.append(simulated_data, array_stack)

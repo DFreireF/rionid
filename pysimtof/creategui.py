@@ -189,7 +189,7 @@ class CreateGUI():
     def set_peaks(self, key):
         
         self.canvas_peaks.cd()
-        peaks = FitPeaks(200, self.histogram_dict[key][0].Clone(), False) # in Search set options nodraw to not draw it. #200 peaks to fit
+        peaks = FitPeaks(2000, self.histogram_dict[key][0].Clone(), False) # in Search set options nodraw to not draw it. #200 peaks to fit
         xpeaks = peaks.peak_finding()
         self.canvas_peaks.Update()
         return xpeaks
