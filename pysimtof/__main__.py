@@ -1,7 +1,6 @@
 import argparse
 import os
 import logging as log
-from datetime import datetime
 from pysimtof.importdata import *
 from pysimtof.creategui import *
 
@@ -10,69 +9,70 @@ def main():
     
     scriptname = 'pySimToF' 
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument('filename', type = str, nargs = '+', help = 'Name of the input file.')
-    parser.add_argument('-l', '--lise_file', type = str, nargs = '?',help = 'Name of the LISE file.')
+    modes = parser.add_mutually_exclusive_group(required = True)
+
+    # Main arguments
+    parser.add_argument('datafile', type = str, nargs = '+', help = 'Name of the input file with data.')
     parser.add_argument('-hrm', '--harmonics', type = int, nargs = '+', help = 'Harmonics to simulate.')
-    parser.add_argument('-b', '--brho', type = float, default = 6.90922, help = 'Brho value of the reference ion beam at ESR.')
-    parser.add_argument('-g', '--gammat', type = float, default = 1.395, help = 'GammaT value of ESR.')
-    parser.add_argument('-i', '--refisotope', type = str, default = '72Ge', help = 'Isotope of study.')
-    parser.add_argument('-c', '--refcharge', type = int, default = 32, help = 'Charge state of the studied isotope.')
+    parser.add_argument('-ap', '--alphap', type = float, help = 'Momentum compaction factor of the ring.')
+    parser.add_argument('-r', '--refion', type = str, help = 'Reference ion with format NucleonsNameChargestate :=  AAXX+CC. Example: 72Ge+35, 1H+1, 238U+92...')
+    parser.add_argument('-psim', '--filep', type = str, help = 'Read list of particles to simulate. LISE file or something else.')
+
+    # Arguments for each mode (exclusive)
+    modes.add_argument('-b', '--brho', type = float, help = 'Brho value of the reference nucleus at ESR (isochronous mode).')
+    modes.add_argument('-f', '--frev', type = float, help = 'Revolution frequency of the reference particle (standard mode).')
+    
+    # Arguments for the visualization
     parser.add_argument('-d', '--ndivs', type = int, default = 4, help = 'Number of divisions in the display.')
-    parser.add_argument('-o', '--dops', type = int, default = 1, help = 'Display of srf data options. 0-> constant height, else->scaled.')
-    parser.add_argument('-t', '--time', type = float, default = 1, help = 'Data time to analyse.')
-    parser.add_argument('-sk', '--skip', type = float, default = 0, help = 'Start of the analysis.')
-    parser.add_argument('-bin', '--binning', type = int, default = 1024, help = 'Number of frecuency bins.')
-    parser.add_argument('-out', '--outdir', type = str, default = '.', help = 'output directory.')
-
-    parser.add_argument('-v', '--verbose',
-                        help = 'Increase output verbosity', action = 'store_true')
-
-    parser.add_argument('-s', '--spdf',
-                        help = 'Save canvas to pdf.', action = 'store_true')
-
-    parser.add_argument('-r', '--sroot',
-                        help = 'Save canvas to root.', action = 'store_true')
+    parser.add_argument('-o', '--dops', type = int, default = 0, help = 'Display of srf data options. 0 -> constant height, else->scaled.')
+    
+    # Actions
+    parser.add_argument('-v', '--verbose', help = 'Increase output verbosity.', action = 'store_true')
+    parser.add_argument('-s', '--show', help = 'Show display. If not, save root file and close display', action = 'store_true')
 
     args = parser.parse_args()
 
-    print(f'Running {scriptname}')
+    # Checking for arguments errors
+    if args.brho is None and args.frev is None:
+        parser.error('Please introduce the revolution frequency of the reference nucleus or the brho parameter.')
+
+    # Extra details
     if args.verbose: log.basicConfig(level = log.DEBUG)
     if args.outdir: outfilepath = os.path.join(args.outdir, '')
 
-    # here we go:
-    log.info(f'File {args.filename} passed for processing the information of {args.refisotope}+{args.refcharge}.')
-    
-    if ('txt') in args.filename[0]:
-        filename_list = read_masterfile(args.filename[0])
-        for filename in filename_list:
-            controller(filename[0], args.lise_file, args.harmonics, args.brho, args.gammat, args.refisotope, args.refcharge, args.ndivs, args.dops, args.spdf, args.sroot, args.time, args.skip, args.binning)
+    # Here we go:
+    print(f'Running {scriptname}... Lets see what we have in our ring ;-)')
+    log.info(f'File {args.datafile} passed for processing the information of {args.refion}.')
+
+    # If it is a txt file with files or just files introduced by the terminal
+    if ('txt') in args.datafile[0]:
+        filename_list = read_masterfile(args.datafile[0])
+        for datafile in datafile_list:
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.dops, args.show, brho = args.brho, frev = args.frev)
     else:
-        for file in args.filename:
-            controller(file, args.lise_file, args.harmonics, args.brho, args.gammat, args.refisotope, args.refcharge, args.ndivs, args.dops, args.spdf, args.sroot, args.time, args.skip, args.binning)
-            gApplication.Run()
+        for file in args.datafile:
+            controller(file, args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.dops, args.show, brho = args.brho, frev = args.frev)
     
-def read_masterfile(master_filename):
-    # reads list filenames with experiment data. [:-1] to remove eol sequence.
-    return [file[:-1] for file in open(master_filename).readlines()]
-    
-def controller(filename, lise_file, harmonics, brho, gammat, ref_nuclei, ref_charge, ndivs, dops, spdf, sroot, time, skip, binning):
+def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndivs, dops, show, brho = None, frev = None):
     
     mydata = ImportData(filename, harmonics, ref_nuclei, ref_charge, brho, gammat)
-    mydata._set_secondary_args(lise_file)
+    mydata._set_secondary_args(particles_to_simulate)
+    
     mydata._set_tertiary_args(time, skip, binning)
     mydata._exp_data() # -> exp_data
+    
     mydata.calculate_moqs()
     mydata._calculate_srrf() # -> moq ; srrf
     mydata._simulated_data() # -> simulated frecs
     
-    mycanvas = CreateGUI(ref_nuclei, mydata.nuclei_names, ndivs, dops)
+    mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, dops, show)
     mycanvas._view(mydata.exp_data, mydata.simulated_data_dict, filename)
         
-    date_time = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
-    info_name = f'{outfilepath}{date_time}_b{brho}_g{gammat}'
-    if spdf: mycanvas.save_pdf(info_name)
-    if sroot: mycanvas.save_root(info_name)
+    
+
+def read_masterfile(master_filename):
+    # reads list filenames with experiment data. [:-1] to remove eol sequence.
+    return [file[:-1] for file in open(master_filename).readlines()]
 
 if __name__ == '__main__':
     main()

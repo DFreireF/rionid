@@ -2,20 +2,20 @@ from ROOT import *
 from barion.patternfinder import *
 from pysimtof.pypeaks import *
 from pysimtof.importdata import *
+from datetime import datetime
 
 
 class CreateGUI():
     '''
     View (MVC)
     '''
-    
-    def __init__(self, ref_ion, nuclei_names, ndivs, idx_case):
+    def __init__(self, ref_ion, ion_names, ndivs, yield_option, show):
         
         self.ref_ion = ref_ion
-        self.nuclei_names = nuclei_names
+        self.ion_names = ion_names
         self.ndivs = ndivs
-        self.idx_case = idx_case
-        self.root = False
+        self.idx_case = yield_option
+        self.show = show
 
     def _view(self, exp_data, simulated_data_dict, filename = 'Spectrum'):
         
@@ -26,9 +26,14 @@ class CreateGUI():
         self.set_yscales()
         self.create_stack(simulated_data_dict)
         self.draw_histograms()
-        #self.canvas_peaks.Close()
         gSystem.ProcessEvents()
-        gApplication.Run() #only if you want to see 1 plot
+        
+        if self.show:
+            gApplication.Run()
+        else:
+            date_time = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
+            info_name = f'{outfilepath}{date_time}'
+            self.canvas_main.save_root(info_name)
         
     def create_canvas(self):
         
@@ -38,49 +43,43 @@ class CreateGUI():
         self.canvas_peaks = TCanvas('canvas_peaks_srf', 'canvas_peaks_srf', 500, 500)
 
     def create_histograms(self, exp_data, simulated_data_dict, filename):
-        if 'root' in exp_data:
-            self.root = True
-            self.myFile = TFile.Open(exp_data)
-            histogram = self.myFile.th1f
-            self.histogram_dict = {'exp_data': [histogram]}
-            
-        else:
-            self.histogram_dict = {'exp_data': np.array([TH1D('h_exp_data', filename, len(exp_data[:,0]),
-                                                          exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype = 'object').T}
+        
+        self.histogram_dict = {'exp_data': np.array([TH1D('h_exp_data', filename, len(exp_data[:,0]),
+                                                     exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype = 'object').T}
         for key in simulated_data_dict:
             name = f'srf{key}'
             self.histogram_dict[name] = np.array([TH1F(name, name, int(1e6),
                                                        simulated_data_dict[key][:, 0].min(), simulated_data_dict[key][:, 0].max()), simulated_data_dict[key][:,:]], dtype = 'object').T
+            
         [self.histogram_format(self.histogram_dict[key][0], color, key) for color, key in enumerate(self.histogram_dict)]
 
     def histogram_fill(self):
         
         for key in self.histogram_dict:
-            if not self.root:
-                xbin = [self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:,0]]
-                [self.histogram_dict[key][0].AddBinContent(xbin, self.histogram_dict[key][1][i,1]) for i, xbin in enumerate(xbin)]
-            else:    
-                if 'srf' in key:
-                    xbin = [self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:,0]]
-                    [self.histogram_dict[key][0].AddBinContent(xbin, self.histogram_dict[key][1][i,1]) for i, xbin in enumerate(xbin)]
+            xbin = [self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:,0]]
+            [self.histogram_dict[key][0].AddBinContent(xbin, self.histogram_dict[key][1][i,1]) for i, xbin in enumerate(xbin)]
             
     def set_xranges(self):
         
         self.xrange_divs = dict()
+        
         x = int ( self.histogram_dict['exp_data'][0].GetNbinsX() / self.ndivs )
+        
         for j in range (0, self.ndivs):
            self.xrange_divs[str(j)] = np.array([int(x * j + 1), int(x * ( j + 1 ))])
            
     def set_yscales(self):
         
         self.ranges = list()
+        
         for x in self.xrange_divs:
             min_div = int(self.xrange_divs[x][0])
             max_div = int(self.xrange_divs[x][1])
 
             self.histogram_dict['exp_data'][0].GetXaxis().SetRange(min_div, max_div)
             maximum = self.histogram_dict['exp_data'][0].GetMaximum()
-            self.ranges.append((maximum, min_div, max_div))
+            minimum = self.histogram_dict['exp_data'][0].GetMinimum()
+            self.ranges.append((maximum, min_div, max_div, minimum))
 
             for key in self.histogram_dict:
                 if 'srf' in key:
@@ -94,6 +93,7 @@ class CreateGUI():
                                 self.histogram_dict[key][0].SetBinContent(xbin, scaled)
         
     def create_stack(self, simulated_data_dict):
+        
         self.exp_dict = dict()
         self.stack = dict()
 
@@ -105,18 +105,19 @@ class CreateGUI():
            
     def set_xy_ranges(self, stack, rang):
         
-        self.exp_dict[stack].SetMinimum(rang[0] / 30)
-        self.exp_dict[stack].SetMaximum(rang[0] * 30)
+        self.exp_dict[stack].SetMinimum(rang[3] / 10)
+        self.exp_dict[stack].SetMaximum(rang[0] * 10)
         self.exp_dict[stack].GetXaxis().SetRange(rang[1], rang[2])
         
-        self.stack[stack][0].SetMinimum(rang[0] / 30)
-        self.stack[stack][0].SetMaximum(rang[0] * 30)
+        self.stack[stack][0].SetMinimum(rang[3] / 10)
+        self.stack[stack][0].SetMaximum(rang[0] * 10)
         self.stack[stack][0].GetXaxis().SetRange(rang[1], rang[2])
     
             
     def draw_histograms(self):
         
         self.labels = dict()
+        
         self.legend = TLegend(0.9, 0.6, 0.99, 0.99, 'blNDC')
         self.set_legend(self.legend)
         
@@ -206,12 +207,12 @@ class CreateGUI():
         xlabel = self.histogram_dict[key][0].GetXaxis().FindBin(frec)
         ylabel = self.histogram_dict[key][0].GetBinContent(xlabel)
         
-        nuclei_name = self.nuclei_names[tmp]
-        label_name = f'{nuclei_name}{key}'
+        ion_name = self.ion_names[tmp]
+        label_name = f'{ion_name}{key}'
         
         refion = False
-        if self.ref_ion in nuclei_name: refion = True
-        self.labels[label_name] = np.array([TLatex(frec, ylabel, nuclei_name), frec, refion]).T
+        if self.ref_ion in ion_name: refion = True
+        self.labels[label_name] = np.array([TLatex(frec, ylabel, ion_name), frec, refion]).T
         self.draw_label(label_name, color)
 
     def draw_label(self, label, color):
@@ -220,7 +221,7 @@ class CreateGUI():
         if self.plot_this_label:
             self.label_format(self.labels[label][0], self.labels[label][2], color)
             self.plotted_labels = np.array([self.labels[label]])
-                                    
+    
     def canvas_cd(self, frec):
         
         self.plot_this_label = False
