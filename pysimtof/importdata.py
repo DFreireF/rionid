@@ -7,7 +7,7 @@ from iqtools import *
 import sys
 
 
-class ImportData():
+class ImportData(object):
     '''
     Model (MVC)
     '''
@@ -20,7 +20,7 @@ class ImportData():
 
         # Extra objects
         self.ring = Ring('ESR', 108.4) # 108.43 Ge
-        
+        # - Take the charge from the complete name
         for i, char in enumerate(refion):
             if char == '+': aux = i
         self.ref_charge = int(refion[aux:])
@@ -49,34 +49,26 @@ class ImportData():
                 self.moq[ion_name] = particle.get_ionic_moq_in_u()
 
         else:
-            self._import()
             for particle in self.particles_to_simulate:
                 ion_name = f'{particle[1]}{particle[0]}+{particle[4][0]}'
                 for ame in self.ame_data:
                     if particle[0] == ame[6] and particle[1] == ame[5]:
                         self.moq[ion_name] = Particle(particle[2], particle[3], self.ame, self.ring).get_ionic_moq_in_u()
 
-    def _calculate_srrf(self, moqs = None, frev = None, brho = None):
+    def _calculate_srrf(self, moqs = None, frev = None, brho = None, ke = None):
         
         if moqs:
             self.moq = moqs
+        
+        self.mass_ref = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
+        self.ref_rev_frequency = self.reference_revolution_frequency(frev = frev, brho = brho, ke = ke)                    
 
-        if brho:
-            mass_ref = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
-            self.frequence_rel = ImportData.calculate_ion_parameters(self.brho, self.ref_charge, mass_ref, self.ring.circumference)
-            
-        elif:
-            self.frequence_rel = frev
-            
-        else:
-            sys.exit('You forgot to pass to _calculate_srrf() the frev or brho')
-            
         # Simulated relative revolution frequencies (respect to the reference particle)
         self.srrf = np.array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
                               for name in self.moq])
         
     def _simulated_data(self, particles = False):
-        
+        # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
         self.simulated_data_dict = dict()
         
         # Set the yield of the particles to simulate
@@ -87,33 +79,61 @@ class ImportData():
         self.nuclei_names = [nuclei_name for nuclei_name in self.moq]
         
         # Simulate the expected meassured frecuency for each harmonic:
-        for harmonic in self.harmonics:            
+        for harmonic in self.harmonics:
+            
             simulated_data = np.array([])
             array_stack = np.array([])
+            
             # get srf data
-            harmonic_frequency = self.srrf * self.frequence_rel * harmonic
-            print(harmonic_frequency, harmonic, self.frequence_rel * harmonic)
+            harmonic_frequency = self.srrf * self.ref_rev_frequency * harmonic
+            print(harmonic_frequency, harmonic, self.ref_rev_frequency * harmonic)
+            
             # attach harmonic, frequency, yield data and ion properties together:
-            array_stack = np.stack((harmonic_frequency, yield_data),
-                                   axis=1)  # axis=1 stacks vertically
+            array_stack = np.stack((harmonic_frequency, yield_data), axis=1)  # axis=1 stacks vertically
             simulated_data = np.append(simulated_data, array_stack)
+            
             simulated_data = simulated_data.reshape(len(array_stack), 2)
             name = f'{harmonic}'            
             self.simulated_data_dict[name] = simulated_data
-            
-    @staticmethod
-    def calculate_ion_parameters(brho, ref_charge, ref_mass, ring_circumference):
+
+    def reference_revolution_frequency(self, frev = None, brho = None, ke = None):
         
-        gamma = ImportData.gamma(brho, ref_charge, ref_mass)
+        # If no frev given, calculate frev with brho or with ke, whatever you wish
+        if frev:
+            return frev
+            
+        elif brho:
+            return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
+                                                     brho = brho, ref_charge = self.ref_charge)
+        
+        elif ke:
+            return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
+                                                     ke = ke)
+        else: sys.exit('None frev, brho, ke')
+        
+    @staticmethod
+    def calc_ref_rev_frequency(ref_mass, ring_circumference, brho = None, ref_charge = None, ke = None):
+        
+        if brho:
+            gamma = ImportData.gamma_brho(brho, ref_charge, ref_mass)
+            
+        elif ke:
+            gamma = ImportData.gamma_ke(ke, ref_mass)
+        
         beta = ImportData.beta(gamma)
         velocity = ImportData.velocity(beta)
-        frequence_rel = ImportData.calc_freq_rel(velocity, ring_circumference)
-        return frequence_rel
+        
+        return ImportData.calc_revolution_frequency(velocity, ring_circumference)
         
     @staticmethod
-    def gamma(brho, ref_charge, ref_mass):
-        # /1e6 necessary for mass from mev to ev.
-        return np.sqrt(pow(brho*ref_charge*(AMEData.CC/1e6)/ref_mass, 2)+1)        
+    def gamma_brho(brho, ref_charge, ref_mass):
+        # 1e6 necessary for mass from mev to ev.
+        return np.sqrt(pow(brho * ref_charge * AMEData.CC / (ref_mass * 1e6), 2)+1)
+    
+    @staticmethod
+    def gamma_ke(ke, ref_mass):
+        # ke := Kinetic energy
+        return ke / (ref_mass * 1e6) + 1
     
     @staticmethod
     def beta(gamma):
@@ -124,8 +144,12 @@ class ImportData():
         return AMEData.CC * beta
     
     @staticmethod
-    def calc_freq_rel(velocity, ring_circumference):
+    def calc_revolution_frequency(velocity, ring_circumference):
         return velocity / ring_circumference
+
+    @staticmethod
+    def gammat(alphap):
+        return 1 / np.sqrt(alphap)
     
     @staticmethod
     def read_csv(filename):

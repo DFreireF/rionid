@@ -20,6 +20,7 @@ def main():
 
     # Arguments for each mode (exclusive)
     modes.add_argument('-b', '--brho', type = float, help = 'Brho value of the reference nucleus at ESR (isochronous mode).')
+    modes.add_argument('-ke', '--kenergy', type = float, help = 'Kinetic energy of reference nucleus at ESR (isochronous mode).')
     modes.add_argument('-f', '--frev', type = float, help = 'Revolution frequency of the reference particle (standard mode).')
     
     # Arguments for the visualization
@@ -33,7 +34,7 @@ def main():
     args = parser.parse_args()
 
     # Checking for arguments errors
-    if args.brho is None and args.frev is None:
+    if args.brho is None and args.frev is None and args.kenergy is None:
         parser.error('Please introduce the revolution frequency of the reference nucleus or the brho parameter.')
 
     # Extra details

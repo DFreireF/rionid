@@ -5,7 +5,7 @@ from pysimtof.importdata import *
 from datetime import datetime
 
 
-class CreateGUI():
+class CreateGUI(object):
     '''
     View (MVC)
     '''
