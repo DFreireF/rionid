@@ -47,7 +47,7 @@ def main():
 
     # If it is a txt file with files or just files introduced by the terminal
     if ('txt') in args.datafile[0]:
-        filename_list = read_masterfile(args.datafile[0])
+        datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
             controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.dops, args.show, brho = args.brho, frev = args.frev)
     else:
@@ -69,8 +69,6 @@ def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndi
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, dops, show)
     mycanvas._view(mydata.exp_data, mydata.simulated_data_dict, filename)
         
-    
-
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
     return [file[:-1] for file in open(master_filename).readlines()]

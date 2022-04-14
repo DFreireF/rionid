@@ -152,7 +152,8 @@ class ImportData(object):
         return 1 / np.sqrt(alphap)
     
     @staticmethod
-    def read_csv(filename):
+    def read_experimental_data(filename):
+        data = np.genfromtxt(filename, skip_header = 1, delimiter='|')
         f, p  = [np.array([]) for i in range(2)]
         with open(filename) as f:
             cont = f.readlines()[1:]
