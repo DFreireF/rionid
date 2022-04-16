@@ -1,8 +1,10 @@
 import argparse
 import os
+import sys
 import logging as log
 from iqtools import *
 from datetime import datetime
+
 
 class ProcessSchottkyData(object):
     '''
@@ -18,24 +20,17 @@ class ProcessSchottkyData(object):
             self.binnig = binning
         else:
             self.read_all = True
-         
-    def _exp_data(self):
         
-        if '.root' in self.filename: self.frequency, self.power = self.exp_data_root()
-        elif '.Specan' in self.filename : self.frequency, self.power = self.exp_data_specan()        
-        elif 'iq' in self.filename: self.frequency, self.power = self.iq_data(read_all = self.read_all)
-        else: sys.exit()
+    def root_data(self):
         
-    def exp_data_root(self):
-        from ROOT import *
-        ##This part may need to be changed to have the same frecuency "units"
+        from ROOT import TFile
         fdata = TFile(self.filename)
-        histogram = fdata.Get('FFT_Total_px')# change this to, fdata.ls() and choose one
-        f = np.array([[histogram.GetXaxis().GetBinCenter(i) * 1e6] for i in range(1, histogram.GetNbinsX())])#*1000+245*10**6
+        histogram = fdata.Get(fdata.GetListOfKeys()[0].GetName())
+        f = np.array([[histogram.GetXaxis().GetBinCenter(i) * 1e6] for i in range(1, histogram.GetNbinsX())]) # 1e6 for units
         p = np.array([[histogram.GetBinContent(i)] for i in range(1, histogram.GetNbinsX())])          
         return f, p
 
-    def exp_data_specan(self):
+    def specan_data(self):
         
         f, p, _ = read_rsa_specan_xml(self.filename)
         p = p - p.min()
@@ -62,14 +57,23 @@ class ProcessSchottkyData(object):
             p = (azz[0, :]).reshape(len(azz[0, :]), 1) #power
         p = p / p.max()
         return f, p
+    
+    def _exp_data(self):
+        
+        if '.root' in self.filename: self.frequency, self.power = self.root_data()
+        elif '.Specan' in self.filename : self.frequency, self.power = self.specan_data()        
+        elif 'iq' in self.filename: self.frequency, self.power = self.iq_data(read_all = self.read_all)
+        else: sys.exit()
 
-def write_spectrum_to_csv(f, p, filename, center = 0):
+def write_spectrum_to_csv(f, p, filename, center = 0, out = None):
     a = np.concatenate((f, p, IQBase.get_dbm(p)))
     b = np.reshape(a, (3, -1)).T
-    
-    date_time = datetime.now().strftime('%d_%H.%M.')
-    file_name = f'{outfilepath}{date_time}_{filename}.csv'
-    
+    date_time = datetime.now().strftime('%d.%H.%M')
+    if out:
+        filename = os.path.basename(filename)
+    file_name = f'{filename}.{date_time}.csv'
+    if out: file_name = os.path.join(out, file_name)
+    print(f'created file: {file_name}')
     np.savetxt(file_name, b, header =
                'Delta f [Hz] @ {:.2e} [Hz]|Power [W]|Power [dBm]'.format(center), delimiter='|')
           
@@ -86,30 +90,30 @@ def main():
     parser.add_argument('-b', '--binning', type = int, nargs = '?', help = 'Number of frecuency bins.')
 
     # Fancy arguments
-    parser.add_argument('-o', '--outdir', type = str, default = '.', help = 'output directory.')
+    parser.add_argument('-o', '--outdir', type = str, nargs = '?', help = 'output directory.')
     parser.add_argument('-v', '--verbose', help = 'Increase output verbosity', action = 'store_true')
 
     args = parser.parse_args()
 
     print(f'Running {scriptname}. Processing...')
     if args.verbose: log.basicConfig(level = log.DEBUG)
-    if args.outdir: outfilepath = os.path.join(args.outdir, '')
 
     if ('txt') in args.filename[0]:
         filename_list = read_masterfile(args.filename[0])
-        for filename in filename_list:
-            create_exp_spectrum_csv(filename[0], args.time, args.skip, args.binning)
+        for file in filename_list:
+            create_exp_spectrum_csv(file[0], args.time, args.skip, args.binning, out = args.outdir)
     else:
         for file in args.filename:
-            create_exp_spectrum_csv(filename[0], args.time, args.skip, args.binning)            
+            create_exp_spectrum_csv(file, args.time, args.skip, args.binning, out = args.outdir)            
     
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
     return [file[:-1] for file in open(master_filename).readlines()]
     
-def create_exp_spectrum_csv(filename, time, skip, binning):
+def create_exp_spectrum_csv(filename, time, skip, binning, out = None):
     myexpdata = ProcessSchottkyData(filename, analysis_time = time, skip_time = skip, binning = binning)
-    write_spectrum_to_csv(myexpdata.frequency, myexpdata.power, filename)
+    myexpdata._exp_data()
+    write_spectrum_to_csv(myexpdata.frequency, myexpdata.power, filename, out = out)
     
 if __name__ == '__main__':
     main()
