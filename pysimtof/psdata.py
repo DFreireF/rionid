@@ -93,6 +93,10 @@ def main():
     parser.add_argument('-o', '--outdir', type = str, nargs = '?', help = 'output directory.')
     parser.add_argument('-v', '--verbose', help = 'Increase output verbosity', action = 'store_true')
 
+    if args.outdir:
+        if not os.path.isdir(args.outdir):
+            sys.exit('Output directory does not exist. Check it.')
+        
     args = parser.parse_args()
 
     print(f'Running {scriptname}. Processing...')

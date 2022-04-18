@@ -26,9 +26,9 @@ class ImportData(object):
         self.ref_charge = int(refion[aux:])
 
         # Get the experimental data
-        self.experimental_data = read_experimental_data(filename)
+        self.experimental_data = read_psdata(filename)
         
-    def set_particles_to_simulate_from_file(self, particles_to_simulate):
+    def _set_particles_to_simulate_from_file(self, particles_to_simulate):
         
         # import ame from barion: # This would be moved somewhere else
         self.ame = AMEData()
@@ -38,7 +38,7 @@ class ImportData(object):
         lise = LISEreader(particles_to_simulate)
         self.particles_to_simulate = lise.get_info_all()
 
-    def calculate_moqs(self, particles = None):
+    def _calculate_moqs(self, particles = None):
         
         # Calculate the  moq from barion of the particles present in LISE file or of the particles introduced
         self.moq = dict()
@@ -151,14 +151,6 @@ class ImportData(object):
     def gammat(alphap):
         return 1 / np.sqrt(alphap)
     
-    @staticmethod
-    def read_experimental_data(filename):
-        data = np.genfromtxt(filename, skip_header = 1, delimiter='|')
-        f, p  = [np.array([]) for i in range(2)]
-        with open(filename) as f:
-            cont = f.readlines()[1:]
-            for l in cont:
-                l = l.split('|')
-                f = np.append(f, float(l[0]))
-                p = np.append(p, float(l[1]))
-        return (np.stack((f, p), axis = 1).reshape((len(f), 2)))
+def read_psdata(filename, dbm = False):
+    if dbm: return np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
+    else: return np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))

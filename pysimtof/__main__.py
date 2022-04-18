@@ -25,10 +25,10 @@ def main():
     
     # Arguments for the visualization
     parser.add_argument('-d', '--ndivs', type = int, default = 4, help = 'Number of divisions in the display.')
-    parser.add_argument('-o', '--dops', type = int, default = 0, help = 'Display of srf data options. 0 -> constant height, else->scaled.')
+    parser.add_argument('-am', '--amplitude', type = int, default = 0, help = 'Display of srf data options. 0 -> constant height, else->scaled.')
     
     # Actions
-    parser.add_argument('-v', '--verbose', help = 'Increase output verbosity.', action = 'store_true')
+    parser.add_argument('-l', '--log', dest = 'logLevel', choices = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default = 'INFO', help = 'Set the logging level.')
     parser.add_argument('-s', '--show', help = 'Show display. If not, save root file and close display', action = 'store_true')
 
     args = parser.parse_args()
@@ -38,7 +38,7 @@ def main():
         parser.error('Please introduce the revolution frequency of the reference nucleus or the brho parameter.')
 
     # Extra details
-    if args.verbose: log.basicConfig(level = log.DEBUG)
+    if args.logLevel: log.basicConfig(level = log.getLevelName(args.logLevel))
     if args.outdir: outfilepath = os.path.join(args.outdir, '')
 
     # Here we go:
@@ -49,25 +49,33 @@ def main():
     if ('txt') in args.datafile[0]:
         datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
-            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.dops, args.show, brho = args.brho, frev = args.frev)
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy)
     else:
         for file in args.datafile:
-            controller(file, args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.dops, args.show, brho = args.brho, frev = args.frev)
+            controller(file, args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy)
     
-def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndivs, dops, show, brho = None, frev = None):
+def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndivs, amplitude, show, brho = None, frev = None, ke = None):
     
-    mydata = ImportData(filename, harmonics, ref_nuclei, ref_charge, brho, gammat)
-    mydata._set_secondary_args(particles_to_simulate)
+    log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {frev} = frev, {ke} = ke')
     
-    mydata._set_tertiary_args(time, skip, binning)
-    mydata._exp_data() # -> exp_data
+    mydata = ImportData(data_file, harmonics, ref_ion, alphap)
+    log.debug(f'Experimental data = {mydata.experimental_data}')
+    mydata.set_particles_to_simulate_from_file(particles_to_simulate)
     
-    mydata.calculate_moqs()
-    mydata._calculate_srrf() # -> moq ; srrf
+    mydata._calculate_moqs()
+    log.debug(f'moqs = {mydata.moq}')
+    
+    mydata._calculate_srrf(frev = frev, brho = brho, ke = ke)
+    log.debug(f'Revolution frequency of {ref_ion} = {mydata.ref_rev_frequency}')
+    
     mydata._simulated_data() # -> simulated frecs
+    log.debug(f'Simulation results = {mydata.simulated_data_dict}')
+    log.info(f'Simulation performed. Now we are going to start the display.')
     
-    mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, dops, show)
-    mycanvas._view(mydata.exp_data, mydata.simulated_data_dict, filename)
+    mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
+    mycanvas._view(mydata.experiemtal_data, mydata.simulated_data_dict, filename)
+    
+    log.info(f'Program has ended. Hope you have found what you were looking for. :)')
         
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
