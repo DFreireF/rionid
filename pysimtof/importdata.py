@@ -27,7 +27,7 @@ class ImportData(object):
         
         # Get the experimental data
         if filename:
-            self.experimental_data = read_psdata(filename)
+            self.experimental_data = read_psdata(filename, dbm = False)
         
     def _set_particles_to_simulate_from_file(self, particles_to_simulate):
         
@@ -119,7 +119,7 @@ class ImportData(object):
             gamma = ImportData.gamma_brho(brho, ref_charge, ref_mass)
             
         elif ke:
-            gamma = ImportData.gamma_ke(ke, ref_mass)
+            gamma = ImportData.gamma_ke(ke, aa, ref_mass)
         
         beta = ImportData.beta(gamma)
         velocity = ImportData.velocity(beta)
@@ -127,14 +127,14 @@ class ImportData(object):
         return ImportData.calc_revolution_frequency(velocity, ring_circumference)
         
     @staticmethod
-    def gamma_brho(brho, ref_charge, ref_mass):
+    def gamma_brho(brho, charge, mass):
         # 1e6 necessary for mass from mev to ev.
-        return np.sqrt(pow(brho * ref_charge * AMEData.CC / (ref_mass * 1e6), 2)+1)
+        return np.sqrt(pow(brho * charge * AMEData.CC / (mass * 1e6), 2)+1)
     
     @staticmethod
-    def gamma_ke(ke, ref_mass):
-        # ke := Kinetic energy
-        return ke / (ref_mass * 1e6) + 1
+    def gamma_ke(ke, aa, mass):
+        # ke := Kinetic energy per nucleon ; mass in MeV
+        return ke * aa / (mass * 1e6) + 1
     
     @staticmethod
     def beta(gamma):
