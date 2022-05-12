@@ -11,7 +11,7 @@ class ImportData(object):
     '''
     Model (MVC)
     '''
-    def __init__(self, filename, harmonics, refion, alphap):
+    def __init__(self, harmonics, refion, alphap, filename = None):
 
         # Argparser arguments
         self.harmonics = harmonics
@@ -24,9 +24,10 @@ class ImportData(object):
         for i, char in enumerate(refion):
             if char == '+': aux = i
         self.ref_charge = int(refion[aux:])
-
+        
         # Get the experimental data
-        self.experimental_data = read_psdata(filename)
+        if filename:
+            self.experimental_data = read_psdata(filename)
         
     def _set_particles_to_simulate_from_file(self, particles_to_simulate):
         
