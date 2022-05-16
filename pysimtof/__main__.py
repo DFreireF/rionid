@@ -30,6 +30,7 @@ def main():
     # Actions
     parser.add_argument('-l', '--log', dest = 'logLevel', choices = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default = 'INFO', help = 'Set the logging level.')
     parser.add_argument('-s', '--show', help = 'Show display. If not, save root file and close display', action = 'store_true')
+    parser.add_argument('-o', '--outdir', type = str, nargs = '?', default = os.getcwd(), help = 'Output directory.')
 
     args = parser.parse_args()
 
@@ -49,18 +50,18 @@ def main():
     if ('txt') in args.datafile[0]:
         datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
-            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy)
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy, out = args.outdir)
     else:
         for file in args.datafile:
-            controller(file, args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy)
+            controller(file, args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy, out = args.outdir)
     
-def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndivs, amplitude, show, brho = None, frev = None, ke = None):
+def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndivs, amplitude, show, brho = None, frev = None, ke = None, out = None):
     
     log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {frev} = frev, {ke} = ke')
     
-    mydata = ImportData(data_file, harmonics, ref_ion, alphap)
+    mydata = ImportData(harmonics, ref_ion, alphap, filename = data_file)
     log.debug(f'Experimental data = {mydata.experimental_data}')
-    mydata.set_particles_to_simulate_from_file(particles_to_simulate)
+    mydata._set_particles_to_simulate_from_file(particles_to_simulate)
     
     mydata._calculate_moqs()
     log.debug(f'moqs = {mydata.moq}')
@@ -73,7 +74,7 @@ def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndi
     log.info(f'Simulation performed. Now we are going to start the display.')
     
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
-    mycanvas._view(mydata.experiemtal_data, mydata.simulated_data_dict, filename)
+    mycanvas._view(mydata.experimental_data, mydata.simulated_data_dict, filename = data_file, out = out)
     
     log.info(f'Program has ended. Hope you have found what you were looking for. :)')
         

@@ -23,7 +23,9 @@ class ImportData(object):
         # - Take the charge from the complete name
         for i, char in enumerate(refion):
             if char == '+': aux = i
+            
         self.ref_charge = int(refion[aux:])
+        self.ref_aa = int(refion[:2]) # CAUTION: this will be usually true for us. But be careful
         
         # Get the experimental data
         if filename:
@@ -57,12 +59,11 @@ class ImportData(object):
                         self.moq[ion_name] = Particle(particle[2], particle[3], self.ame, self.ring).get_ionic_moq_in_u()
 
     def _calculate_srrf(self, moqs = None, frev = None, brho = None, ke = None):
-        
         if moqs:
             self.moq = moqs
-        
-        self.mass_ref = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
-        self.ref_rev_frequency = self.reference_revolution_frequency(frev = frev, brho = brho, ke = ke)                    
+            
+        self.ref_mass = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
+        self.ref_rev_frequency = self.reference_revolution_frequency(frev = frev, brho = brho, ke = ke)
 
         # Simulated relative revolution frequencies (respect to the reference particle)
         self.srrf = np.array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
@@ -74,7 +75,7 @@ class ImportData(object):
         
         # Set the yield of the particles to simulate
         if particles: yield_data = [1 for i in range(len(self.moq))]
-        else: yield_data = [lise[5] for lise in self.lise_data]
+        else: yield_data = [lise[5] for lise in self.particles_to_simulate]
         
         # Get nuclei name for labels
         self.nuclei_names = [nuclei_name for nuclei_name in self.moq]
@@ -87,7 +88,6 @@ class ImportData(object):
             
             # get srf data
             harmonic_frequency = self.srrf * self.ref_rev_frequency * harmonic
-            print(harmonic_frequency, harmonic, self.ref_rev_frequency * harmonic)
             
             # attach harmonic, frequency, yield data and ion properties together:
             array_stack = np.stack((harmonic_frequency, yield_data), axis=1)  # axis=1 stacks vertically
@@ -109,11 +109,11 @@ class ImportData(object):
         
         elif ke:
             return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
-                                                     ke = ke)
+                                                     ke = ke, aa = self.ref_aa)
         else: sys.exit('None frev, brho, ke')
         
     @staticmethod
-    def calc_ref_rev_frequency(ref_mass, ring_circumference, brho = None, ref_charge = None, ke = None):
+    def calc_ref_rev_frequency(ref_mass, ring_circumference, brho = None, ref_charge = None, ke = None, aa = None):
         
         if brho:
             gamma = ImportData.gamma_brho(brho, ref_charge, ref_mass)
@@ -132,9 +132,15 @@ class ImportData(object):
         return np.sqrt(pow(brho * charge * AMEData.CC / (mass * 1e6), 2)+1)
     
     @staticmethod
+<<<<<<< HEAD
+    def gamma_ke(ke, aa, ref_mass):
+        # ke := Kinetic energy
+        return (ke * aa) / (ref_mass) + 1
+=======
     def gamma_ke(ke, aa, mass):
         # ke := Kinetic energy per nucleon ; mass in MeV
         return ke * aa / (mass * 1e6) + 1
+>>>>>>> origin/master
     
     @staticmethod
     def beta(gamma):

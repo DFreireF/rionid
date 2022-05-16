@@ -17,7 +17,7 @@ class CreateGUI(object):
         self.idx_case = yield_option
         self.show = show
 
-    def _view(self, exp_data, simulated_data_dict, filename = 'Spectrum'):
+    def _view(self, exp_data, simulated_data_dict, filename = 'Spectrum', out = ''):
         
         self.create_canvas()
         self.create_histograms(exp_data, simulated_data_dict, filename)
@@ -32,8 +32,8 @@ class CreateGUI(object):
             gApplication.Run()
         else:
             date_time = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
-            info_name = f'{outfilepath}{date_time}'
-            self.canvas_main.save_root(info_name)
+            info_name = f'{out}{filename}{date_time}'
+            self.save_root(info_name)
         
     def create_canvas(self):
         
@@ -48,7 +48,7 @@ class CreateGUI(object):
                                                      exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype = 'object').T}
         for key in simulated_data_dict:
             name = f'srf{key}'
-            self.histogram_dict[name] = np.array([TH1F(name, name, int(1e6),
+            self.histogram_dict[name] = np.array([TH1F(name, name, int(2e6),
                                                        simulated_data_dict[key][:, 0].min(), simulated_data_dict[key][:, 0].max()), simulated_data_dict[key][:,:]], dtype = 'object').T
             
         [self.histogram_format(self.histogram_dict[key][0], color, key) for color, key in enumerate(self.histogram_dict)]
@@ -79,6 +79,7 @@ class CreateGUI(object):
             self.histogram_dict['exp_data'][0].GetXaxis().SetRange(min_div, max_div)
             maximum = self.histogram_dict['exp_data'][0].GetMaximum()
             minimum = self.histogram_dict['exp_data'][0].GetMinimum()
+            if minimum == 0: minimum = 0.001
             self.ranges.append((maximum, min_div, max_div, minimum))
 
             for key in self.histogram_dict:
@@ -105,12 +106,12 @@ class CreateGUI(object):
            
     def set_xy_ranges(self, stack, rang):
         
-        self.exp_dict[stack].SetMinimum(rang[3] / 10)
-        self.exp_dict[stack].SetMaximum(rang[0] * 10)
+        self.exp_dict[stack].SetMinimum(rang[3] / 1.1)
+        self.exp_dict[stack].SetMaximum(rang[0] * 1.5)
         self.exp_dict[stack].GetXaxis().SetRange(rang[1], rang[2])
         
-        self.stack[stack][0].SetMinimum(rang[3] / 10)
-        self.stack[stack][0].SetMaximum(rang[0] * 10)
+        self.stack[stack][0].SetMinimum(rang[3] / 1.1)
+        self.stack[stack][0].SetMaximum(rang[0] * 1.5)
         self.stack[stack][0].GetXaxis().SetRange(rang[1], rang[2])
     
             
@@ -124,7 +125,7 @@ class CreateGUI(object):
         for j, stack in enumerate(self.stack):
             
             self.canvas_main.cd(j + 1)
-            self.canvas_main.cd(j + 1).SetLogy(1)
+            self.canvas_main.cd(j + 1).SetLogy()
             
             self.exp_dict[stack].Draw('hist')
             self.stack[stack][0].Draw('same nostack')
