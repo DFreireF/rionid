@@ -3,7 +3,7 @@ Work in always progress!
 
 First version: 1.0.0 released 2022.02.25!
 
-**Latest version: 3.0.1 released 2022.04.18!**
+**Latest version: 3.2.1 released 2022.05.16!**
 
 ### First you have to process the data (.tiq, .tdms, .root, .Specan) with psdata.py. It will create a csv file with the f, p, p(dbm), and that's what you pass to __main__.py
 
