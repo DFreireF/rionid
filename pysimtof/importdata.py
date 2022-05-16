@@ -2,8 +2,6 @@ from barion.ring import Ring
 from barion.amedata import *
 from barion.particle import *
 from lisereader.reader import *
-from ROOT import *
-from iqtools import *
 import sys
 
 
