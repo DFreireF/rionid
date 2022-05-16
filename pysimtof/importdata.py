@@ -11,10 +11,9 @@ class ImportData(object):
     '''
     Model (MVC)
     '''
-    def __init__(self, harmonics, refion, alphap, filename = None):
+    def __init__(self, refion, alphap, filename = None):
 
         # Argparser arguments
-        self.harmonics = harmonics
         self.ref_ion = refion
         self.alphap = alphap
 
@@ -58,18 +57,18 @@ class ImportData(object):
                     if particle[0] == ame[6] and particle[1] == ame[5]:
                         self.moq[ion_name] = Particle(particle[2], particle[3], self.ame, self.ring).get_ionic_moq_in_u()
 
-    def _calculate_srrf(self, moqs = None, frev = None, brho = None, ke = None):
+    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None):
         if moqs:
             self.moq = moqs
             
         self.ref_mass = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
-        self.ref_rev_frequency = self.reference_revolution_frequency(frev = frev, brho = brho, ke = ke)
+        self.ref_frequency = self.reference_frequency(fref = fref, brho = brho, ke = ke)
 
         # Simulated relative revolution frequencies (respect to the reference particle)
         self.srrf = np.array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
                               for name in self.moq])
         
-    def _simulated_data(self, particles = False):
+    def _simulated_data(self, harmonics = None, particles = False):
         # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
         self.simulated_data_dict = dict()
         
@@ -81,27 +80,32 @@ class ImportData(object):
         self.nuclei_names = [nuclei_name for nuclei_name in self.moq]
         
         # Simulate the expected meassured frecuency for each harmonic:
-        for harmonic in self.harmonics:
+        if harmonics:
+            for harmonic in harmonics:
             
-            simulated_data = np.array([])
-            array_stack = np.array([])
+                simulated_data = np.array([])
+                array_stack = np.array([])
             
-            # get srf data
-            harmonic_frequency = self.srrf * self.ref_rev_frequency * harmonic
+                # get srf data
+                harmonic_frequency = self.srrf * self.ref_frequency * harmonic
             
-            # attach harmonic, frequency, yield data and ion properties together:
-            array_stack = np.stack((harmonic_frequency, yield_data), axis=1)  # axis=1 stacks vertically
-            simulated_data = np.append(simulated_data, array_stack)
+                # attach harmonic, frequency, yield data and ion properties together:
+                array_stack = np.stack((harmonic_frequency, yield_data), axis=1)  # axis=1 stacks vertically
+                simulated_data = np.append(simulated_data, array_stack)
             
-            simulated_data = simulated_data.reshape(len(array_stack), 2)
-            name = f'{harmonic}'            
-            self.simulated_data_dict[name] = simulated_data
+                simulated_data = simulated_data.reshape(len(array_stack), 2)
+                name = f'{harmonic}'            
+                self.simulated_data_dict[name] = simulated_data
+        else:
+            meassured_frequencies = self.srrf * self.ref_frequency
+            simulated_data = np.stack((meassured_frequencies, yield_data), axis=1)  # axis=1 stacks vertically
+            self.simulated_data_dict['Meassured'] = simulated_data
 
-    def reference_revolution_frequency(self, frev = None, brho = None, ke = None):
+    def reference_frequency(self, fref = None, brho = None, ke = None):
         
         # If no frev given, calculate frev with brho or with ke, whatever you wish
-        if frev:
-            return frev
+        if fref:
+            return fref
             
         elif brho:
             return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
@@ -132,15 +136,9 @@ class ImportData(object):
         return np.sqrt(pow(brho * charge * AMEData.CC / (mass * 1e6), 2)+1)
     
     @staticmethod
-<<<<<<< HEAD
     def gamma_ke(ke, aa, ref_mass):
         # ke := Kinetic energy
         return (ke * aa) / (ref_mass) + 1
-=======
-    def gamma_ke(ke, aa, mass):
-        # ke := Kinetic energy per nucleon ; mass in MeV
-        return ke * aa / (mass * 1e6) + 1
->>>>>>> origin/master
     
     @staticmethod
     def beta(gamma):

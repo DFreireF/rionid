@@ -11,19 +11,21 @@ def main():
     parser = argparse.ArgumentParser()
     modes = parser.add_mutually_exclusive_group(required = True)
 
-    # Main arguments
+    # Main Arguments
     parser.add_argument('datafile', type = str, nargs = '+', help = 'Name of the input file with data.')
-    parser.add_argument('-hrm', '--harmonics', type = int, nargs = '+', help = 'Harmonics to simulate.')
     parser.add_argument('-ap', '--alphap', type = float, help = 'Momentum compaction factor of the ring.')
     parser.add_argument('-r', '--refion', type = str, help = 'Reference ion with format NucleonsNameChargestate :=  AAXX+CC. Example: 72Ge+35, 1H+1, 238U+92...')
     parser.add_argument('-psim', '--filep', type = str, help = 'Read list of particles to simulate. LISE file or something else.')
+    
+    # Secondary Arguments
+    parser.add_argument('-hrm', '--harmonics', type = int, nargs = '?', help = 'Harmonics to simulate.')
 
-    # Arguments for each mode (exclusive)
+    # Arguments for Each Mode (Exclusive)
     modes.add_argument('-b', '--brho', type = float, help = 'Brho value of the reference nucleus at ESR (isochronous mode).')
     modes.add_argument('-ke', '--kenergy', type = float, help = 'Kinetic energy of reference nucleus at ESR (isochronous mode).')
-    modes.add_argument('-f', '--frev', type = float, help = 'Revolution frequency of the reference particle (standard mode).')
+    modes.add_argument('-f', '--fref', type = float, help = 'Revolution frequency of the reference particle (standard mode).')
     
-    # Arguments for the visualization
+    # Arguments for the Visualization
     parser.add_argument('-d', '--ndivs', type = int, default = 4, help = 'Number of divisions in the display.')
     parser.add_argument('-am', '--amplitude', type = int, default = 0, help = 'Display of srf data options. 0 -> constant height, else->scaled.')
     
@@ -34,15 +36,15 @@ def main():
 
     args = parser.parse_args()
 
-    # Checking for arguments errors
-    if args.brho is None and args.frev is None and args.kenergy is None:
+    # Checking for Argument Errors
+    if args.brho is None and args.fref is None and args.kenergy is None:
         parser.error('Please introduce the revolution frequency of the reference nucleus or the brho parameter.')
 
-    # Extra details
+    # Extra Details
     if args.logLevel: log.basicConfig(level = log.getLevelName(args.logLevel))
     if args.outdir: outfilepath = os.path.join(args.outdir, '')
 
-    # Here we go:
+    # Here We Go:
     print(f'Running {scriptname}... Lets see what we have in our ring ;-)')
     log.info(f'File {args.datafile} passed for processing the information of {args.refion}.')
 
@@ -50,26 +52,26 @@ def main():
     if ('txt') in args.datafile[0]:
         datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
-            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy, out = args.outdir)
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics)
     else:
         for file in args.datafile:
-            controller(file, args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, frev = args.frev, ke = args.kenergy, out = args.outdir)
+            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics)
     
-def controller(data_file, particles_to_simulate, harmonics, alphap, ref_ion, ndivs, amplitude, show, brho = None, frev = None, ke = None, out = None):
+def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None):
     
-    log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {frev} = frev, {ke} = ke')
+    log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     
-    mydata = ImportData(harmonics, ref_ion, alphap, filename = data_file)
+    mydata = ImportData(ref_ion, alphap, filename = data_file)
     log.debug(f'Experimental data = {mydata.experimental_data}')
     mydata._set_particles_to_simulate_from_file(particles_to_simulate)
     
     mydata._calculate_moqs()
     log.debug(f'moqs = {mydata.moq}')
     
-    mydata._calculate_srrf(frev = frev, brho = brho, ke = ke)
-    log.debug(f'Revolution frequency of {ref_ion} = {mydata.ref_rev_frequency}')
+    mydata._calculate_srrf(fref = fref, brho = brho, ke = ke)
+    log.debug(f'Revolution (or meassured) frequency of {ref_ion} = {mydata.ref_frequency}')
     
-    mydata._simulated_data() # -> simulated frecs
+    mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
     log.debug(f'Simulation results = {mydata.simulated_data_dict}')
     log.info(f'Simulation performed. Now we are going to start the display.')
     
