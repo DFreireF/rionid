@@ -49,14 +49,9 @@ class ProcessSchottkyData(object):
         else:
             iq.read_samples(iq.nsamples_total)
         
-<<<<<<< HEAD
         if self.fft:
             f, p, _ = iq.get_fft(nframes = nframes, lframes = self.binning)
             f = f + iq.center
-=======
-        if fft:
-            freq, power, _ = get_fft(nframes = nframes, lframes = self.lframes)
->>>>>>> origin/master
         else:
             xx, yy, zz = iq.get_spectrogram(nframes = nframes, lframes = self.binning)
             axx, ayy, azz = get_averaged_spectrogram(xx, yy, zz, len(xx[:, 0]))
@@ -65,11 +60,7 @@ class ProcessSchottkyData(object):
         normalized_power = power / power.max()
         return freq, normalized_power
     
-<<<<<<< HEAD
     def _exp_data(self, fft = False):
-=======
-    def exp_data(self):
->>>>>>> origin/master
         
         if '.root' in self.filename: self.frequency, self.power = self.root_data()
         elif '.Specan' in self.filename : self.frequency, self.power = self.specan_data()        
@@ -102,11 +93,7 @@ def main():
     parser.add_argument('-b', '--binning', type = int, nargs = '?', help = 'Number of frecuency bins.')
 
     # Fancy arguments
-<<<<<<< HEAD
     parser.add_argument('-o', '--outdir', type = str, nargs = '?', default = os.getcwd(), help = 'Output directory.')
-=======
-    parser.add_argument('-o', '--outdir', type = str, nargs = '?', help = 'Output directory.')
->>>>>>> origin/master
     parser.add_argument('-v', '--verbose', help = 'Increase output verbosity', action = 'store_true')
 
     # Actions
@@ -133,15 +120,10 @@ def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
     return [file[:-1] for file in open(master_filename).readlines()]
     
-<<<<<<< HEAD
+
 def create_exp_spectrum_csv(filename, time, skip, binning, out = None, fft = None):
     myexpdata = ProcessSchottkyData(filename, analysis_time = time, skip_time = skip, binning = binning, fft = fft)
     myexpdata._exp_data()
-=======
-def create_exp_spectrum_csv(filename, time, skip, binning, out = None):
-    myexpdata = ProcessSchottkyData(filename, analysis_time = time, skip_time = skip, binning = binning)
-    myexpdata.exp_data()
->>>>>>> origin/master
     write_spectrum_to_csv(myexpdata.frequency, myexpdata.power, filename, out = out)
     
 if __name__ == '__main__':
