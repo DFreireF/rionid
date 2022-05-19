@@ -119,7 +119,6 @@ def main():
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
     return [file[:-1] for file in open(master_filename).readlines()]
-    
 
 def create_exp_spectrum_csv(filename, time, skip, binning, out = None, fft = None):
     myexpdata = ProcessSchottkyData(filename, analysis_time = time, skip_time = skip, binning = binning, fft = fft)
