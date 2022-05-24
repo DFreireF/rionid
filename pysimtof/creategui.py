@@ -73,13 +73,15 @@ class CreateGUI(object):
         self.ranges = list()
         
         for x in self.xrange_divs:
+            self.logy = True
             min_div = int(self.xrange_divs[x][0])
             max_div = int(self.xrange_divs[x][1])
 
             self.histogram_dict['exp_data'][0].GetXaxis().SetRange(min_div, max_div)
-            maximum = self.histogram_dict['exp_data'][0].GetMaximum()
             minimum = self.histogram_dict['exp_data'][0].GetMinimum()
-            if minimum == 0: minimum = 0.001
+            maximum = self.histogram_dict['exp_data'][0].GetMaximum()
+            if minimum <= 0: self.logy = False
+
             self.ranges.append((maximum, min_div, max_div, minimum))
 
             for key in self.histogram_dict:
@@ -107,11 +109,11 @@ class CreateGUI(object):
     def set_xy_ranges(self, stack, rang):
         
         self.exp_dict[stack].SetMinimum(rang[3] / 1.1)
-        self.exp_dict[stack].SetMaximum(rang[0] * 1.5)
+        self.exp_dict[stack].SetMaximum(rang[0] * 2)
         self.exp_dict[stack].GetXaxis().SetRange(rang[1], rang[2])
         
         self.stack[stack][0].SetMinimum(rang[3] / 1.1)
-        self.stack[stack][0].SetMaximum(rang[0] * 1.5)
+        self.stack[stack][0].SetMaximum(rang[0] * 2)
         self.stack[stack][0].GetXaxis().SetRange(rang[1], rang[2])
     
             
@@ -125,8 +127,7 @@ class CreateGUI(object):
         for j, stack in enumerate(self.stack):
             
             self.canvas_main.cd(j + 1)
-            self.canvas_main.cd(j + 1).SetLogy()
-            
+            if self.logy: self.canvas_main.cd(j + 1).SetLogy()
             self.exp_dict[stack].Draw('hist')
             self.stack[stack][0].Draw('same nostack')
             

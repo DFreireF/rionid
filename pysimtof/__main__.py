@@ -18,7 +18,7 @@ def main():
     parser.add_argument('-psim', '--filep', type = str, help = 'Read list of particles to simulate. LISE file or something else.')
     
     # Secondary Arguments
-    parser.add_argument('-hrm', '--harmonics', type = int, nargs = '?', help = 'Harmonics to simulate.')
+    parser.add_argument('-hrm', '--harmonics', type = int, nargs = '*', help = 'Harmonics to simulate.')
 
     # Arguments for Each Mode (Exclusive)
     modes.add_argument('-b', '--brho', type = float, help = 'Brho value of the reference nucleus at ESR (isochronous mode).')
