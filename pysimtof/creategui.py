@@ -109,11 +109,11 @@ class CreateGUI(object):
     def set_xy_ranges(self, stack, rang):
         
         self.exp_dict[stack].SetMinimum(rang[3] / 1.1)
-        self.exp_dict[stack].SetMaximum(rang[0] * 2)
+        self.exp_dict[stack].SetMaximum(rang[0] * 2.2)
         self.exp_dict[stack].GetXaxis().SetRange(rang[1], rang[2])
         
         self.stack[stack][0].SetMinimum(rang[3] / 1.1)
-        self.stack[stack][0].SetMaximum(rang[0] * 2)
+        self.stack[stack][0].SetMaximum(rang[0] * 2.2)
         self.stack[stack][0].GetXaxis().SetRange(rang[1], rang[2])
     
             

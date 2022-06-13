@@ -3,6 +3,7 @@ from barion.amedata import *
 from barion.particle import *
 from lisereader.reader import *
 import sys
+import re
 
 
 class ImportData(object):
@@ -17,12 +18,8 @@ class ImportData(object):
 
         # Extra objects
         self.ring = Ring('ESR', 108.4) # 108.43 Ge
-        # - Take the charge from the complete name
-        for i, char in enumerate(refion):
-            if char == '+': aux = i
-            
-        self.ref_charge = int(refion[aux:])
-        self.ref_aa = int(refion[:2]) # CAUTION: this will be usually true for us. But be careful
+        self.ref_charge = int(refion[refion.index('+'):])
+        self.ref_aa = int(re.split('(\d+)', refion)[1])
         
         # Get the experimental data
         if filename:
@@ -47,20 +44,23 @@ class ImportData(object):
             for particle in particles:
                 ion_name = f'{particle.tbl_aa}{particle.tbl_name}+{particle.qq}'
                 self.moq[ion_name] = particle.get_ionic_moq_in_u()
-
         else:
             for particle in self.particles_to_simulate:
                 ion_name = f'{particle[1]}{particle[0]}+{particle[4][0]}'
                 for ame in self.ame_data:
                     if particle[0] == ame[6] and particle[1] == ame[5]:
-                        self.moq[ion_name] = Particle(particle[2], particle[3], self.ame, self.ring).get_ionic_moq_in_u()
+                        pp = Particle(particle[2], particle[3], self.ame, self.ring)
+                        pp.qq = particle[4][0]
+                        # implement into simtofat lines below
+                        if ion_name == self.ref_ion: self.moq[ion_name] = pp.get_ionic_moq_in_u() #+ AMEData.to_u(0.697/pp.qq)
+                        else: self.moq[ion_name] = pp.get_ionic_moq_in_u()
 
-    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None):
+    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None):
         if moqs:
             self.moq = moqs
-            
+        
         self.ref_mass = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
-        self.ref_frequency = self.reference_frequency(fref = fref, brho = brho, ke = ke)
+        self.ref_frequency = self.reference_frequency(fref = fref, brho = brho, ke = ke, gam = gam)
 
         # Simulated relative revolution frequencies (respect to the reference particle)
         self.srrf = np.array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
@@ -99,29 +99,33 @@ class ImportData(object):
             simulated_data = np.stack((meassured_frequencies, yield_data), axis=1)  # axis=1 stacks vertically
             self.simulated_data_dict['Meassured'] = simulated_data
 
-    def reference_frequency(self, fref = None, brho = None, ke = None):
+    def reference_frequency(self, fref = None, brho = None, ke = None, gam = None):
         
         # If no frev given, calculate frev with brho or with ke, whatever you wish
         if fref:
             return fref
-            
         elif brho:
             return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
                                                      brho = brho, ref_charge = self.ref_charge)
-        
         elif ke:
             return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
                                                      ke = ke, aa = self.ref_aa)
-        else: sys.exit('None frev, brho, ke')
+        elif gam:
+            return ImportData.calc_ref_rev_frequency(gam = gam)
+            
+        else: sys.exit('None frev, brho, ke or gam')
         
     @staticmethod
-    def calc_ref_rev_frequency(ref_mass, ring_circumference, brho = None, ref_charge = None, ke = None, aa = None):
+    def calc_ref_rev_frequency(ref_mass, ring_circumference, brho = None, ref_charge = None, ke = None, aa = None, gam = None):
         
         if brho:
             gamma = ImportData.gamma_brho(brho, ref_charge, ref_mass)
             
         elif ke:
             gamma = ImportData.gamma_ke(ke, aa, ref_mass)
+            
+        elif gam:
+            gamma = gam
         
         beta = ImportData.beta(gamma)
         velocity = ImportData.velocity(beta)
@@ -135,7 +139,7 @@ class ImportData(object):
     
     @staticmethod
     def gamma_ke(ke, aa, ref_mass):
-        # ke := Kinetic energy
+        # ke := Kinetic energy per nucleon
         return (ke * aa) / (ref_mass) + 1
     
     @staticmethod

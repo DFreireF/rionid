@@ -23,6 +23,7 @@ def main():
     # Arguments for Each Mode (Exclusive)
     modes.add_argument('-b', '--brho', type = float, help = 'Brho value of the reference nucleus at ESR (isochronous mode).')
     modes.add_argument('-ke', '--kenergy', type = float, help = 'Kinetic energy of reference nucleus at ESR (isochronous mode).')
+    modes.add_argument('-gam', '--gamma', type = float, help = 'Lorentz factor gamma of the reference particle')
     modes.add_argument('-f', '--fref', type = float, help = 'Revolution frequency of the reference particle (standard mode).')
     
     # Arguments for the Visualization
@@ -37,8 +38,8 @@ def main():
     args = parser.parse_args()
 
     # Checking for Argument Errors
-    if args.brho is None and args.fref is None and args.kenergy is None:
-        parser.error('Please introduce the revolution frequency of the reference nucleus or the brho parameter.')
+    if args.brho is None and args.fref is None and args.kenergy is None and args.gamma is None:
+        parser.error('Please introduce the revolution frequency of the reference nucleus or the brho parameter or ke/aa or gamma.')
 
     # Extra Details
     if args.logLevel: log.basicConfig(level = log.getLevelName(args.logLevel))
@@ -52,12 +53,12 @@ def main():
     if ('txt') in args.datafile[0]:
         datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
-            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics)
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma)
     else:
         for file in args.datafile:
-            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics)
+            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma)
     
-def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None):
+def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None):
     
     log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     
@@ -68,7 +69,7 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     mydata._calculate_moqs()
     log.debug(f'moqs = {mydata.moq}')
     
-    mydata._calculate_srrf(fref = fref, brho = brho, ke = ke)
+    mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam)
     log.debug(f'Revolution (or meassured) frequency of {ref_ion} = {mydata.ref_frequency}')
     
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
@@ -77,7 +78,7 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
     mycanvas._view(mydata.experimental_data, mydata.simulated_data_dict, filename = data_file, out = out)
-    
+    log.debug(f'Plotted labels = {mycanvas.labels},{mycanvas.ref_ion}')
     log.info(f'Program has ended. Hope you have found what you were looking for. :)')
         
 def read_masterfile(master_filename):
