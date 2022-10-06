@@ -73,7 +73,9 @@ class ImportData(object):
         # Set the yield of the particles to simulate
         if particles: yield_data = [1 for i in range(len(self.moq))]
         else: yield_data = [lise[5] for lise in self.particles_to_simulate]
-        
+        # We normalize the yield to avoid problems with ranges and printing
+        #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
+
         # Get nuclei name for labels
         self.nuclei_names = [nuclei_name for nuclei_name in self.moq]
         
@@ -111,7 +113,8 @@ class ImportData(object):
             return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
                                                      ke = ke, aa = self.ref_aa)
         elif gam:
-            return ImportData.calc_ref_rev_frequency(gam = gam)
+            return ImportData.calc_ref_rev_frequency(self.ref_mass, self.ring.circumference,
+                                                     gam = gam)
             
         else: sys.exit('None frev, brho, ke or gam')
         
