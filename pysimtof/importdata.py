@@ -90,10 +90,10 @@ class ImportData(object):
                 harmonic_frequency = self.srrf * self.ref_frequency * harmonic
             
                 # attach harmonic, frequency, yield data and ion properties together:
-                array_stack = np.stack((harmonic_frequency, yield_data), axis=1)  # axis=1 stacks vertically
+                array_stack = np.stack((harmonic_frequency, yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
                 simulated_data = np.append(simulated_data, array_stack)
             
-                simulated_data = simulated_data.reshape(len(array_stack), 2)
+                simulated_data = simulated_data.reshape(len(array_stack), 3)
                 name = f'{harmonic}'            
                 self.simulated_data_dict[name] = simulated_data
         else:

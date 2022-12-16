@@ -74,8 +74,8 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
     log.debug(f'Simulation results = {mydata.simulated_data_dict}')
-    log.info(f'Simulation performed. Now we are going to start the display.')
     
+    log.info(f'Simulation performed. Now we are going to start the display.')
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
     mycanvas._view(mydata.experimental_data, mydata.simulated_data_dict, filename = data_file, out = out)
     log.debug(f'Plotted labels = {mycanvas.labels},{mycanvas.ref_ion}')

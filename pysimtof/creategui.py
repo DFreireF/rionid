@@ -49,7 +49,7 @@ class CreateGUI(object):
         for key in simulated_data_dict:
             name = f'srf{key}'
             self.histogram_dict[name] = np.array([TH1F(name, name, int(2e6),
-                                                       simulated_data_dict[key][:, 0].min(), simulated_data_dict[key][:, 0].max()), simulated_data_dict[key][:,:]], dtype = 'object').T
+                                                       float(min(simulated_data_dict[key][:, 0])), float(max(simulated_data_dict[key][:, 0]))), simulated_data_dict[key][:,:2].astype(np.float)], dtype = 'object').T
             
         [self.histogram_format(self.histogram_dict[key][0], color, key) for color, key in enumerate(self.histogram_dict)]
 
