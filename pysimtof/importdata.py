@@ -55,7 +55,7 @@ class ImportData(object):
                         if ion_name == self.ref_ion: self.moq[ion_name] = pp.get_ionic_moq_in_u() #+ AMEData.to_u(0.697/pp.qq)
                         else: self.moq[ion_name] = pp.get_ionic_moq_in_u()
 
-    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None):
+    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None):
         if moqs:
             self.moq = moqs
         
@@ -65,14 +65,16 @@ class ImportData(object):
         # Simulated relative revolution frequencies (respect to the reference particle)
         self.srrf = np.array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
                               for name in self.moq])
+        if correct:
+            self.srrf = self.srrf + np.polyval(np.array(correct), self.srrf * self.ref_frequency) / self.ref_frequency
         
     def _simulated_data(self, harmonics = None, particles = False):
         # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
         self.simulated_data_dict = dict()
         
         # Set the yield of the particles to simulate
-        if particles: yield_data = [1 for i in range(len(self.moq))]
-        else: yield_data = [lise[5] for lise in self.particles_to_simulate]
+        if particles: self.yield_data = [1 for i in range(len(self.moq))]
+        else: self.yield_data = [lise[5] for lise in self.particles_to_simulate]
         # We normalize the yield to avoid problems with ranges and printing
         #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
 
@@ -90,7 +92,7 @@ class ImportData(object):
                 harmonic_frequency = self.srrf * self.ref_frequency * harmonic
             
                 # attach harmonic, frequency, yield data and ion properties together:
-                array_stack = np.stack((harmonic_frequency, yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
+                array_stack = np.stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
                 simulated_data = np.append(simulated_data, array_stack)
             
                 simulated_data = simulated_data.reshape(len(array_stack), 3)
@@ -98,7 +100,7 @@ class ImportData(object):
                 self.simulated_data_dict[name] = simulated_data
         else:
             meassured_frequencies = self.srrf * self.ref_frequency
-            simulated_data = np.stack((meassured_frequencies, yield_data), axis=1)  # axis=1 stacks vertically
+            simulated_data = np.stack((meassured_frequencies, self.yield_data), axis=1)  # axis=1 stacks vertically
             self.simulated_data_dict['Meassured'] = simulated_data
 
     def reference_frequency(self, fref = None, brho = None, ke = None, gam = None):

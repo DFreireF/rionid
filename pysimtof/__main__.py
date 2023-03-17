@@ -34,7 +34,8 @@ def main():
     parser.add_argument('-l', '--log', dest = 'logLevel', choices = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default = 'INFO', help = 'Set the logging level.')
     parser.add_argument('-s', '--show', help = 'Show display. If not, save root file and close display', action = 'store_true')
     parser.add_argument('-o', '--outdir', type = str, nargs = '?', default = os.getcwd(), help = 'Output directory.')
-
+    parser.add_argument('-c', '--correct', nargs = '*', type = float, help = 'Correct simulated spectrum following a polynomial fit with paremeters given here')
+    
     args = parser.parse_args()
 
     # Checking for Argument Errors
@@ -53,12 +54,12 @@ def main():
     if ('txt') in args.datafile[0]:
         datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
-            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma)
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct)
     else:
         for file in args.datafile:
-            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma)
+            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct)
     
-def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None):
+def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None):
     
     log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     
@@ -69,11 +70,14 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     mydata._calculate_moqs()
     log.debug(f'moqs = {mydata.moq}')
     
-    mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam)
+    mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = correct)
     log.debug(f'Revolution (or meassured) frequency of {ref_ion} = {mydata.ref_frequency}')
     
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
-    log.debug(f'Simulation results = {mydata.simulated_data_dict}')
+    
+    log.debug(f'Simulation results = ')
+    for i,name in enumerate(mydata.nuclei_names):
+        log.debug(f'{name} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
     
     log.info(f'Simulation performed. Now we are going to start the display.')
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
