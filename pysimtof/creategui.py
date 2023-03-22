@@ -45,55 +45,67 @@ class CreateGUI(object):
     def create_histograms(self, exp_data, simulated_data_dict, filename):
         
         self.histogram_dict = {'exp_data': np.array([TH1D('h_exp_data', filename, len(exp_data[:,0]),
-                                                     exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype = 'object').T}
-        for key in simulated_data_dict:
-            name = f'srf{key}'
-            self.histogram_dict[name] = np.array([TH1F(name, name, int(2e6),
-                                                       float(min(simulated_data_dict[key][:, 0])), float(max(simulated_data_dict[key][:, 0]))), simulated_data_dict[key][:,:2].astype(np.float)], dtype = 'object').T
-            
-        [self.histogram_format(self.histogram_dict[key][0], color, key) for color, key in enumerate(self.histogram_dict)]
+                                                 exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype = 'object').T,
+                            **{f'srf{key}': np.array([TH1F(f'srf{key}', f'srf{key}', int(2e6),
+                                                       float(min(simulated_data_dict[key][:, 0])), float(max(simulated_data_dict[key][:, 0]))), simulated_data_dict[key][:,:2].astype(np.float)], dtype = 'object').T for key in simulated_data_dict}
+                            }
+        list(map(lambda x: self.histogram_format(self.histogram_dict[x[1]][0], x[0], x[1]), enumerate(self.histogram_dict)))
+
 
     def histogram_fill(self):
-        
         for key in self.histogram_dict:
-            xbin = [self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:,0]]
-            [self.histogram_dict[key][0].AddBinContent(xbin, self.histogram_dict[key][1][i,1]) for i, xbin in enumerate(xbin)]
+            xbin = (self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:, 0])
+            values = (self.histogram_dict[key][1][i, 1] for i in range(self.histogram_dict[key][1].shape[0]))
+            [self.histogram_dict[key][0].AddBinContent(x, v) for x, v in zip(xbin, values)]
             
     def set_xranges(self):
         
-        self.xrange_divs = dict()
-        
-        x = int ( self.histogram_dict['exp_data'][0].GetNbinsX() / self.ndivs )
-        
-        for j in range (0, self.ndivs):
-           self.xrange_divs[str(j)] = np.array([int(x * j + 1), int(x * ( j + 1 ))])
+        xrange_divs = {}
+        histogram = self.histogram_dict['exp_data'][0]
+        n_bins_x = histogram.GetNbinsX()
+        x = n_bins_x // self.ndivs
+        for j in range(self.ndivs):
+            xrange_divs[j] = np.array([x*j+1, x*(j+1)])
+        self.xrange_divs = xrange_divs
            
     def set_yscales(self):
+        self.ranges = []
+        exp_data_hist = self.histogram_dict['exp_data'][0]
+        exp_data_xaxis = exp_data_hist.GetXaxis()
+        exp_data_yaxis = exp_data_hist.GetYaxis()
         
-        self.ranges = list()
-        
+        # Loop over xrange_divs
         for x in self.xrange_divs:
-            self.logy = True
-            min_div = int(self.xrange_divs[x][0])
-            max_div = int(self.xrange_divs[x][1])
-
-            self.histogram_dict['exp_data'][0].GetXaxis().SetRange(min_div, max_div)
-            minimum = self.histogram_dict['exp_data'][0].GetMinimum()
-            maximum = self.histogram_dict['exp_data'][0].GetMaximum()
-            if minimum <= 0: self.logy = False
-
+            min_div, max_div = map(int, self.xrange_divs[x])
+            exp_data_xaxis.SetRange(min_div, max_div)
+            minimum = exp_data_hist.GetMinimum()
+            maximum = exp_data_hist.GetMaximum()
+        
+            # Check if y-axis is logarithmic
+            if minimum <= 0:
+                self.logy = False
+        
             self.ranges.append((maximum, min_div, max_div, minimum))
-
+        
+            # Loop over keys in histogram_dict
             for key in self.histogram_dict:
                 if 'srf' in key:
-                    for frec in (self.histogram_dict[key][1][:, 0]):
-                        if (frec >= self.histogram_dict['exp_data'][0].GetBinCenter(min_div)) and (frec <= self.histogram_dict['exp_data'][0].GetBinCenter(max_div)):
-                            xbin = self.histogram_dict[key][0].FindBin(frec)
-                            if self.idx_case == 0:
-                                self.histogram_dict[key][0].SetBinContent(xbin, maximum)
-                            else:
-                                scaled = self.histogram_dict[key][0].GetBinContent(xbin) * maximum /  self.histogram_dict[key][0].GetMaximum()
-                                self.histogram_dict[key][0].SetBinContent(xbin, scaled)
+                    srf_hist = self.histogram_dict[key][0]
+                    srf_array = self.histogram_dict[key][1]
+        
+                    # Filter out frequencies outside of the xrange_divs range
+                    srf_mask = (srf_array[:, 0] >= exp_data_xaxis.GetBinCenter(min_div)) & (srf_array[:, 0] <= exp_data_xaxis.GetBinCenter(max_div))
+                    srf_filtered = srf_array[srf_mask]
+        
+                    # Loop over filtered frequencies and update histogram bin contents
+                    for freq, value in srf_filtered:
+                        xbin = srf_hist.FindBin(freq)
+                        if self.idx_case == 0:
+                            srf_hist.SetBinContent(xbin, maximum)
+                        else:
+                            scaled = srf_hist.GetBinContent(xbin) * maximum / srf_hist.GetMaximum()
+                            srf_hist.SetBinContent(xbin, scaled)
+
         
     def create_stack(self, simulated_data_dict):
         
@@ -107,16 +119,11 @@ class CreateGUI(object):
            [self.stack[name][0].Add(self.histogram_dict[key][0]) for key in self.histogram_dict if 'srf' in key]
            
     def set_xy_ranges(self, stack, rang):
-        
-        self.exp_dict[stack].SetMinimum(rang[3] / 1.1)
-        self.exp_dict[stack].SetMaximum(rang[0] * 2.2)
-        self.exp_dict[stack].GetXaxis().SetRange(rang[1], rang[2])
-        
-        self.stack[stack][0].SetMinimum(rang[3] / 1.1)
-        self.stack[stack][0].SetMaximum(rang[0] * 2.2)
-        self.stack[stack][0].GetXaxis().SetRange(rang[1], rang[2])
+        for h in [self.exp_dict[stack], self.stack[stack][0]]:
+            h.SetMinimum(rang[3] / 1.1)
+            h.SetMaximum(rang[0] * 2.2)
+            h.GetXaxis().SetRange(rang[1], rang[2])
     
-            
     def draw_histograms(self):
         
         self.labels = dict()
@@ -128,14 +135,13 @@ class CreateGUI(object):
             
             self.canvas_main.cd(j + 1)
             if self.logy: self.canvas_main.cd(j + 1).SetLogy()
+            
             self.exp_dict[stack].Draw('hist')
             self.stack[stack][0].Draw('same nostack')
             
             self.set_xy_ranges(stack, self.ranges[j])
             self.stack_format(self.stack[stack][0])
-            
-            self.canvas_main.Update()
-            
+                        
         for color, key in enumerate(self.histogram_dict):
             self.legend.AddEntry(self.histogram_dict[key][0], f'{key}', 'l')
             if 'srf' in key:
@@ -212,36 +218,32 @@ class CreateGUI(object):
         ion_name = self.ion_names[tmp]
         label_name = f'{ion_name}{key}'
         
-        refion = False
-        if self.ref_ion in ion_name: refion = True
+        refion = self.ref_ion in ion_name
         self.labels[label_name] = np.array([TLatex(frec, ylabel, ion_name), frec, refion]).T
-        self.draw_label(label_name, color)
+        if self.canvas_cd(frec, index):
+            self.draw_label(label_name, color)
 
     def draw_label(self, label, color):
         
-        self.canvas_cd(self.labels[label][1])
-        if self.plot_this_label:
-            self.label_format(self.labels[label][0], self.labels[label][2], color)
-            self.plotted_labels = np.array([self.labels[label]])
+        self.label_format(self.labels[label][0], self.labels[label][2], color)
+        self.plotted_labels = np.array([self.labels[label]])
     
-    def canvas_cd(self, frec):
+    def canvas_cd(self, frec, index):
         
-        self.plot_this_label = False
         for key in self.xrange_divs:
             if (frec >= self.histogram_dict['exp_data'][0].GetBinCenter(int(self.xrange_divs[key][0]))) and (frec <= self.histogram_dict['exp_data'][0].GetBinCenter(int(self.xrange_divs[key][1]))):
                 self.canvas_main.cd(int(key) + 1)
-                self.plot_this_label = True
-                break
+                return True
+        return False
          
     def label_format(self, label, refion, color):
-        
+        label.SetLineColor(0)
         label.SetTextFont(110)
         label.SetTextSize(0.055)
         label.SetTextAngle(90)
         if color == 4: color = 225 #for not using the blue for this (since it is the data color)
         if color == 5: color = 95 #to avoid yellow
-        label.SetTextColor(color)
-        if refion: label.SetTextColor(1)
+        label.SetTextColor(1 if refion else color)
         label.SetLineWidth(3)
         label.Draw('same')
         self.canvas_main.Update()
