@@ -6,32 +6,40 @@ this_directory=Path(__file__).parent
 long_description=(this_directory / 'README.md').read_text()
 
 classifiers = [
-    'Environment :: Console',
-    'Programming Language :: Python :: 3.4',
-    'Programming Language :: Python :: 3.5',
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Science/Research',
     'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-    'Natural Language :: English',
     'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
     'Topic :: Scientific/Engineering :: Physics'
-
 ]
 
 setup(
-    name='pySimToF',
-    packages=find_packages(),
+    name='pysimtof',
     version=__version__,
     description='Collection of tools for dealing with SMS data at storage rings.',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='DFreireF // gwgwhc',
     url='https://github.com/DFreireF/pysimtof',
-    download_url=f'https://github.com/DFreireF/pysimtof/tarball/{__version__}',
+    download_url=f'https://github.com/DFreireF/pysimtof/archive/{__version__}.tar.gz',
+    packages=find_packages(),
+    classifiers=classifiers,
+    keywords=['physics', 'data analysis', 'storage ring'],
+    python_requires='>=3.7, <4',
+    install_requires=[
+        'numpy',
+        'scipy',
+        'matplotlib'
+    ],
     entry_points={
         'console_scripts': [
             'pysimtof = pysimtof.__main__:main'
         ]
     },
     license='GPLv3',
-    keywords=['physics', 'data analysis', 'storage ring', ],
-    classifiers=classifiers
 )
