@@ -32,9 +32,9 @@ setup(
     keywords=['physics', 'data analysis', 'storage ring'],
     python_requires='>=3.7, <4',
     install_requires=[
-        'numpy',
-        'scipy',
-        'matplotlib'
+        'iqtools',
+        'barion',
+        'lisereader',
     ],
     entry_points={
         'console_scripts': [
