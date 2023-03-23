@@ -1,30 +1,23 @@
 # pySimToF Usage Guide
 
-First version: 1.0.0 released 2022.02.25!
-
-
-#### Dependencies
-Requires [Barion](https://github.com/xaratustrah/barion) and [IQTools](https://github.com/xaratustrah/iqtools) from [@Xaratustrah](https://github.com/xaratustrah), [LISEreader](https://github.com/gwgwhc/lisereader) from [@gwgwhc](https://github.com/gwgwhc) and [PyROOT](https://root.cern/manual/python/).
-
-
 `pySimToF` is a Python code that simulates the time-of-flight (ToF) spectrum of particles in a storage ring. Here is a guide on how to use pySimToF:
 
 ## Installation
 
-+    Install the required libraries by running pip install -r requirements.txt in the terminal: 
-  ```bash
-    pip install -r requirements.txt
-    pip install .
-  ```
++    Download and install [Barion](https://github.com/xaratustrah/barion) from [@Xaratustrah](https://github.com/xaratustrah), [LISEreader](https://github.com/gwgwhc/lisereader) from [@gwgwhc](https://github.com/gwgwhc) and [PyROOT](https://root.cern/manual/python/)
+
 +    Download or clone the `pySimToF` repository:
   ```bash
     git clone https://github.com/DFreireF/pysimtof.git
   ```
-
++    Then in the cloned directory: 
+  ```bash
+    pip install .
+  ```
 ## Usage
 
-    Navigate to the directory containing the `pySimToF` code in your terminal.
-    Run `python __main__.py [arguments]`, replacing `[arguments]` with the desired arguments (detailed below).
+Navigate to the directory containing the `pySimToF` code in your terminal.
+Run `python __main__.py [arguments]`, replacing `[arguments]` with the desired arguments (detailed below).
 
 ## Arguments
 
