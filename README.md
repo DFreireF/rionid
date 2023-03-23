@@ -1,13 +1,68 @@
-# pySimToF
-Work in always progress!
+# pySimToF Usage Guide
 
 First version: 1.0.0 released 2022.02.25!
 
-**Latest version: 3.2.3 released 2022.05.16!**
-
-### First you have to process the data (.tiq, .tdms, .root, .Specan) with psdata.py. It will create a csv file with the f, p, p(dbm), and that's what you pass to __main__.py
 
 #### Dependencies
 Requires [Barion](https://github.com/xaratustrah/barion) and [IQTools](https://github.com/xaratustrah/iqtools) from [@Xaratustrah](https://github.com/xaratustrah), [LISEreader](https://github.com/gwgwhc/lisereader) from [@gwgwhc](https://github.com/gwgwhc) and [PyROOT](https://root.cern/manual/python/).
 
-#### Code inspired in 'simtof.cxx' from Dr. Chen Rui-Jiu
+
+`pySimToF` is a Python code that simulates the time-of-flight (ToF) spectrum of particles in a storage ring. Here is a guide on how to use pySimToF:
+
+## Installation
+
++    Install the required libraries by running pip install -r requirements.txt in the terminal: 
+  ```bash
+    pip install -r requirements.txt
+    pip install .
+  ```
++    Download or clone the `pySimToF` repository:
+  ```bash
+    git clone https://github.com/DFreireF/pysimtof.git
+  ```
+
+## Usage
+
+    Navigate to the directory containing the `pySimToF` code in your terminal.
+    Run `python __main__.py [arguments]`, replacing `[arguments]` with the desired arguments (detailed below).
+
+## Arguments
+
+The following arguments are available for use with `pySimToF`:
+#### Main Arguments
+
++    `datafile` (required): Name of the input file with data. Can also be a list of files in a txt file.
++    `alphap`: Momentum compaction factor of the ring.
++    `refion`: Reference ion with format NucleonsNameChargestate := AAXX+CC. Example: 72Ge+35, 1H+1, 238U+92...
++    `filep`: Read list of particles to simulate. LISE file or something else.
+
+#### Secondary Arguments
+
++    `harmonics`: Harmonics to simulate.
+
+#### Arguments for Each Mode (Exclusive)
+
++    `brho`: Brho value of the reference nucleus at ESR (isochronous mode).
++    `kenergy`: Kinetic energy of reference nucleus at ESR (isochronous mode).
++    `gamma`: Lorentz factor gamma of the reference particle.
++    `fref`: Revolution frequency of the reference particle (standard mode).
+
+#### Arguments for Visualization
+
++    `ndivs`: Number of divisions in the display.
++    `amplitude`: Display of srf data options. 0 -> constant height, else->scaled.
+
+#### Actions
+
++    `log`: Set the logging level.
++    `show`: Show display. If not, save root file and close display.
++    `outdir`: Output directory.
++    `correct`: Correct simulated spectrum following a polynomial fit with paremeters given here.
+
+#### Example Usage: Dummy example
+
+```python
+    python __main__.py datafile.txt -f 11.2452 -r 209Bi+83 -psim datafile.psim -b 5.5 -d 8 -am 1 -s -o output_folder -c 1 2 3
+```
+
+This command would run `pySimToF` on the `datafile.txt` input file, using the standard mode with a `reference frequency` of 11.2452, a `reference ion` of `209Bi+83`, a particle input file of `datafile.psim`, a `brho` value of `5.5`, and displaying the data with `8 divisions`, `scaled amplitude`, and showing the display. The output files would be saved in the `output_folder directory`, and the `simulated spectrum` would be `corrected` using the polynomial fit parameters 1, 2, and 3.
