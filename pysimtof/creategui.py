@@ -18,7 +18,7 @@ class CreateGUI(object):
         self.show = show
 
     def _view(self, exp_data, simulated_data_dict, filename = 'Spectrum', out = ''):
-        
+
         self.create_canvas()
         self.create_histograms(exp_data, simulated_data_dict, filename)
         self.histogram_fill()      
@@ -30,6 +30,7 @@ class CreateGUI(object):
         
         if self.show:
             gApplication.Run()
+
         else:
             date_time = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
             info_name = f'{out}{filename}{date_time}'
@@ -37,6 +38,7 @@ class CreateGUI(object):
         
     def create_canvas(self):
         
+        # Create a canvas
         self.canvas_main = TCanvas('canvas', 'Frequency Histograms', 1500, 1500)
         self.canvas_main.SetFillColor(0)
         self.canvas_main.Divide(1, self.ndivs)

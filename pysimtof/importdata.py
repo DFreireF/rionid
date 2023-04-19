@@ -52,10 +52,10 @@ class ImportData(object):
                         pp = Particle(particle[2], particle[3], self.ame, self.ring)
                         pp.qq = particle[4][0]
                         # implement into simtofat lines below
-                        if ion_name == self.ref_ion: self.moq[ion_name] = pp.get_ionic_moq_in_u() #+ AMEData.to_u(0.697/pp.qq)
+                        if ion_name == self.ref_ion: self.moq[ion_name] = pp.get_ionic_moq_in_u()
                         else: self.moq[ion_name] = pp.get_ionic_moq_in_u()
 
-    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None):
+    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None, ):
         if moqs:
             self.moq = moqs
         
@@ -73,13 +73,13 @@ class ImportData(object):
         self.simulated_data_dict = dict()
         
         # Set the yield of the particles to simulate
-        if particles: self.yield_data = [1 for i in range(len(self.moq))]
-        else: self.yield_data = [lise[5] for lise in self.particles_to_simulate]
+        if particles: self.yield_data = np.array([1 for i in range(len(self.moq))])
+        else: self.yield_data = np.array([lise[5] for lise in self.particles_to_simulate])
         # We normalize the yield to avoid problems with ranges and printing
         #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
 
         # Get nuclei name for labels
-        self.nuclei_names = [nuclei_name for nuclei_name in self.moq]
+        self.nuclei_names = np.array([nuclei_name for nuclei_name in self.moq])
         
         # Simulate the expected meassured frecuency for each harmonic:
         if harmonics:

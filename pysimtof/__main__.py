@@ -3,7 +3,7 @@ import os
 import logging as log
 from pysimtof.importdata import *
 from pysimtof.creategui import *
-
+import ezodf
 
 def main():
     
@@ -33,6 +33,8 @@ def main():
     # Actions
     parser.add_argument('-l', '--log', dest = 'logLevel', choices = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default = 'INFO', help = 'Set the logging level.')
     parser.add_argument('-s', '--show', help = 'Show display. If not, save root file and close display', action = 'store_true')
+    parser.add_argument('-w', '--ods', help = 'Write ods.', action = 'store_true')
+
     parser.add_argument('-o', '--outdir', type = str, nargs = '?', default = os.getcwd(), help = 'Output directory.')
     parser.add_argument('-c', '--correct', nargs = '*', type = float, help = 'Correct simulated spectrum following a polynomial fit with paremeters given here')
     
@@ -54,12 +56,12 @@ def main():
     if ('txt') in args.datafile[0]:
         datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
-            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct)
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct, ods = args.ods)
     else:
         for file in args.datafile:
-            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct)
+            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct, ods = args.ods)
     
-def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None):
+def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False):
     
     log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     
@@ -76,9 +78,11 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
     
     log.debug(f'Simulation results = ')
-    for i,name in enumerate(mydata.nuclei_names):
-        log.debug(f'{name} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
-    
+    sort_index = np.argsort(mydata.srrf)
+    for i in sort_index:
+        log.debug(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
+    if ods: write_arrays_to_ods('Data_simulated_pysimtof', 'Data', ['Name', 'freq', 'yield'], (mydata.nuclei_names)[sort_index], (mydata.srrf)[sort_index] * mydata.ref_frequency, (mydata.yield_data)[sort_index] )
+        
     log.info(f'Simulation performed. Now we are going to start the display.')
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
     mycanvas._view(mydata.experimental_data, mydata.simulated_data_dict, filename = data_file, out = out)
@@ -88,6 +92,21 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
     return [file[:-1] for file in open(master_filename).readlines()]
+
+def write_arrays_to_ods(file_name, sheet_name, names, *arrays):
+    # Create the ods spreadsheet and add a sheet
+    spreadsheet = ezodf.newdoc(doctype='ods', filename=file_name)
+    max_len = max(len(arr) for arr in arrays)
+    sheet = ezodf.Sheet(sheet_name,size=(max_len+1,len(arrays)))
+    spreadsheet.sheets += sheet
+    
+    for i, arr in enumerate(arrays):
+        sheet[(0, i)].set_value(str(names[i]))
+        for j in range(len(arr)):
+            sheet[j+1, i].set_value(arr[j])
+
+    # Save the spreadsheet
+    spreadsheet.save()
 
 if __name__ == '__main__':
     main()
