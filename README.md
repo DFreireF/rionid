@@ -1,4 +1,4 @@
-# RionID Usage Guide
+# RionID (Ringed Ions IDentification) Usage Guide
 
 `rionid` is a Python code that simulates the time-of-flight (ToF) spectrum of particles in a storage ring. Here is a guide on how to use pySimToF:
 
