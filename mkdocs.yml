@@ -1,0 +1,58 @@
+site_name: pysimtof Documentation
+site_description: "Library to perform particle identification of a Schottky spectrum."
+site_url: "https://DFreireF.github.io/pysimtof"
+repo_url: "https://github.com/DFreireF/pysimtof"
+edit_uri: "blob/main/docs/"
+repo_name: "DFreireF/pysimtof"
+site_dir: "site"
+watch: [README.md]
+
+theme:
+  name: material
+  highlightjs: true
+  features:
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: red
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.magiclink
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist
+
+plugins:
+  - search
+  - mkdocstrings
+
+nav:
+  - Main page: index.md
+  - Code Reference:
+    - __main__: references/plotters.md
+    - importdata: references/tools.md
+    - creategui: references/iqbase.md
+      
+extra:
+  social:
+  - icon: fontawesome/brands/github
+    link: https://github.com/DFreireF
