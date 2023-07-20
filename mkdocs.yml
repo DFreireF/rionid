@@ -48,9 +48,9 @@ plugins:
 nav:
   - Main page: index.md
   - Code Reference:
-    - __main__: references/plotters.md
-    - importdata: references/tools.md
-    - creategui: references/iqbase.md
+    - __main__: __main__.md
+    - importdata: importdata.md
+    - creategui: creategui.md
       
 extra:
   social:
