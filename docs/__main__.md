@@ -1,6 +1,6 @@
 ## Summary of Python Code: Controller (main.py) Documentation
 
-The provided Python code defines the main controller module for the pySimToF application. It is responsible for handling command-line arguments, parsing data files, and coordinating the flow of data between the `ImportData` class and the `CreateGUI` class. The controller also facilitates the visualization and saving of simulation results.
+The provided Python code defines the main controller module for the rionid application. It is responsible for handling command-line arguments, parsing data files, and coordinating the flow of data between the `ImportData` class and the `CreateGUI` class. The controller also facilitates the visualization and saving of simulation results.
 
 ### Function: `main()`
 This function is the entry point of the application and is called when the script is executed. It parses command-line arguments using `argparse` and then delegates tasks to the `controller()` function based on the provided arguments.

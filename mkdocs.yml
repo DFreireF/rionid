@@ -1,9 +1,9 @@
-site_name: pysimtof Documentation
-site_description: "Library to perform particle identification of a Schottky spectrum."
-site_url: "https://DFreireF.github.io/pysimtof"
-repo_url: "https://github.com/DFreireF/pysimtof"
+site_name: RionID Documentation
+site_description: "Ringed Ions IDdentification: Library to perform particle identification of a Schottky spectrum."
+site_url: "https://DFreireF.github.io/rionid"
+repo_url: "https://github.com/DFreireF/rionid"
 edit_uri: "blob/main/docs/"
-repo_name: "DFreireF/pysimtof"
+repo_name: "DFreireF/rionid"
 site_dir: "site"
 watch: [README.md]
 

@@ -1,6 +1,6 @@
-# pySimToF Usage Guide
+# RionID Usage Guide
 
-`pySimToF` is a Python code that simulates the time-of-flight (ToF) spectrum of particles in a storage ring. Here is a guide on how to use pySimToF:
+`rionid` is a Python code that simulates the time-of-flight (ToF) spectrum of particles in a storage ring. Here is a guide on how to use pySimToF:
 
 ## Installation
 
@@ -16,12 +16,12 @@
   ```
 ## Usage
 
-Navigate to the directory containing the `pySimToF` code in your terminal.
+Navigate to the directory containing the `rionid` code in your terminal.
 Run `python __main__.py [arguments]`, replacing `[arguments]` with the desired arguments (detailed below).
 
 ## Arguments
 
-The following arguments are available for use with `pySimToF`:
+The following arguments are available for use with `rionid`:
 #### Main Arguments
 
 +    `datafile` (required): Name of the input file with data. Can also be a list of files in a txt file.
@@ -58,4 +58,4 @@ The following arguments are available for use with `pySimToF`:
     python __main__.py datafile.txt -f 11.2452 -r 209Bi+83 -psim datafile.psim -b 5.5 -d 8 -am 1 -s -o output_folder -c 1 2 3
 ```
 
-This command would run `pySimToF` on the `datafile.txt` input file, using the standard mode with a `reference frequency` of 11.2452, a `reference ion` of `209Bi+83`, a particle input file of `datafile.psim`, a `brho` value of `5.5`, and displaying the data with `8 divisions`, `scaled amplitude`, and showing the display. The output files would be saved in the `output_folder directory`, and the `simulated spectrum` would be `corrected` using the polynomial fit parameters 1, 2, and 3.
+This command would run `rionid` on the `datafile.txt` input file, using the standard mode with a `reference frequency` of 11.2452, a `reference ion` of `209Bi+83`, a particle input file of `datafile.psim`, a `brho` value of `5.5`, and displaying the data with `8 divisions`, `scaled amplitude`, and showing the display. The output files would be saved in the `output_folder directory`, and the `simulated spectrum` would be `corrected` using the polynomial fit parameters 1, 2, and 3.
