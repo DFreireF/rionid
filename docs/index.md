@@ -6,9 +6,9 @@
 
 +    Download and install [Barion](https://github.com/xaratustrah/barion) from [@Xaratustrah](https://github.com/xaratustrah), [LISEreader](https://github.com/gwgwhc/lisereader) from [@gwgwhc](https://github.com/gwgwhc) and [PyROOT](https://root.cern/manual/python/)
 
-+    Download or clone the `pySimToF` repository:
++    Download or clone the `rionid` repository:
   ```bash
-    git clone https://github.com/DFreireF/pysimtof.git
+    git clone https://github.com/DFreireF/rionid.git
   ```
 +    Then in the cloned directory: 
   ```bash
