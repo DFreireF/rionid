@@ -56,3 +56,5 @@ extra:
   social:
   - icon: fontawesome/brands/github
     link: https://github.com/DFreireF
+copyright: |
+  &copy; 2023 <a href="https://github.com/DFreireF"  target="_blank" rel="noopener">David Freire Fernández</a>
