@@ -1,13 +1,14 @@
 import argparse
 import os
 import logging as log
-from pysimtof.importdata import *
-from pysimtof.creategui import *
+from rionid.importdata import *
+from rionid.creategui import *
 import ezodf
+import numpy as np
 
 def main():
     
-    scriptname = 'pySimToF' 
+    scriptname = 'RionID' 
     parser = argparse.ArgumentParser()
     modes = parser.add_mutually_exclusive_group(required = True)
 
@@ -81,7 +82,7 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     sort_index = np.argsort(mydata.srrf)
     for i in sort_index:
         log.debug(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
-    if ods: write_arrays_to_ods('Data_simulated_pysimtof', 'Data', ['Name', 'freq', 'yield'], (mydata.nuclei_names)[sort_index], (mydata.srrf)[sort_index] * mydata.ref_frequency, (mydata.yield_data)[sort_index] )
+    if ods: write_arrays_to_ods('Data_simulated_RionID', 'Data', ['Name', 'freq', 'yield'], (mydata.nuclei_names)[sort_index], (mydata.srrf)[sort_index] * mydata.ref_frequency, (mydata.yield_data)[sort_index] )
         
     log.info(f'Simulation performed. Now we are going to start the display.')
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
