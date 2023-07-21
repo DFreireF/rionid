@@ -1,4 +1,4 @@
-# RionID (Ringed Ions IDentification) Usage Guide
+# RionID (Ringed IONs IDentification) Usage Guide
 [![documentation](https://img.shields.io/badge/docs-mkdocs%20material-blue.svg?style=flat)](https://DFreireF.github.io/rionid)[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8169341.svg)](https://doi.org/10.5281/zenodo.8169341)
 
 
