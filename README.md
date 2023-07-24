@@ -65,4 +65,5 @@ This command would run `rionid` on the `datafile.txt` input file, using the stan
 
 #### Acknowledgements:
 We acknowledge Dr. RuiJiu Chen (@chenruijiu) for providing a c++ code for the simulation of ToF which we used as inspiration for the backbone of this code.
+
 We acknowledge Dr. Shahab Sanajri (@xaratustrah) for the guiding our software coding, specially in the initial stages.
