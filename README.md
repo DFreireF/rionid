@@ -64,6 +64,6 @@ The following arguments are available for use with `rionid`:
 This command would run `rionid` on the `datafile.txt` input file, using the standard mode with a `reference frequency` of 11.2452, a `reference ion` of `209Bi+83`, a particle input file of `datafile.psim`, a `brho` value of `5.5`, and displaying the data with `8 divisions`, `scaled amplitude`, and showing the display. The output files would be saved in the `output_folder directory`, and the `simulated spectrum` would be `corrected` using the polynomial fit parameters 1, 2, and 3.
 
 #### Acknowledgements:
-We acknowledge Dr. RuiJiu Chen [@chenruijiu](https://github.com/chenruijiu/) for providing a c++ code for the simulation of ToF which we used as inspiration for the backbone of this code.
+We acknowledge Dr. RuiJiu Chen ([@chenruijiu](https://github.com/chenruijiu/)) for providing a c++ code for the simulation of ToF which we used as inspiration for the backbone of this code.
 <br />
-We acknowledge Dr. Shahab Sanajri [@xaratustrah](https://github.com/xaratustrah/) for the guiding our software coding, specially in the initial stages.
+We acknowledge Dr. Shahab Sanajri ([@xaratustrah](https://github.com/xaratustrah/)) for the guiding our software coding, specially in the initial stages.
