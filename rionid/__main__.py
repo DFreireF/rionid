@@ -1,8 +1,8 @@
 import argparse
 import os
 import logging as log
-from rionid.importdata import *
-from rionid.creategui import *
+from .importdata import *
+from .creategui import *
 import ezodf
 import numpy as np
 
