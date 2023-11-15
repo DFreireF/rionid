@@ -1,7 +1,7 @@
 from ROOT import *
 from barion.patternfinder import *
-from rionid.pypeaks import *
-from rionid.importdata import *
+from .pypeaks import *
+from .importdata import *
 from datetime import datetime
 
 
