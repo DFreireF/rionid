@@ -3,7 +3,7 @@
 
 
 
-`rionid` is a Python code that simulates the time-of-flight (ToF) spectrum of particles in a storage ring. Here is a guide on how to use pySimToF (for more details please check dfreiref.github.io/rionid/):
+`rionid` is a Python code that simulates the time-of-flight (ToF) spectrum of particles in a storage ring. Here is a guide on how to use pySimToF (for more details please check [dfreiref.github.io/rionid/](dfreiref.github.io/rionid/)):
 
 ## Installation
 
