@@ -49,7 +49,8 @@ class CreateGUI(object):
         self.histogram_dict = {'exp_data': np.array([TH1D('h_exp_data', filename, len(exp_data[:,0]),
                                                  exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype = 'object').T,
                             **{f'srf{key}': np.array([TH1F(f'srf{key}', f'srf{key}', int(2e6),
-                                                       float(min(simulated_data_dict[key][:, 0])), float(max(simulated_data_dict[key][:, 0]))), simulated_data_dict[key][:,:2].astype(np.float)], dtype = 'object').T for key in simulated_data_dict}
+                                                       float(min(simulated_data_dict[key][:, 0])), float(max(simulated_data_dict[key][:, 0]))), 
+                                                      simulated_data_dict[key][:,:2].astype(float)], dtype = 'object').T for key in simulated_data_dict}
                             }
         list(map(lambda x: self.histogram_format(self.histogram_dict[x[1]][0], x[0], x[1]), enumerate(self.histogram_dict)))
 
@@ -82,7 +83,8 @@ class CreateGUI(object):
             exp_data_xaxis.SetRange(min_div, max_div)
             minimum = exp_data_hist.GetMinimum()
             maximum = exp_data_hist.GetMaximum()
-        
+
+            self.logy=True
             # Check if y-axis is logarithmic
             if minimum <= 0:
                 self.logy = False
