@@ -20,6 +20,7 @@ def main():
     
     # Secondary Arguments
     parser.add_argument('-hrm', '--harmonics', type = float, nargs = '*', help = 'Harmonics to simulate.')
+    parser.add_argument('-n', '--nions', type = int, nargs = '*', help = 'Number of ions to display, sorted by yield (highest)')
 
     # Arguments for Each Mode (Exclusive)
     modes.add_argument('-b', '--brho', type = float, help = 'Brho value of the reference nucleus at ESR (isochronous mode).')
@@ -57,16 +58,16 @@ def main():
     if ('txt') in args.datafile[0]:
         datafile_list = read_masterfile(args.datafile[0])
         for datafile in datafile_list:
-            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct, ods = args.ods)
+            controller(datafile[0], args.filep, args.harmonics, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct, ods = args.ods, nions=args.nions)
     else:
         for file in args.datafile:
-            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct, ods = args.ods)
+            controller(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct, ods = args.ods, nions = args.nions)
     
-def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False):
+def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False, nions = None):
     
     log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     
-    mydata = ImportData(ref_ion, alphap, filename = data_file)
+    mydata = ImportData(ref_ion, alphap, filename = data_file, nions = nions)
     log.debug(f'Experimental data = {mydata.experimental_data}')
     mydata._set_particles_to_simulate_from_file(particles_to_simulate)
     
