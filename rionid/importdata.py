@@ -15,7 +15,7 @@ class ImportData(object):
         # Argparser arguments
         self.ref_ion = refion
         self.alphap = alphap
-        self.nions = nions[0]
+        self.nions = nions
         
         # Extra objects
         self.ring = Ring('ESR', 108.4) # 108.43 Ge

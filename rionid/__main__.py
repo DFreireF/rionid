@@ -20,7 +20,7 @@ def main():
     
     # Secondary Arguments
     parser.add_argument('-hrm', '--harmonics', type = float, nargs = '*', help = 'Harmonics to simulate.')
-    parser.add_argument('-n', '--nions', type = int, nargs = '*', help = 'Number of ions to display, sorted by yield (highest)')
+    parser.add_argument('-n', '--nions', type = int, help = 'Number of ions to display, sorted by yield (highest)')
 
     # Arguments for Each Mode (Exclusive)
     modes.add_argument('-b', '--brho', type = float, help = 'Brho value of the reference nucleus at ESR (isochronous mode).')
