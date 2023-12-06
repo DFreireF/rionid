@@ -67,7 +67,7 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     
     log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     
-    mydata = ImportData(ref_ion, alphap, filename = data_file, nions = nions)
+    mydata = ImportData(ref_ion, alphap, filename = data_file)
     log.debug(f'Experimental data = {mydata.experimental_data}')
     mydata._set_particles_to_simulate_from_file(particles_to_simulate)
     
@@ -79,6 +79,19 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
     
+    # displaying specified amount of ions, sorted by yield
+    if nions:
+        # sort by yield (greatest first)
+        sorted_indices = np.argsort(mydata.yield_data)[::-1]
+        if harmonics:
+            for harmonic in harmonics: # for each harmonic
+                name = f'{harmonic}'
+                # store first n indices where n = nion
+                mydata.simulated_data_dict[name] = mydata.simulated_data_dict[name][sorted_indices][:nions]
+        else:
+            mydata.simulated_data_dict['Meassured'] = mydata.simulated_data_dict['Meassured'][sorted_indices][:nions]
+
+
     log.debug(f'Simulation results = ')
     sort_index = np.argsort(mydata.srrf)
     for i in sort_index:

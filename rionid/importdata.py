@@ -10,12 +10,11 @@ class ImportData(object):
     '''
     Model (MVC)
     '''
-    def __init__(self, refion, alphap, filename = None, nions = None):
+    def __init__(self, refion, alphap, filename = None):
 
         # Argparser arguments
         self.ref_ion = refion
         self.alphap = alphap
-        self.nions = nions
         
         # Extra objects
         self.ring = Ring('ESR', 108.4) # 108.43 Ge
@@ -104,18 +103,6 @@ class ImportData(object):
             simulated_data = np.stack((meassured_frequencies, self.yield_data), axis=1)  # axis=1 stacks vertically
             self.simulated_data_dict['Meassured'] = simulated_data
             
-        # displaying specified amount of ions, sorted by yield
-        if self.nions:
-            # sort by yield (greatest first)
-            sorted_indices = np.argsort(self.yield_data)[::-1]
-            if harmonics:
-                for harmonic in harmonics: # for each harmonic
-                    name = f'{harmonic}'
-                    # store first n indices where n = nion
-                    self.simulated_data_dict[name] = self.simulated_data_dict[name][sorted_indices][:self.nions]
-            else:
-                self.simulated_data_dict['Meassured'] = self.simulated_data_dict['Meassured'][sorted_indices][:self.nions]
-
     def reference_frequency(self, fref = None, brho = None, ke = None, gam = None):
         
         # If no frev given, calculate frev with brho or with ke, whatever you wish
