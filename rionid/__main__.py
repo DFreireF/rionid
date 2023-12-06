@@ -66,43 +66,44 @@ def main():
 def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False, nions = None):
     
     log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
-    
+    # Calculations
     mydata = ImportData(ref_ion, alphap, filename = data_file)
     log.debug(f'Experimental data = {mydata.experimental_data}')
     mydata._set_particles_to_simulate_from_file(particles_to_simulate)
     
     mydata._calculate_moqs()
     log.debug(f'moqs = {mydata.moq}')
-    
     mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = correct)
     log.debug(f'Revolution (or meassured) frequency of {ref_ion} = {mydata.ref_frequency}')
-    
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
-    
-    # displaying specified amount of ions, sorted by yield
-    if nions:
-        # sort by yield (greatest first)
-        sorted_indices = np.argsort(mydata.yield_data)[::-1]
-        if harmonics:
-            for harmonic in harmonics: # for each harmonic
-                name = f'{harmonic}'
-                # store first n indices where n = nion
-                mydata.simulated_data_dict[name] = mydata.simulated_data_dict[name][sorted_indices][:nions]
-        else:
-            mydata.simulated_data_dict['Meassured'] = mydata.simulated_data_dict['Meassured'][sorted_indices][:nions]
 
-
-    log.debug(f'Simulation results = ')
+    log.debug(f'Simulation results (ordered by frequency) = ')
     sort_index = np.argsort(mydata.srrf)
     for i in sort_index:
         log.debug(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
     if ods: write_arrays_to_ods('Data_simulated_RionID', 'Data', ['Name', 'freq', 'yield'], (mydata.nuclei_names)[sort_index], (mydata.srrf)[sort_index] * mydata.ref_frequency, (mydata.yield_data)[sort_index] )
-        
     log.info(f'Simulation performed. Now we are going to start the display.')
+
+    # View
+
+    # Some extra controlling
+    # displaying specified amount of ions, sorted by yield
+    if nions:
+        # sort by yield (greatest first)
+        sorted_indices = np.argsort(mydata.yield_data)[::-1][:nions]
+        mydata.nuclei_names = mydata.nuclei_names[sorted_indices]
+        if harmonics:
+            for harmonic in harmonics: # for each harmonic
+                name = f'{harmonic}'
+                mydata.simulated_data_dict[name] = mydata.simulated_data_dict[name][sorted_indices]
+        else:
+            mydata.simulated_data_dict['Meassured'] = mydata.simulated_data_dict['Meassured'][sorted_indices]
+
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
     mycanvas._view(mydata.experimental_data, mydata.simulated_data_dict, filename = data_file, out = out)
+
     log.debug(f'Plotted labels = {mycanvas.labels},{mycanvas.ref_ion}')
-    log.info(f'Program has ended. Hope you have found what you were looking for. :)')
+    log.info(f'Program has ended. I hope you have found what you were looking for. :)')
         
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
