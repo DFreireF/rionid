@@ -91,6 +91,8 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     if nions:
         # sort by yield (greatest first)
         sorted_indices = np.argsort(mydata.yield_data)[::-1][:nions]
+        ref_index = np.where(mydata.nuclei_names == ref_ion)[0]
+        sorted_indices = np.append(sorted_indices, ref_index)
         mydata.nuclei_names = mydata.nuclei_names[sorted_indices]
         if harmonics:
             for harmonic in harmonics: # for each harmonic
