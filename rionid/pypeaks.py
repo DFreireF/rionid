@@ -2,26 +2,31 @@ from ROOT import TCanvas, TMath, TH1, TH1F, TF1, TRandom, TSpectrum, TVirtualFit
 from time import time
 from numpy import array,append,argsort
 
-def gaussians(x, par):  # necessary to define outside of class for TF1.Fit()
-    #--------------------horrible------------------------#
-    i = 0
-    aux = 1
-    while aux > 1e-6 and aux < 1e10:  # this part is awful but it works
-        aux = abs(par[i])
-        i = i+1
-    npeakstofit = int((i-1-2)/3)  # whatever it takes philosophy
-    #--------------------------------------------------#
-    result = par[0] + par[1]*x[0]  # line
-    for p in range(0, npeakstofit):  # for each peak 3 parameters
-        norm = par[3*p+2]
-        mean = par[3*p+3]
-        sigma = par[3*p+4]
-        norm /= sigma*(TMath.Sqrt(TMath.TwoPi()))
-        result += norm*TMath.Gaus(x[0], mean, sigma)
-    return result
+GAUSSIAN_THRESHOLD = 1e-6
+GAUSSIAN_UPPER_LIMIT = 1e10
 
-def decay_curve(x,par):#for the lifetime calculation
-    return par[0]+par[1]*TMath.Exp(-x[0]/par[2])
+def gaussians(x, par):
+    """
+    Calculate the sum of gaussians.
+
+    Parameters:
+    - x: array-like, input data.
+    - par: array-like, parameters for the gaussians.
+
+    Returns:
+    - result: sum of the gaussians.
+    """
+    npeakstofit = 0
+    while abs(par[npeakstofit]) > GAUSSIAN_THRESHOLD and abs(par[npeakstofit]) < GAUSSIAN_UPPER_LIMIT:
+        npeakstofit += 1
+    npeakstofit = (npeakstofit - 3) // 3
+
+    result = par[0] + par[1]*x[0]  # linear part
+    for p in range(npeakstofit):
+        norm, mean, sigma = par[3*p+2:3*p+5]
+        norm /= sigma * TMath.Sqrt(TMath.TwoPi())
+        result += norm * TMath.Gaus(x[0], mean, sigma)
+    return result
 
 class FitPeaks():
 
@@ -162,18 +167,3 @@ class FitPeaks():
     def set_ranges(self):
         self.range_min = self.histogram.GetXaxis().GetXmin()
         self.range_max = self.histogram.GetXaxis().GetXmax()
-
-    def decay_fit(self, histogram):  # histogram with the interesting data
-        par = array([4.5, 0.05, 20], dtype='d',)  # initial seeds
-        range_min = histogram.GetXaxis().GetXmin()
-        range_max = histogram.GetXaxis().GetXmax()
-        decay_fit = TF1('decay_fit', decay_curve,
-                        range_min, range_max, len(par))
-        TVirtualFitter.Fitter(histogram, len(par))
-        fit.SetParameters(par)
-        fit.SetNpx(1000)
-        histogram.Fit(decay_fit)
-        getpar = histogram.GetFunction('decay_fit')
-        for j in range(getpar.GetNumberFreeParameters()):
-            par[j] = getpar.GetParameter(j)
-        # return par? just plot?

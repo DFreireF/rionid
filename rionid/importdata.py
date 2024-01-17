@@ -1,7 +1,8 @@
 from barion.ring import Ring
-from barion.amedata import *
-from barion.particle import *
-from lisereader.reader import *
+from barion.amedata import AMEData
+from barion.particle import Particle
+from lisereader.reader import LISEreader
+from numpy import polyval, array, stack, append, sqrt, genfromtxt
 import sys
 import re
 
@@ -63,44 +64,44 @@ class ImportData(object):
         self.ref_frequency = self.reference_frequency(fref = fref, brho = brho, ke = ke, gam = gam)
 
         # Simulated relative revolution frequencies (respect to the reference particle)
-        self.srrf = np.array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
+        self.srrf = array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
                               for name in self.moq])
         if correct:
-            self.srrf = self.srrf + np.polyval(np.array(correct), self.srrf * self.ref_frequency) / self.ref_frequency
+            self.srrf = self.srrf + polyval(array(correct), self.srrf * self.ref_frequency) / self.ref_frequency
         
     def _simulated_data(self, harmonics = None, particles = False):
         # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
         self.simulated_data_dict = dict()
         
         # Set the yield of the particles to simulate
-        if particles: self.yield_data = np.array([1 for i in range(len(self.moq))])
-        else: self.yield_data = np.array([lise[5] for lise in self.particles_to_simulate])
+        if particles: self.yield_data = array([1 for i in range(len(self.moq))])
+        else: self.yield_data = array([lise[5] for lise in self.particles_to_simulate])
         # We normalize the yield to avoid problems with ranges and printing
         #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
 
         # Get nuclei name for labels
-        self.nuclei_names = np.array([nuclei_name for nuclei_name in self.moq])
+        self.nuclei_names = array([nuclei_name for nuclei_name in self.moq])
         
         # Simulate the expected measured frequency for each harmonic:
         if harmonics:
             for harmonic in harmonics:
             
-                simulated_data = np.array([])
-                array_stack = np.array([])
+                simulated_data = array([])
+                array_stack = array([])
             
                 # get srf data
                 harmonic_frequency = self.srrf * self.ref_frequency * harmonic
             
                 # attach harmonic, frequency, yield data and ion properties together:
-                array_stack = np.stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
-                simulated_data = np.append(simulated_data, array_stack)
+                array_stack = stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
+                simulated_data = append(simulated_data, array_stack)
             
                 simulated_data = simulated_data.reshape(len(array_stack), 3)
                 name = f'{harmonic}'            
                 self.simulated_data_dict[name] = simulated_data
         else:
             meassured_frequencies = self.srrf * self.ref_frequency
-            simulated_data = np.stack((meassured_frequencies, self.yield_data), axis=1)  # axis=1 stacks vertically
+            simulated_data = stack((meassured_frequencies, self.yield_data), axis=1)  # axis=1 stacks vertically
             self.simulated_data_dict['Meassured'] = simulated_data
             
     def reference_frequency(self, fref = None, brho = None, ke = None, gam = None):
@@ -140,7 +141,7 @@ class ImportData(object):
     @staticmethod
     def gamma_brho(brho, charge, mass):
         # 1e6 necessary for mass from mev to ev.
-        return np.sqrt(pow(brho * charge * AMEData.CC / (mass * 1e6), 2)+1)
+        return sqrt(pow(brho * charge * AMEData.CC / (mass * 1e6), 2)+1)
     
     @staticmethod
     def gamma_ke(ke, aa, ref_mass):
@@ -149,7 +150,7 @@ class ImportData(object):
     
     @staticmethod
     def beta(gamma):
-        return np.sqrt(gamma**2 - 1) / gamma
+        return sqrt(gamma**2 - 1) / gamma
 
     @staticmethod
     def velocity(beta):
@@ -161,8 +162,8 @@ class ImportData(object):
 
     @staticmethod
     def gammat(alphap):
-        return 1 / np.sqrt(alphap)
+        return 1 / sqrt(alphap)
     
 def read_psdata(filename, dbm = False):
-    if dbm: return np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
-    else: return np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))
+    if dbm: return genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
+    else: return genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))

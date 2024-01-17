@@ -1,7 +1,7 @@
-from ROOT import *
-from barion.patternfinder import *
-from .pypeaks import *
-from .importdata import *
+from ROOT import TCanvas, TH1D, TH1F, THStack, TLegend, TLatex, gSystem, gApplication
+from barion.patternfinder import PatternFinder
+from .pypeaks import FitPeaks
+from numpy import array
 from datetime import datetime
 
 
@@ -46,9 +46,9 @@ class CreateGUI(object):
 
     def create_histograms(self, exp_data, simulated_data_dict, filename):
         
-        self.histogram_dict = {'exp_data': np.array([TH1D('h_exp_data', filename, len(exp_data[:,0]),
+        self.histogram_dict = {'exp_data': array([TH1D('h_exp_data', filename, len(exp_data[:,0]),
                                                  exp_data[:, 0].min(), exp_data[:, 0].max()), exp_data], dtype = 'object').T,
-                            **{f'srf{key}': np.array([TH1F(f'srf{key}', f'srf{key}', int(2e6),
+                            **{f'srf{key}': array([TH1F(f'srf{key}', f'srf{key}', int(2e6),
                                                        float(min(simulated_data_dict[key][:, 0])), float(max(simulated_data_dict[key][:, 0]))), 
                                                       simulated_data_dict[key][:,:2].astype(float)], dtype = 'object').T for key in simulated_data_dict}
                             }
@@ -68,7 +68,7 @@ class CreateGUI(object):
         n_bins_x = histogram.GetNbinsX()
         x = n_bins_x // self.ndivs
         for j in range(self.ndivs):
-            xrange_divs[j] = np.array([x*j+1, x*(j+1)])
+            xrange_divs[j] = array([x*j+1, x*(j+1)])
         self.xrange_divs = xrange_divs
            
     def set_yscales(self):
@@ -119,7 +119,7 @@ class CreateGUI(object):
         for j in range (0, self.ndivs):
            name = f'stack{j}'
            self.exp_dict[name] = self.histogram_dict['exp_data'][0].Clone()
-           self.stack[name] = np.array([THStack()])
+           self.stack[name] = array([THStack()])
            [self.stack[name][0].Add(self.histogram_dict[key][0]) for key in self.histogram_dict if 'srf' in key]
            
     def set_xy_ranges(self, stack, rang):
@@ -223,16 +223,16 @@ class CreateGUI(object):
         label_name = f'{ion_name}{key}'
         
         refion = self.ref_ion in ion_name
-        self.labels[label_name] = np.array([TLatex(frec, ylabel, ion_name), frec, refion]).T
-        if self.canvas_cd(frec, index):
+        self.labels[label_name] = array([TLatex(frec, ylabel, ion_name), frec, refion]).T
+        if self.canvas_cd(frec):
             self.draw_label(label_name, color)
 
     def draw_label(self, label, color):
         
         self.label_format(self.labels[label][0], self.labels[label][2], color)
-        self.plotted_labels = np.array([self.labels[label]])
+        self.plotted_labels = array([self.labels[label]])
     
-    def canvas_cd(self, frec, index):
+    def canvas_cd(self, frec):
         
         for key in self.xrange_divs:
             if (frec >= self.histogram_dict['exp_data'][0].GetBinCenter(int(self.xrange_divs[key][0]))) and (frec <= self.histogram_dict['exp_data'][0].GetBinCenter(int(self.xrange_divs[key][1]))):

@@ -1,10 +1,9 @@
 import argparse
 import os
 import logging as log
-from .importdata import *
-from .creategui import *
 import ezodf
-import numpy as np
+from numpy import argsort, where, append
+from rionid import CreateGUI, ImportData
 
 def main():
     
@@ -78,7 +77,7 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
 
     log.debug(f'Simulation results (ordered by frequency) = ')
-    sort_index = np.argsort(mydata.srrf)
+    sort_index = argsort(mydata.srrf)
     for i in sort_index:
         log.debug(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
     if ods: write_arrays_to_ods('Data_simulated_RionID', 'Data', ['Name', 'freq', 'yield'], (mydata.nuclei_names)[sort_index], (mydata.srrf)[sort_index] * mydata.ref_frequency, (mydata.yield_data)[sort_index] )
@@ -90,9 +89,9 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     # displaying specified amount of ions, sorted by yield
     if nions:
         # sort by yield (greatest first)
-        sorted_indices = np.argsort(mydata.yield_data)[::-1][:nions]
-        ref_index = np.where(mydata.nuclei_names == ref_ion)[0]
-        sorted_indices = np.append(sorted_indices, ref_index)
+        sorted_indices = argsort(mydata.yield_data)[::-1][:nions]
+        ref_index = where(mydata.nuclei_names == ref_ion)[0]
+        sorted_indices = append(sorted_indices, ref_index)
         mydata.nuclei_names = mydata.nuclei_names[sorted_indices]
         if harmonics:
             for harmonic in harmonics: # for each harmonic
