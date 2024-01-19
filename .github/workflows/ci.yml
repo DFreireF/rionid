@@ -45,10 +45,13 @@ jobs:
         
     - name: Install other dependencies
       run: |
+        source /usr/share/miniconda3/etc/profile.d/conda.sh
+        conda activate my_env
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         python -m pip install toml
         pip install .
+
     - name: Decrypt csv data file
       run: gpg --quiet --batch --yes --decrypt --passphrase="$CSV_PASS" --output tests/test_data.csv tests/test_data.csv.gpg
       env:
@@ -59,11 +62,10 @@ jobs:
       env:
         LPP_PASS: ${{ secrets.LPP_PASS }}
 
-    - name: List files 
-      run: ls -l
-
     - name: Test with pytest
       run: |
+        source /usr/share/miniconda3/etc/profile.d/conda.sh
+        conda activate my_env
         pip install pytest
         pytest
 
