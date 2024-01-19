@@ -1,6 +1,6 @@
 import pytest
 import toml
-from rionid import ImportData
+from rionid.importdata import ImportData
 
 # Load test data from TOML file
 with open('test_importdata.toml', 'r') as toml_file:
@@ -19,4 +19,3 @@ def test_initialization(import_data):
     assert import_data.ring is not None
     assert import_data.ref_charge is not None
     assert import_data.ref_aa is not None
-    

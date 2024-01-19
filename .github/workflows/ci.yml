@@ -28,7 +28,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         python -m pip install toml
-        python -m pip install rionid
 
     - name: Decrypt csv data file
       run: gpg --quiet --batch --yes --decrypt --passphrase="$CSV_PASS" --output tests/test_data.csv tests/test_data.csv.gpg
