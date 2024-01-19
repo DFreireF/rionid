@@ -41,7 +41,7 @@ jobs:
       run: |
         source /usr/share/miniconda3/etc/profile.d/conda.sh
         conda activate my_env
-        mamba install -y root
+        mamba install -c conda-forge root -y
         
     - name: Install other dependencies
       run: |
