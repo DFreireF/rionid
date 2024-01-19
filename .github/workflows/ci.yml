@@ -47,9 +47,5 @@ jobs:
     - name: List files 
       run: ls -l
 
-    - name: Clean up decrypted file
-      if: always()
-      run: |
-        rm tests/test_data.lpp
-        rm tests/test_data.csv
+    
 
