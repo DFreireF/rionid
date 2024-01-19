@@ -36,6 +36,7 @@ jobs:
     - name: Install ROOT
       run: |
         mamba create -n my_env
+        mamba init
         mamba activate my_env
         mamba install -y root
 
