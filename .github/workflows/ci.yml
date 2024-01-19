@@ -30,12 +30,12 @@ jobs:
         pip install -r requirements.txt
 
     - name: Decrypt csv data file
-      run: gpg --quiet --batch --yes --decrypt --passphrase="$CSV_PASS" --output test_data.csv test_data.csv.gpg
+      run: gpg --quiet --batch --yes --decrypt --passphrase="$CSV_PASS" --output tests/test_data.csv tests/test_data.csv.gpg
       env:
         CSV_PASS: ${{ secrets.CSV_PASS }}
 
     - name: Decrypt lpp data file
-      run: gpg --quiet --batch --yes --decrypt --passphrase="$LPP_PASS" --output test_data.lpp test_data.lpp.gpg
+      run: gpg --quiet --batch --yes --decrypt --passphrase="$LPP_PASS" --output tests/test_data.lpp tests/test_data.lpp.gpg
       env:
         LPP_PASS: ${{ secrets.LPP_PASS }}
 
@@ -43,3 +43,10 @@ jobs:
       run: |
         pip install pytest
         pytest
+
+    - name: Clean up decrypted file
+      if: always()
+      run: |
+        rm tests/test_data.lpp
+        rm tests/test_data.csv
+
