@@ -3,7 +3,7 @@ import toml
 from rionid.importdata import ImportData
 
 # Load test data from TOML file
-with open('test_importdata.toml', 'r') as toml_file:
+with open('~/rionid/tests/test_importdata.toml', 'r') as toml_file:
     test_data = toml.load(toml_file)
 
 @pytest.fixture(params=test_data['test_init'])
