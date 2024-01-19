@@ -66,9 +66,17 @@ jobs:
       run: |
         source /usr/share/miniconda3/etc/profile.d/conda.sh
         conda activate my_env
-        git clone https://"$PAT"@github.com/xaratustrah/barion.git
+        git clone https://$PAT@github.com/xaratustrah/barion.git
         python -m pip install -r barion/requirements.txt
         python -m pip install barion/.
+      env:
+        PAT: ${{ secrets.PAT }}
+    - name: Clone lisereader
+      run: |
+        source /usr/share/miniconda3/etc/profile.d/conda.sh
+        conda activate my_env
+        git clone https://$PAT@github.com/gwgwhc/lisereader.git
+        python -m pip install lisereader/.
       env:
         PAT: ${{ secrets.PAT }}
     - name: Decrypt csv data file
