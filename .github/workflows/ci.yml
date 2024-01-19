@@ -43,7 +43,7 @@ jobs:
         conda activate my_env
         mamba install -c conda-forge root -y
         
-    - name: Install other dependencies
+    - name: Install more dependencies
       run: |
         source /usr/share/miniconda3/etc/profile.d/conda.sh
         conda activate my_env
@@ -51,7 +51,26 @@ jobs:
         python -m pip install -r requirements.txt
         python -m pip install toml
         pip install .
+    - name: Clone iqtools
+      run: |
+        source /usr/share/miniconda3/etc/profile.d/conda.sh
+        conda activate my_env
+        git clone https://$PAT@github.com/xaratustrah/iqtools.git
+        python -m pip install --upgrade pip
+        python -m pip install -r iqtools/requirements.txt
+        python -m pip install iqtools/.
+      env:
+        PAT: ${{ secrets.PAT }}
 
+    - name: Clone barion
+      run: |
+        source /usr/share/miniconda3/etc/profile.d/conda.sh
+        conda activate my_env
+        git clone https://"$PAT"@github.com/xaratustrah/barion.git
+        python -m pip install -r barion/requirements.txt
+        python -m pip install barion/.
+      env:
+        PAT: ${{ secrets.PAT }}
     - name: Decrypt csv data file
       run: gpg --quiet --batch --yes --decrypt --passphrase="$CSV_PASS" --output tests/test_data.csv tests/test_data.csv.gpg
       env:
