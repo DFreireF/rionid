@@ -29,6 +29,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install toml
 
     - name: Decrypt csv data file
       run: gpg --quiet --batch --yes --decrypt --passphrase="$CSV_PASS" --output tests/test_data.csv tests/test_data.csv.gpg
