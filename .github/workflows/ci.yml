@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.7, 3.8, 3.9, 3.10, 3.11, 3.12]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Decrypt csv data file
+      run: gpg --quiet --batch --yes --decrypt --passphrase="$CSV_PASS" --output test_data.csv test_data.csv.gpg
+      env:
+        CSV_PASS: ${{ secrets.CSV_PASS }}
+
+    - name: Decrypt lpp data file
+      run: gpg --quiet --batch --yes --decrypt --passphrase="$LPP_PASS" --output test_data.lpp test_data.lpp.gpg
+      env:
+        LPP_PASS: ${{ secrets.LPP_PASS }}
+
+    - name: Test with pytest
+      run: |
+        pip install pytest
+        pytest

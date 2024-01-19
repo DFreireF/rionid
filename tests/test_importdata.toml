@@ -1,0 +1,4 @@
+[[test_init]]
+ref_ion = "72Ge+32"
+alphap = 0.5
+csv_data = "test_data.csv"
