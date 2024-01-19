@@ -33,11 +33,14 @@ jobs:
     - name: Install Mamba
       run: |
         conda install mamba -c conda-forge
-    - name: Install ROOT
+
+    - name: Create mamba environment
       run: |
         mamba create -n my_env
-        mamba init
-        mamba activate my_env
+        echo "source $(conda info --base)/etc/profile.d/conda.sh" >> $GITHUB_ENV
+        echo "conda activate my_env" >> $GITHUB_ENV
+    - name: Install ROOT
+      run: |
         mamba install -y root
 
     - name: Install other dependencies
