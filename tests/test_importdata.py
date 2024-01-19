@@ -7,7 +7,7 @@ from rionid.importdata import ImportData
 workspace_path = os.getenv('GITHUB_WORKSPACE')
 
 # Construct the full path to the TOML file
-toml_file_path = os.path.join(workspace_path, 'rionid/tests/test_importdata.toml')
+toml_file_path = os.path.join(workspace_path, 'tests/test_importdata.toml')
 
 # Load test data from TOML file
 with open(toml_file_path, 'r') as toml_file:
