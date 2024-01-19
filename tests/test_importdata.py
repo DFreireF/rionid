@@ -1,9 +1,16 @@
 import pytest
 import toml
+import os
 from rionid.importdata import ImportData
 
+# Get the GitHub Actions workspace path
+workspace_path = os.getenv('GITHUB_WORKSPACE')
+
+# Construct the full path to the TOML file
+toml_file_path = os.path.join(workspace_path, 'rionid/tests/test_importdata.toml')
+
 # Load test data from TOML file
-with open('~/rionid/tests/test_importdata.toml', 'r') as toml_file:
+with open(toml_file_path, 'r') as toml_file:
     test_data = toml.load(toml_file)
 
 @pytest.fixture(params=test_data['test_init'])
