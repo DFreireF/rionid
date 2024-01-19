@@ -44,6 +44,9 @@ jobs:
         pip install pytest
         pytest
 
+    - name: List files 
+      run: ls -l
+
     - name: Clean up decrypted file
       if: always()
       run: |
