@@ -67,6 +67,8 @@ The following arguments are available for use with `rionid`:
 
 This command would run `rionid` on the `datafile.txt` input file, using the standard mode with a `reference frequency` of 11.2452, a `reference ion` of `209Bi+83`, a particle input file of `datafile.psim`, a `brho` value of `5.5`, and displaying the data with `8 divisions`, `scaled amplitude`, and showing the display. The output files would be saved in the `output_folder directory`, and the `simulated spectrum` would be `corrected` using the polynomial fit parameters 1, 2, and 3.
 
+#### Tutorial:
+[Tutorial](https://github.com/gwgwhc/schottky_analysis_tutorial.git) for introducing yourself to Schottky data analysis by G. Hudson-Chang [@gwgwhc](https://github.com/gwgwhc/). 
 #### Acknowledgements:
 We acknowledge Dr. RuiJiu Chen ([@chenruijiu](https://github.com/chenruijiu/)) for providing a c++ code for the simulation of ToF which we used as inspiration for the backbone of this code.
 <br />
