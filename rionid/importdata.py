@@ -159,10 +159,6 @@ class ImportData(object):
     @staticmethod
     def calc_revolution_frequency(velocity, ring_circumference):
         return velocity / ring_circumference
-
-    @staticmethod
-    def gammat(alphap):
-        return 1 / sqrt(alphap)
     
 def read_psdata(filename, dbm = False):
     if dbm: return genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
