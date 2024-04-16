@@ -83,26 +83,20 @@ class ImportData(object):
         self.nuclei_names = array([nuclei_name for nuclei_name in self.moq])
         
         # Simulate the expected measured frequency for each harmonic:
-        if harmonics:
-            for harmonic in harmonics:
-            
-                simulated_data = array([])
-                array_stack = array([])
-            
-                # get srf data
-                harmonic_frequency = self.srrf * self.ref_frequency * harmonic
-            
-                # attach harmonic, frequency, yield data and ion properties together:
-                array_stack = stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
-                simulated_data = append(simulated_data, array_stack)
-            
-                simulated_data = simulated_data.reshape(len(array_stack), 3)
-                name = f'{harmonic}'            
-                self.simulated_data_dict[name] = simulated_data
-        else:
-            meassured_frequencies = self.srrf * self.ref_frequency
-            simulated_data = stack((meassured_frequencies, self.yield_data), axis=1)  # axis=1 stacks vertically
-            self.simulated_data_dict['Meassured'] = simulated_data
+        for harmonic in harmonics:
+            simulated_data = array([])
+            array_stack = array([])
+        
+            # get srf data
+            harmonic_frequency = self.srrf * self.ref_frequency * harmonic
+        
+            # attach harmonic, frequency, yield data and ion properties together:
+            array_stack = stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
+            simulated_data = append(simulated_data, array_stack)
+        
+            simulated_data = simulated_data.reshape(len(array_stack), 3)
+            name = f'{harmonic}'            
+            self.simulated_data_dict[name] = simulated_data
             
     def reference_frequency(self, fref = None, brho = None, ke = None, gam = None):
         

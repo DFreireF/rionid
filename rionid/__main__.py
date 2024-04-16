@@ -16,9 +16,9 @@ def main():
     parser.add_argument('-ap', '--alphap', type = float, help = 'Momentum compaction factor of the ring.')
     parser.add_argument('-r', '--refion', type = str, help = 'Reference ion with format NucleonsNameChargestate :=  AAXX+CC. Example: 72Ge+35, 1H+1, 238U+92...')
     parser.add_argument('-psim', '--filep', type = str, help = 'Read list of particles to simulate. LISE file or something else.')
-    
+    parser.add_argument('-hrm', '--harmonics', type = float, default = 1, nargs = '+', help = 'Harmonics to simulate.')
+
     # Secondary Arguments
-    parser.add_argument('-hrm', '--harmonics', type = float, nargs = '*', help = 'Harmonics to simulate.')
     parser.add_argument('-n', '--nions', type = int, help = 'Number of ions to display, sorted by yield (highest)')
 
     # Arguments for Each Mode (Exclusive)
