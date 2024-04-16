@@ -49,6 +49,9 @@ def main():
     if args.logLevel: log.basicConfig(level = log.getLevelName(args.logLevel))
     if args.outdir: outfilepath = os.path.join(args.outdir, '')
 
+    # Easy wayy to handle alphap or gammat. If alphap is greater than 1, it is assumed that you are giving gammat. So here it is transformed to alphap = 1 / gammat^2
+    if args.alphap > 1: args.alphap = 1 / args.alphap**2
+
     # Here We Go:
     print(f'Running {scriptname}... Lets see what we have in our ring ;-)')
     log.info(f'File {args.datafile} passed for processing the information of {args.refion}.')
