@@ -35,7 +35,7 @@ class CreatePyGUI(QMainWindow):
         self.legend.setParentItem(self.plot_widget.graphicsItem())
 
         # Plot experimental data
-        self.x_exp, self.z_exp = exp_data[:, 0]*1e-6, exp_data[:, 1]
+        self.x_exp, self.z_exp = exp_data[:, 0]*1e-6, exp_data[:, 1] # 1e-6 for having MHz
         self.exp_data_line = self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
         self.legend.addItem(self.exp_data_line, 'Experimental Data')
         self.plot_widget.setLabel(

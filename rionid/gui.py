@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QLoggingCategory
 import argparse
 import os
 import logging as log
@@ -10,24 +10,26 @@ from rionid.creategui import CreateGUI
 class RionID_GUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('RionID GUI')
+        self.setWindowTitle('RionID')
         self.setGeometry(100, 100, 600, 400)  # Set window size
         self.setStyleSheet("""
             background-color: #f0f0f0;
             font-size: 14pt;
         """)
+        #logging annoying messages
+        QLoggingCategory.setFilterRules('*.warning=false\n*.critical=false')
         self.initUI()
 
     def initUI(self):
-        self.datafile_label = QLabel('Data File:')
+        self.datafile_label = QLabel('Experimental Data File:')
         self.datafile_edit = QLineEdit()
         self.datafile_button = QPushButton('Browse')
         self.datafile_button.clicked.connect(self.browse_datafile)
 
-        self.alphap_label = QLabel('Alphap:')
+        self.alphap_label = QLabel('<i>&alpha;<sub>p</sub> or &gamma;<sub>t</sub> :</i>')
         self.alphap_edit = QLineEdit()
 
-        self.refion_label = QLabel('Reference ion:')
+        self.refion_label = QLabel('Reference Ion:')
         self.refion_edit = QLineEdit()
 
         self.filep_label = QLabel('.lpp File:')
@@ -37,7 +39,7 @@ class RionID_GUI(QWidget):
 
         self.mode_label = QLabel('Mode:')
         self.mode_combo = QComboBox()
-        self.mode_combo.addItems(['brho', 'fref', 'ke'])
+        self.mode_combo.addItems(['Bρ', 'Frequency', 'Kinetic Energy'])
         self.mode_combo.currentIndexChanged.connect(self.mode_changed)
         self.value_label = QLabel('Value:')
         self.value_edit = QLineEdit()
