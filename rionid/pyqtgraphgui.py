@@ -30,28 +30,36 @@ class CreatePyGUI(QMainWindow):
         self.plot_widget = pg.PlotWidget()
         main_layout.addWidget(self.plot_widget)
 
+        # Add legend
+        self.legend = pg.LegendItem(offset=(-10, 10))  # Adjust offset as needed
+        self.legend.setParentItem(self.plot_widget.graphicsItem())
+
         # Plot experimental data
-        self.x_exp, self.z_exp = exp_data[:, 0], exp_data[:, 1]
-        self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
+        self.x_exp, self.z_exp = exp_data[:, 0]*1e-6, exp_data[:, 1]
+        self.exp_data_line = self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
+        self.legend.addItem(self.exp_data_line, 'Experimental Data')
         self.plot_widget.setLabel(
             "left",
             '<span style="color: white; font-size: 20px">Amplitude (arb. units)</span>'
         )
         self.plot_widget.setLabel(
             "bottom",
-            '<span style="color: white; font-size: 20px">Frequency (Hz)</span>'
+            '<span style="color: white; font-size: 20px">Frequency (MHz)</span>'
         )
         # Set the initial X-range to encompass all experimental data
         self.initial_x_range = (min(self.x_exp), max(self.x_exp))
         self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
 
         # Customizing tick label font size
-        font = QFont("Times", 12)
-        font.setPixelSize(20)  # Set the desired font size here
-        self.plot_widget.getAxis('bottom').tickFont = font
-        self.plot_widget.getAxis('left').tickFont = font
+        font_ticks = QFont()
+        font_ticks.setPixelSize(20)  # Set the desired font size here
+        self.plot_widget.getAxis('bottom').setTickFont(font_ticks)
+        self.plot_widget.getAxis("bottom").setStyle(tickTextOffset = 15)
+        self.plot_widget.getAxis('left').setTickFont(font_ticks)
+        self.plot_widget.getAxis("left").setStyle(tickTextOffset = 15)
 
         # Cursor position label
+        font = QFont("Times", 12)
         self.cursor_pos_label = QLabel(self)
         self.cursor_pos_label.setFont(font)
         main_layout.addWidget(self.cursor_pos_label)
@@ -69,7 +77,7 @@ class CreatePyGUI(QMainWindow):
         for i, (harmonic, data) in enumerate(self.simulated_data.items()):
             color = pg.intColor(int(float(harmonic))+i, hues=len(self.simulated_data))
             for entry in data:
-                freq = float(entry[0])
+                freq = float(entry[0])*1e-6
                 label = entry[2]
                 # Vertical line
                 line = self.plot_widget.plot([freq, freq], [min_z, max_z], pen=pg.mkPen(color=color, width=1, style = Qt.DashLine ))
@@ -78,6 +86,7 @@ class CreatePyGUI(QMainWindow):
                 self.plot_widget.addItem(text)
                 text.setPos(freq, max_z*1.05)
                 self.simulated_items.extend([line, text])
+            self.legend.addItem(line, f'Harmonic {harmonic}')
 
     def toggle_simulated_data(self):
         for item in self.simulated_items:
@@ -87,7 +96,7 @@ class CreatePyGUI(QMainWindow):
         pos = evt[0]  # using signal proxy turns original arguments into a tuple
         if self.plot_widget.sceneBoundingRect().contains(pos):
             mousePoint = self.plot_widget.plotItem.vb.mapSceneToView(pos)
-            self.cursor_pos_label.setText(f"Cursor Position: x={mousePoint.x():.2f}, y={mousePoint.y():.2f}")
+            self.cursor_pos_label.setText(f"Cursor Position: x={mousePoint.x():.8f}, y={mousePoint.y():.2f}")
 
     def save_selected_data(self):
         selected_range = self.plot_widget.getViewBox().viewRange()[0]
@@ -102,7 +111,7 @@ class CreatePyGUI(QMainWindow):
         # Reset the plot to the original X and Y ranges
         self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
         self.plot_widget.setYRange(min(self.z_exp), max(self.z_exp), padding=0.05)
-        
+
     def add_buttons(self, main_layout):
         button_layout = QHBoxLayout()
 
@@ -156,6 +165,6 @@ if __name__ == '__main__':
                          ['242703150.0762615', '0.0048654', '79Br+35']])
     }
 
-    sa = SpectrumAnalyzer(experimental_data, simulated_data)
+    sa = CreatePyGUI(experimental_data, simulated_data)
     sa.show()
     sys.exit(app.exec_())
