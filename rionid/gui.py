@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox, QGroupBox, QGridLayout
 from PyQt5.QtCore import Qt, QLoggingCategory
 import argparse
 import os
@@ -10,11 +10,12 @@ from rionid.creategui import CreateGUI
 class RionID_GUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('RionID')
+        self.setWindowTitle('RionID Controller')
         self.setGeometry(100, 100, 600, 400)  # Set window size
         self.setStyleSheet("""
             background-color: #f0f0f0;
-            font-size: 14pt;
+            font-size: 18pt;
+            font-family = Times;
         """)
         #logging annoying messages
         QLoggingCategory.setFilterRules('*.warning=false\n*.critical=false')
@@ -28,6 +29,9 @@ class RionID_GUI(QWidget):
 
         self.alphap_label = QLabel('<i>&alpha;<sub>p</sub> or &gamma;<sub>t</sub> :</i>')
         self.alphap_edit = QLineEdit()
+
+        self.harmonics_label = QLabel('Harmonics:')
+        self.harmonics_edit = QLineEdit()
 
         self.refion_label = QLabel('Reference Ion:')
         self.refion_edit = QLineEdit()
@@ -80,35 +84,56 @@ class RionID_GUI(QWidget):
         self.exit_button.clicked.connect(self.close)
 
         vbox = QVBoxLayout()
-        vbox.addWidget(self.datafile_label)
         hbox1 = QHBoxLayout()
+        hbox1.addWidget(self.datafile_label)
         hbox1.addWidget(self.datafile_edit)
         hbox1.addWidget(self.datafile_button)
         vbox.addLayout(hbox1)
 
-        vbox.addWidget(self.filep_label)
         hbox2 = QHBoxLayout()
+        hbox2.addWidget(self.filep_label)
         hbox2.addWidget(self.filep_edit)
         hbox2.addWidget(self.filep_button)
         vbox.addLayout(hbox2)
 
-        vbox.addWidget(self.mode_label)
-        vbox.addWidget(self.mode_combo)
+        hbox_mode_value = QHBoxLayout()
+        hbox_mode_value.addWidget(self.mode_label)
+        hbox_mode_value.addWidget(self.mode_combo)
+        hbox_mode_value.addWidget(self.value_edit)
+        vbox.addLayout(hbox_mode_value)
 
-        vbox.addWidget(self.value_label)
-        vbox.addWidget(self.value_edit)
+        hbox3 = QHBoxLayout()
+        hbox3.addWidget(self.alphap_label)
+        hbox3.addWidget(self.alphap_edit)
+        vbox.addLayout(hbox3)
 
-        vbox.addWidget(self.alphap_label)
-        vbox.addWidget(self.alphap_edit)
+        hboxH = QHBoxLayout()
+        hboxH.addWidget(self.harmonics_label)
+        hboxH.addWidget(self.harmonics_edit)
+        vbox.addLayout(hboxH)
 
-        vbox.addWidget(self.refion_label)
-        vbox.addWidget(self.refion_edit)
+        hbox4 = QHBoxLayout()
+        hbox4.addWidget(self.refion_label)
+        hbox4.addWidget(self.refion_edit)
+        vbox.addLayout(hbox4)
 
-        vbox.addWidget(self.ndivs_label)
-        vbox.addWidget(self.ndivs_edit)
+        # Collapsible Optional Features
+        self.Optional_features_group = QGroupBox("Optional Features")
+        self.Optional_features_group.setCheckable(True)
+        self.Optional_features_group.setChecked(False)
+        self.Optional_features_group.toggled.connect(self.toggle_Optional_features)
 
-        vbox.addWidget(self.amplitude_label)
-        vbox.addWidget(self.amplitude_edit)
+        Optional_vbox = QVBoxLayout()
+        self.ndivs_label = QLabel('Number of divisions:')
+        self.ndivs_edit = QLineEdit()
+        self.amplitude_label = QLabel('Amplitude:')
+        self.amplitude_edit = QLineEdit()
+        Optional_vbox.addWidget(self.ndivs_label)
+        Optional_vbox.addWidget(self.ndivs_edit)
+        Optional_vbox.addWidget(self.amplitude_label)
+        Optional_vbox.addWidget(self.amplitude_edit)
+        self.Optional_features_group.setLayout(Optional_vbox)
+        vbox.addWidget(self.Optional_features_group)
 
         vbox.addWidget(self.show_checkbox)
 
@@ -134,21 +159,31 @@ class RionID_GUI(QWidget):
     def mode_changed(self, index):
         if index != -1:
             mode = self.mode_combo.currentText()
-            self.value_label.setText(mode.capitalize() + ':')
+            self.value_label.setText(f'{mode}:')
+
+    def toggle_Optional_features(self, checked):
+        self.ndivs_label.setVisible(checked)
+        self.ndivs_edit.setVisible(checked)
+        self.amplitude_label.setVisible(checked)
+        self.amplitude_edit.setVisible(checked)
 
     def run_script(self):
-        datafile = self.datafile_edit.text()
-        alphap = self.alphap_edit.text()
-        refion = self.refion_edit.text()
-        filep = self.filep_edit.text()
-        ndivs = self.ndivs_edit.text()
-        amplitude = self.amplitude_edit.text()
-        show = self.show_checkbox.isChecked()
-        mode = self.mode_combo.currentText()
-        value = self.value_edit.text()
+        try:
+            datafile = self.datafile_edit.text()
+            alphap = self.alphap_edit.text()
+            refion = self.refion_edit.text()
+            filep = self.filep_edit.text()
+            ndivs = self.ndivs_edit.text()
+            amplitude = self.amplitude_edit.text()
+            show = self.show_checkbox.isChecked()
+            mode = self.mode_combo.currentText()
+            value = self.value_edit.text()
 
-        args = argparse.Namespace(datafile=datafile, alphap=alphap, refion=refion, filep=filep, ndivs=ndivs, amplitude=amplitude, show=show, mode=mode, value=value)
-        controller(args)
+            args = argparse.Namespace(datafile=datafile, alphap=alphap, refion=refion, filep=filep, ndivs=ndivs, amplitude=amplitude,   show=show, mode=mode, value=value)
+            controller(args)
+        except Exception as e:
+            QMessageBox.critical(self, 'Error', f'An error occurred: {str(e)}')
+            log.error(f"Failed to run script: {str(e)}")
 
 def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False, nions = None):
     
@@ -194,11 +229,9 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     log.debug(f'Plotted labels = {mycanvas.labels},{mycanvas.ref_ion}')
     log.info(f'Program has ended. I hope you have found what you were looking for. :)')
 
-def main():
+
+if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = RionID_GUI()
     window.show()
     sys.exit(app.exec_())
-
-if __name__ == '__main__':
-    main()
