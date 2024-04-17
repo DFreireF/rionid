@@ -1,9 +1,9 @@
 import sys
 import numpy as np
 import pyqtgraph as pg
-from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QLabel
 from PyQt5.QtGui import QFont
-
+from PyQt5.QtCore import QLoggingCategory, Qt
 
 class CreatePyGUI(QMainWindow):
     '''
@@ -23,6 +23,9 @@ class CreatePyGUI(QMainWindow):
         self.setCentralWidget(self.main_widget)
         main_layout = QVBoxLayout(self.main_widget)
 
+        #logging annoying messages
+        QLoggingCategory.setFilterRules('*.warning=false\n*.critical=false')
+
         # Create the plot widget
         self.plot_widget = pg.PlotWidget()
         main_layout.addWidget(self.plot_widget)
@@ -30,6 +33,29 @@ class CreatePyGUI(QMainWindow):
         # Plot experimental data
         self.x_exp, self.z_exp = exp_data[:, 0], exp_data[:, 1]
         self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
+        self.plot_widget.setLabel(
+            "left",
+            '<span style="color: white; font-size: 20px">Amplitude (arb. units)</span>'
+        )
+        self.plot_widget.setLabel(
+            "bottom",
+            '<span style="color: white; font-size: 20px">Frequency (Hz)</span>'
+        )
+        # Set the initial X-range to encompass all experimental data
+        self.initial_x_range = (min(self.x_exp), max(self.x_exp))
+        self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
+
+        # Customizing tick label font size
+        font = QFont("Times", 12)
+        font.setPixelSize(20)  # Set the desired font size here
+        self.plot_widget.getAxis('bottom').tickFont = font
+        self.plot_widget.getAxis('left').tickFont = font
+
+        # Cursor position label
+        self.cursor_pos_label = QLabel(self)
+        self.cursor_pos_label.setFont(font)
+        main_layout.addWidget(self.cursor_pos_label)
+        self.proxy = pg.SignalProxy(self.plot_widget.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
 
         # Adding simulated data
         self.add_simulated_data()
@@ -39,13 +65,14 @@ class CreatePyGUI(QMainWindow):
 
     def add_simulated_data(self):
         max_z = self.z_exp.max()
+        min_z = np.min(self.z_exp[self.z_exp > 0])
         for i, (harmonic, data) in enumerate(self.simulated_data.items()):
             color = pg.intColor(int(float(harmonic))+i, hues=len(self.simulated_data))
             for entry in data:
                 freq = float(entry[0])
                 label = entry[2]
                 # Vertical line
-                line = self.plot_widget.plot([freq, freq], [10, max_z], pen=pg.mkPen(color=color, width=2))
+                line = self.plot_widget.plot([freq, freq], [min_z, max_z], pen=pg.mkPen(color=color, width=1, style = Qt.DashLine ))
                 # Text label at top
                 text = pg.TextItem(text=label, color=color, anchor=(0.5, 0))
                 self.plot_widget.addItem(text)
@@ -56,17 +83,11 @@ class CreatePyGUI(QMainWindow):
         for item in self.simulated_items:
             item.setVisible(not item.isVisible())
 
-    def toggle_y_scale(self):
-        axis = self.plot_widget.getPlotItem().getAxis('left')
-        is_log_scale = axis.logMode
-        if not is_log_scale:
-            # Switch to log scale
-            axis.setLogMode(True)
-            self.plot_widget.getPlotItem().setYRange(1, np.log10(self.z_exp.max()), padding=0.1)
-        else:
-            # Switch back to linear scale
-            axis.setLogMode(False)
-            self.plot_widget.getPlotItem().setYRange(self.z_exp.min()+1, self.z_exp.max(), padding=0.1)
+    def mouse_moved(self, evt):
+        pos = evt[0]  # using signal proxy turns original arguments into a tuple
+        if self.plot_widget.sceneBoundingRect().contains(pos):
+            mousePoint = self.plot_widget.plotItem.vb.mapSceneToView(pos)
+            self.cursor_pos_label.setText(f"Cursor Position: x={mousePoint.x():.2f}, y={mousePoint.y():.2f}")
 
     def save_selected_data(self):
         selected_range = self.plot_widget.getViewBox().viewRange()[0]
@@ -77,10 +98,16 @@ class CreatePyGUI(QMainWindow):
         np.savez(filename, x=selected_x, z=selected_data)
         print(f"Data saved to {filename}")
 
+    def reset_view(self):
+        # Reset the plot to the original X and Y ranges
+        self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
+        self.plot_widget.setYRange(min(self.z_exp), max(self.z_exp), padding=0.05)
+        
     def add_buttons(self, main_layout):
         button_layout = QHBoxLayout()
 
-        font = QFont("EB Garamond", 20)
+        font = QFont("Times", 15)
+        font.setBold(True)
 
         toggle_button = QPushButton("Toggle Simulated Data")
         toggle_button.clicked.connect(self.toggle_simulated_data)
@@ -102,10 +129,12 @@ class CreatePyGUI(QMainWindow):
         zoom_out_button.setFont(font)
         button_layout.addWidget(zoom_out_button)
 
-        toggle_y_scale_button = QPushButton("Toggle Y Scale")
-        toggle_y_scale_button.clicked.connect(self.toggle_y_scale)
-        toggle_y_scale_button.setFont(font)
-        button_layout.addWidget(toggle_y_scale_button)
+        # Button to reset the plot view
+        reset_view_button = QPushButton("Reset View")
+        reset_view_button.setFont(font)
+        reset_view_button.clicked.connect(self.reset_view)
+        button_layout.addWidget(reset_view_button)
+
 
         main_layout.addLayout(button_layout)
 
