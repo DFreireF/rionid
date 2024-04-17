@@ -95,7 +95,7 @@ class ImportData(object):
             simulated_data = append(simulated_data, array_stack)
         
             simulated_data = simulated_data.reshape(len(array_stack), 3)
-            name = f'{harmonic}'            
+            name = f'{harmonic}'
             self.simulated_data_dict[name] = simulated_data
             
     def reference_frequency(self, fref = None, brho = None, ke = None, gam = None):
