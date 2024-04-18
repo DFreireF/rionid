@@ -68,8 +68,6 @@ def main():
             controller2(file, args.filep, args.alphap, args.refion, args.ndivs, args.amplitude, args.show, brho = args.brho, fref = args.fref, ke = args.kenergy, out = args.outdir, harmonics = args.harmonics, gam = args.gamma, correct = args.correct, ods = args.ods, nions = args.nions)
     
 def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False, nions = None):
-    
-    log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     # Calculations
     mydata = ImportData(ref_ion, alphap, filename = data_file)
     log.debug(f'Experimental data (shape = {shape(mydata.experimental_data)}) = {mydata.experimental_data}')
@@ -111,8 +109,6 @@ def display_nions(nions, yield_data, nuclei_names, simulated_data_dict, ref_ion,
         simulated_data_dict[name] = simulated_data_dict[name][sorted_indices]
 
 def controller2(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False, nions = None):
-    
-    log.debug(f'Tracking of variables introduced:\n {data_file} = data_file, {particles_to_simulate} = particles_to_simulate, {harmonics} = harmonics, {alphap} = alphap, {ref_ion} = ref_ion, {ndivs} = ndivs, {amplitude} = amplitude, {show} = show, {brho} = brho, {fref} = fref, {ke} = ke')
     # Calculations
     mydata = ImportData(ref_ion, alphap, filename = data_file)
     mydata._set_particles_to_simulate_from_file(particles_to_simulate)
@@ -122,7 +118,7 @@ def controller2(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplit
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
 
     if nions: display_nions(nions, mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, ref_ion, harmonics)
-    
+
     #pyView
     app = QApplication(sys.argv)
     sa = CreatePyGUI(mydata.experimental_data, mydata.simulated_data_dict)
