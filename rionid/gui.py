@@ -126,6 +126,16 @@ class RionID_GUI(QWidget):
         self.run_button.clicked.connect(self.run_script)
 
         self.stop_button = QPushButton('Stop')
+        self.stop_button.setStyleSheet("""
+            QPushButton {
+                background-color: #d1cc01;
+                color: white;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
         self.stop_button.clicked.connect(self.stop_script)
         self.stop_button.setEnabled(False)
 
@@ -207,6 +217,7 @@ class RionID_GUI(QWidget):
 
             args = argparse.Namespace(datafile=datafile, alphap=alphap, refion=refion, filep=filep, ndivs=ndivs, amplitude=amplitude, mode=mode, value=value)
             controller(args)
+
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'An error occurred: {str(e)}')
             log.error(f"Failed to run script: {str(e)}")
@@ -219,7 +230,6 @@ class ScriptThread(QThread):
         super().__init__()
         self.function = function
         self._stop_requested = False
-        #self.signalError.connect(self.handle_error)
 
     def run(self):
         try:
@@ -233,6 +243,7 @@ class ScriptThread(QThread):
 
 def controller(datafile=None, alphap=None, refion=None, filep=None, ndivs=None, amplitude=None, mode=None, value=None):
     print('HELLO!')
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = RionID_GUI()

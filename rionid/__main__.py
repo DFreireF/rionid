@@ -90,25 +90,25 @@ def controller(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitu
     log.info(f'Simulation performed. Now we are going to start the display.')
 
     # View
-
-    # Some extra controlling
     # displaying specified amount of ions, sorted by yield
-    if nions:
-        # sort by yield (greatest first)
-        sorted_indices = argsort(mydata.yield_data)[::-1][:nions]
-        ref_index = where(mydata.nuclei_names == ref_ion)[0]
-        sorted_indices = append(sorted_indices, ref_index)
-        mydata.nuclei_names = mydata.nuclei_names[sorted_indices]
-        if harmonics:
-            for harmonic in harmonics: # for each harmonic
-                name = f'{harmonic}'
-                mydata.simulated_data_dict[name] = mydata.simulated_data_dict[name][sorted_indices]
+    if nions: display_nions(nions, mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, ref_ion, harmonics)
 
     mycanvas = CreateGUI(ref_ion, mydata.nuclei_names, ndivs, amplitude, show)
     mycanvas._view(mydata.experimental_data, mydata.simulated_data_dict, filename = data_file, out = out)
 
     log.debug(f'Plotted labels = {mycanvas.labels},{mycanvas.ref_ion}')
     log.info(f'Program has ended. I hope you have found what you were looking for. :)')
+
+def display_nions(nions, yield_data, nuclei_names, simulated_data_dict, ref_ion, harmonics):
+    sorted_indices = argsort(yield_data)[::-1][:nions]
+    ref_index = where(nuclei_names == ref_ion)[0]
+    if ref_index not in sorted_indices:
+        sorted_indices = append(sorted_indices, ref_index)
+    nuclei_names = nuclei_names[sorted_indices]
+    
+    for harmonic in harmonics: # for each harmonic
+        name = f'{harmonic}'
+        simulated_data_dict[name] = simulated_data_dict[name][sorted_indices]
 
 def controller2(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplitude, show, brho = None, fref = None, ke = None, out = None, harmonics = None, gam = None, correct = None, ods = False, nions = None):
     
@@ -120,14 +120,14 @@ def controller2(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplit
     mydata._calculate_moqs()
     mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = correct)
     mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
-    #pyView
 
+    if nions: display_nions(nions, mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, ref_ion, harmonics)
+    
+    #pyView
     app = QApplication(sys.argv)
     sa = CreatePyGUI(mydata.experimental_data, mydata.simulated_data_dict)
     sa.show()
     sys.exit(app.exec_())
-    
-
 
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
