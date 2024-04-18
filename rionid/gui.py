@@ -23,6 +23,7 @@ class RionID_GUI(QWidget):
         QLoggingCategory.setFilterRules('*.warning=false\n*.critical=false') #logging annoying messages
         self.thread = None
         self.initUI()
+        self.visualization_window = None
         self.visualization_signal.connect(self.launch_visualization)
         
     def initUI(self):
@@ -212,7 +213,6 @@ class RionID_GUI(QWidget):
 
     def actual_run_script(self):
         try:
-            print('HOLA')
             datafile = self.datafile_edit.text()
             alphap = self.alphap_edit.text()
             refion = self.refion_edit.text()
@@ -238,9 +238,12 @@ class RionID_GUI(QWidget):
 
     def launch_visualization(self, mydata):
         # Check for an existing QApplication instance
-        if QApplication.instance():
-            self.new_window = CreatePyGUI(mydata.experimental_data, mydata.simulated_data_dict)
-            self.new_window.show()
+        if QApplication.instance(): #it is important to have them as self., not static.
+            if not self.visualization_window:
+                self.visualization_window = CreatePyGUI(mydata.experimental_data, mydata.simulated_data_dict)
+                self.visualization_window.show()
+            else:
+                self.visualization_window.updateData(mydata.experimental_data, mydata.simulated_data_dict)
 
 class ScriptThread(QThread):
     signalError = pyqtSignal(str)
@@ -296,6 +299,7 @@ def display_nions(nions, yield_data, nuclei_names, simulated_data_dict, ref_ion,
     for harmonic in harmonics: # for each harmonic
         name = f'{harmonic}'
         simulated_data_dict[name] = simulated_data_dict[name][sorted_indices]
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = RionID_GUI()

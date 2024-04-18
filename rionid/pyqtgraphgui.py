@@ -11,33 +11,24 @@ class CreatePyGUI(QMainWindow):
     '''
     def __init__(self, exp_data, simulated_data_dict):
         super().__init__()
+        self.exp_data = exp_data
+        self.simulated_data = simulated_data_dict
+        self.setup_ui()
+
+    def setup_ui(self):
         self.setWindowTitle('Schottky Signals Identifier')
         self.setGeometry(100, 100, 800, 600)
-
-        #self.exp_data = exp_data
-        self.simulated_data = simulated_data_dict
-        self.simulated_items = []
-
-        # Create the main widget for the plot
         self.main_widget = QWidget(self)
         self.setCentralWidget(self.main_widget)
         main_layout = QVBoxLayout(self.main_widget)
-
         #logging annoying messages
         QLoggingCategory.setFilterRules('*.warning=false\n*.critical=false')
-
         # Create the plot widget
         self.plot_widget = pg.PlotWidget()
         main_layout.addWidget(self.plot_widget)
-
         # Add legend
         self.legend = pg.LegendItem(offset=(-10, 10))  # Adjust offset as needed
         self.legend.setParentItem(self.plot_widget.graphicsItem())
-
-        # Plot experimental data
-        self.x_exp, self.z_exp = exp_data[:, 0]*1e-6, exp_data[:, 1] # 1e-6 for having MHz
-        self.exp_data_line = self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
-        self.legend.addItem(self.exp_data_line, 'Experimental Data')
         self.plot_widget.setLabel(
             "left",
             '<span style="color: white; font-size: 20px">Amplitude (arb. units)</span>'
@@ -47,6 +38,7 @@ class CreatePyGUI(QMainWindow):
             '<span style="color: white; font-size: 20px">Frequency (MHz)</span>'
         )
         # Set the initial X-range to encompass all experimental data
+        self.x_exp, self.z_exp = self.exp_data[:, 0]*1e-6, self.exp_data[:, 1] # 1e-6 for having MHz
         self.initial_x_range = (min(self.x_exp), max(self.x_exp))
         self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
 
@@ -64,15 +56,24 @@ class CreatePyGUI(QMainWindow):
         self.cursor_pos_label.setFont(font)
         main_layout.addWidget(self.cursor_pos_label)
         self.proxy = pg.SignalProxy(self.plot_widget.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
-
-        # Adding simulated data
-        self.add_simulated_data()
+        # Plot experimental data
+        self.plot_experimental_data()
 
         # Add control buttons
         self.add_buttons(main_layout)
 
-    def add_simulated_data(self):
-        max_z = self.z_exp.max()
+        # Initialize simulation plot items
+        self.simulated_items = []
+        self.plot_simulated_data()
+
+    def plot_experimental_data(self):
+        # Plot experimental data
+        self.exp_data_line = self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
+        self.legend.addItem(self.exp_data_line, 'Experimental Data')
+
+    def plot_simulated_data(self):
+        self.clear_simulated_data()  # Clear existing data if any
+        max_z = max(self.z_exp)
         min_z = np.min(self.z_exp[self.z_exp > 0])
         for i, (harmonic, data) in enumerate(self.simulated_data.items()):
             color = pg.intColor(int(float(harmonic))+i, hues=len(self.simulated_data))
@@ -85,8 +86,28 @@ class CreatePyGUI(QMainWindow):
                 text = pg.TextItem(text=label, color=color, anchor=(0.5, 0))
                 self.plot_widget.addItem(text)
                 text.setPos(freq, max_z*1.05)
-                self.simulated_items.extend([line, text])
+                self.simulated_items.append((line, text))  # Add as a tuple
             self.legend.addItem(line, f'Harmonic {harmonic}')
+
+    def updateData(self, new_exp_data, new_simulated_data_dict):
+        self.exp_data = new_exp_data
+        self.simulated_data_dict = new_simulated_data_dict
+        self.plot_experimental_data()  # Re-plot experimental data
+        self.plot_simulated_data()  # Re-plot simulated data
+
+    def clear_simulated_data(self):
+        for line, text in self.simulated_items:
+            self.plot_widget.removeItem(line)
+            self.plot_widget.removeItem(text)
+        self.simulated_items.clear()
+        self.legend.clear()
+    
+    def clear_experimental_data(self):#NOT FINISHED
+        for line, text in self.simulated_items:
+            self.plot_widget.removeItem(line)
+            self.plot_widget.removeItem(text)
+        self.simulated_items.clear()
+        self.legend.clear()
 
     def toggle_simulated_data(self):
         for item in self.simulated_items:
