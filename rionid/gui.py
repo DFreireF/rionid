@@ -1,9 +1,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox, QGroupBox, QGridLayout
-from PyQt5.QtCore import Qt, QLoggingCategory, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QLoggingCategory, QThread, pyqtSignal, QTimer, QEvent
 import argparse
 import os
 import logging as log
+from numpy import argsort, where, append, shape 
 from rionid.importdata import ImportData
 from rionid.creategui import CreateGUI
 from rionid.pyqtgraphgui import CreatePyGUI
@@ -213,6 +214,7 @@ class RionID_GUI(QWidget):
 
     def actual_run_script(self):
         try:
+            print("Running script...")
             datafile = self.datafile_edit.text()
             alphap = self.alphap_edit.text()
             refion = self.refion_edit.text()
@@ -229,21 +231,32 @@ class RionID_GUI(QWidget):
                           nions=nions or None, amplitude=amplitude or None, mode=mode or None, value=value or None)
             data = controller_pyqt(**vars(args))
             if data:
-                self.visualization_signal.emit(data)
+                print("Data generated successfully, posting event...")
+                event = CustomEvent(data)
+                print(event)
+                QApplication.postEvent(self, event)
 
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'An error occurred: {str(e)}')
             log.error("Processing failed", exc_info=True)
             self.signalError.emit(str(e))
 
-    def launch_visualization(self, mydata):
+    def customEvent(self, event):
+        print('Inside customEvent')
+        print(event.type(), CustomEvent.EventType)
+        if event.type() == CustomEvent.EventType:
+            print("Custom event received.")
+            print("Data is present. Launching visualization...")
+            self.launch_visualization(event.data)
+
+    def launch_visualization(self, data):
         # Check for an existing QApplication instance
-        if QApplication.instance(): #it is important to have them as self., not static.
-            if not self.visualization_window:
-                self.visualization_window = CreatePyGUI(mydata.experimental_data, mydata.simulated_data_dict)
-                self.visualization_window.show()
-            else:
-                self.visualization_window.updateData(mydata.experimental_data, mydata.simulated_data_dict)
+        #if QApplication.instance(): #it is important to have them as self., not static.
+        if not self.visualization_window:
+            self.visualization_window = CreatePyGUI(data.experimental_data, data.simulated_data_dict)
+            self.visualization_window.show()
+        else:
+            self.visualization_window.updateData(data.experimental_data, data.simulated_data_dict)
 
 class ScriptThread(QThread):
     signalError = pyqtSignal(str)
@@ -262,6 +275,13 @@ class ScriptThread(QThread):
 
     def requestStop(self):
         self._stop_requested = True
+
+class CustomEvent(QEvent):
+    EventType = QEvent.Type(QEvent.registerEventType())
+
+    def __init__(self, data):
+        super().__init__(CustomEvent.EventType)
+        self.data = data
 
 def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmonics = None, ndivs=None, nions = None, amplitude=None, mode=None, value=None):
     try:

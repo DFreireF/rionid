@@ -56,27 +56,28 @@ class CreatePyGUI(QMainWindow):
         self.cursor_pos_label.setFont(font)
         main_layout.addWidget(self.cursor_pos_label)
         self.proxy = pg.SignalProxy(self.plot_widget.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
-        # Plot experimental data
-        self.plot_experimental_data()
 
         # Add control buttons
         self.add_buttons(main_layout)
 
-        # Initialize simulation plot items
+        # Plot experimental data
+        self.plot_experimental_data()
+        #simulated
         self.simulated_items = []
         self.plot_simulated_data()
 
     def plot_experimental_data(self):
         # Plot experimental data
+        if hasattr(self, 'exp_data_line'):
+            self.plot_widget.removeItem(self.exp_data_line)
         self.exp_data_line = self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
         self.legend.addItem(self.exp_data_line, 'Experimental Data')
 
     def plot_simulated_data(self):
-        self.clear_simulated_data()  # Clear existing data if any
         max_z = max(self.z_exp)
         min_z = np.min(self.z_exp[self.z_exp > 0])
         for i, (harmonic, data) in enumerate(self.simulated_data.items()):
-            color = pg.intColor(int(float(harmonic))+i, hues=len(self.simulated_data))
+            color = pg.intColor(i, hues=len(self.simulated_data))
             for entry in data:
                 freq = float(entry[0])*1e-6
                 label = entry[2]
@@ -90,28 +91,36 @@ class CreatePyGUI(QMainWindow):
             self.legend.addItem(line, f'Harmonic {harmonic}')
 
     def updateData(self, new_exp_data, new_simulated_data_dict):
+        print("Updating data in visualization GUI...")
+        self.clear_experimental_data()
+        self.clear_simulated_data()
         self.exp_data = new_exp_data
-        self.simulated_data_dict = new_simulated_data_dict
+        self.simulated_data = new_simulated_data_dict
+        self.x_exp, self.z_exp = self.exp_data[:, 0] * 1e-6, self.exp_data[:, 1]
         self.plot_experimental_data()  # Re-plot experimental data
         self.plot_simulated_data()  # Re-plot simulated data
 
     def clear_simulated_data(self):
-        for line, text in self.simulated_items:
+        print("Clearing simulated data plots...")
+        while self.simulated_items:
+            line, text = self.simulated_items.pop()
             self.plot_widget.removeItem(line)
             self.plot_widget.removeItem(text)
-        self.simulated_items.clear()
         self.legend.clear()
-    
-    def clear_experimental_data(self):#NOT FINISHED
-        for line, text in self.simulated_items:
-            self.plot_widget.removeItem(line)
-            self.plot_widget.removeItem(text)
-        self.simulated_items.clear()
-        self.legend.clear()
+        self.simulated_data = None
+
+    def clear_experimental_data(self):
+        if hasattr(self, 'exp_data_line'):
+            print("Clearing experimental data plot...")
+            self.plot_widget.removeItem(self.exp_data_line)
+            self.legend.removeItem(self.exp_data_line)
+        self.exp_data_line = None
+        self.exp_data = None
 
     def toggle_simulated_data(self):
-        for item in self.simulated_items:
-            item.setVisible(not item.isVisible())
+        for line, text in self.simulated_items:
+            line.setVisible(not line.isVisible())
+            text.setVisible(not text.isVisible())
 
     def mouse_moved(self, evt):
         pos = evt[0]  # using signal proxy turns original arguments into a tuple
