@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox, QGroupBox, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox, QGroupBox, QGridLayout, QDesktopWidget
 from PyQt5.QtCore import Qt, QLoggingCategory, QThread, pyqtSignal, QTimer, QEvent
 import argparse
 import os
@@ -15,7 +15,9 @@ class RionID_GUI(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('RionID Controller')
-        self.setGeometry(100, 100, 600, 400)  # Set window size
+        width = QDesktopWidget().screenGeometry(-1).width()
+        height = QDesktopWidget().screenGeometry(-1).height()
+        self.setGeometry(100, 100, width, height)  # Set window size
         self.setStyleSheet("""
             background-color: #f0f0f0;
             font-size: 18pt;
@@ -189,7 +191,6 @@ class RionID_GUI(QWidget):
         self.ndivs_edit.setVisible(checked)
         self.amplitude_label.setVisible(checked)
         self.amplitude_edit.setVisible(checked)
-
 
     def thread_complete(self):
         self.thread = None
