@@ -135,19 +135,6 @@ class RionID_GUI(QWidget):
         """)
         self.run_button.clicked.connect(self.run_script)
 
-        self.stop_button = QPushButton('Stop')
-        self.stop_button.setStyleSheet("""
-            QPushButton {
-                background-color: #d1cc01;
-                color: white;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
-        self.stop_button.clicked.connect(self.stop_script)
-        self.stop_button.setEnabled(False)
 
         self.exit_button = QPushButton('Exit')
         self.exit_button.setStyleSheet("""
@@ -164,7 +151,6 @@ class RionID_GUI(QWidget):
 
         hbox_buttons = QHBoxLayout()
         hbox_buttons.addWidget(self.run_button)
-        hbox_buttons.addWidget(self.stop_button)
         hbox_buttons.addWidget(self.exit_button)
         self.vbox.addLayout(hbox_buttons)
 
