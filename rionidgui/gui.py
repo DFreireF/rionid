@@ -68,7 +68,7 @@ class RionID_GUI(QWidget):
         self.harmonics_label = QLabel('Harmonics:')
         self.harmonics_edit = QLineEdit()
 
-        self.refion_label = QLabel('Reference Ion:')
+        self.refion_label = QLabel('Reference Ion (AAEl+QQ ; e.g. 72Ge+32):')
         self.refion_edit = QLineEdit()
 
         self.mode_label = QLabel('Mode:')
@@ -112,7 +112,7 @@ class RionID_GUI(QWidget):
         self.Optional_features_group = QGroupBox("Optional Features")
         self.Optional_features_group.setCheckable(True)
         self.Optional_features_group.setChecked(False)
-        self.Optional_features_group.toggled.connect(self.toggle_Optional_features)
+        #self.Optional_features_group.toggled.connect(self.toggle_Optional_features)
         Optional_vbox = QVBoxLayout()
         
         Optional_vbox.addWidget(self.nions_label)
