@@ -23,15 +23,15 @@ class ImportData(object):
         self.alphap = alphap
         
         # Extra objects
-        self.ring = Ring('ESR', 108.4) # 108.43 Ge
+        self.ring = Ring('ESR', 108.4)
         self.ref_charge = int(refion[refion.index('+'):])
         self.ref_aa = int(re.split('(\d+)', refion)[1])
         self.experimental_data = None
         
         # Get the experimental data
-        if filename: self.get_experimental_data(filename)
+        if filename: self._get_experimental_data(filename)
             
-    def get_experimental_data(self, filename):
+    def _get_experimental_data(self, filename):
         _, file_extension = os.path.splitext(filename)
         if file_extension.lower() == '.csv':
             self.experimental_data = read_psdata(filename, dbm = False)
@@ -46,7 +46,7 @@ class ImportData(object):
         #    handle_read_rsa_result_csv(filename)
         #if :
         #    handle_read_rsa_data_csv
-        
+
     def _set_particles_to_simulate_from_file(self, particles_to_simulate):
         
         # import ame from barion: # This would be moved somewhere else
