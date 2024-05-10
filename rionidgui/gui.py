@@ -6,7 +6,6 @@ import os
 import logging as log
 from numpy import argsort, where, append, shape 
 from rionid.importdata import ImportData
-from rionid.creategui import CreateGUI
 from rionid.pyqtgraphgui import CreatePyGUI
 
 log.basicConfig(level=log.DEBUG)
@@ -321,9 +320,3 @@ def display_nions(nions, yield_data, nuclei_names, simulated_data_dict, ref_ion,
     for harmonic in harmonics: # for each harmonic
         name = f'{harmonic}'
         simulated_data_dict[name] = simulated_data_dict[name][sorted_indices]
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = RionID_GUI()
-    window.show()
-    sys.exit(app.exec_())
