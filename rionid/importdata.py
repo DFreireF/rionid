@@ -1,10 +1,15 @@
-from barion.ring import Ring
-from barion.amedata import AMEData
-from barion.particle import Particle
-from lisereader.reader import LISEreader
 from numpy import polyval, array, stack, append, sqrt, genfromtxt
 import sys
 import re
+
+from barion.ring import Ring
+from barion.amedata import AMEData
+from barion.particle import Particle
+
+from lisereader.reader import LISEreader
+
+from rionid.inouttools import * 
+
 
 
 class ImportData(object):
@@ -21,10 +26,26 @@ class ImportData(object):
         self.ring = Ring('ESR', 108.4) # 108.43 Ge
         self.ref_charge = int(refion[refion.index('+'):])
         self.ref_aa = int(re.split('(\d+)', refion)[1])
+        self.experimental_data = None
         
         # Get the experimental data
-        if filename:
+        if filename: self.get_experimental_data(filename)
+            
+    def get_experimental_data(self, filename):
+        _, file_extension = os.path.splitext(filename)
+        if file_extension.lower() == '.csv':
             self.experimental_data = read_psdata(filename, dbm = False)
+        if file_extension.lower() == '.bin_fre' or file_extension.lower() == '.bin_time' or file_extension.lower() == '.bin_amp':
+            self.experimental_data = handle_read_tdsm_bin(filename)
+        if file_extension.lower() == '.tdms':
+            self.experimental_data = handle_read_tdsm(filename)
+            #substitute this
+        if file_extension.lower() == '.xml':
+            self.experimental_data = handle_read_rsa_specan_xml(filename)
+        #if :
+        #    handle_read_rsa_result_csv(filename)
+        #if :
+        #    handle_read_rsa_data_csv
         
     def _set_particles_to_simulate_from_file(self, particles_to_simulate):
         

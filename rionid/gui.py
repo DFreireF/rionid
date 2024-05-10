@@ -287,7 +287,7 @@ class CustomEvent(QEvent):
 def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmonics = None, ndivs=None, nions = None, amplitude=None, mode=None, value=None):
     try:
         # Calculations
-        if float(alphap) > 0.6: alphap = 1/float(alphap)**2 # handling alphap and gammat
+        if float(alphap) > 1: alphap = 1/float(alphap)**2 # handling alphap and gammat
         mydata = ImportData(refion, float(alphap), filename = datafile)
         mydata._set_particles_to_simulate_from_file(filep)
 
