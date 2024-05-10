@@ -77,7 +77,7 @@ class ImportData(object):
                         if ion_name == self.ref_ion: self.moq[ion_name] = pp.get_ionic_moq_in_u()
                         else: self.moq[ion_name] = pp.get_ionic_moq_in_u()
 
-    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None, ):
+    def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None):
         if moqs:
             self.moq = moqs
         

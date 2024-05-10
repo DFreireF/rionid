@@ -83,6 +83,8 @@ class RionID_GUI(QWidget):
         self.amplitude_edit = QLineEdit()
         self.nions_label = QLabel('Number of ions to display:')
         self.nions_edit = QLineEdit()
+        self.correction_label = QLabel(r'<i>$a_0\cdot x^2 + a_1 \cdot x^1 + a_2 \cdot x^0$:</i>')
+        self.correction_edit = QLineEdit()
 
         hbox3 = QHBoxLayout()
         hbox3.addWidget(self.alphap_label)
@@ -111,12 +113,15 @@ class RionID_GUI(QWidget):
         self.Optional_features_group.setChecked(False)
         self.Optional_features_group.toggled.connect(self.toggle_Optional_features)
         Optional_vbox = QVBoxLayout()
-        Optional_vbox.addWidget(self.ndivs_label)
-        Optional_vbox.addWidget(self.ndivs_edit)
+        
         Optional_vbox.addWidget(self.nions_label)
         Optional_vbox.addWidget(self.nions_edit)
-        Optional_vbox.addWidget(self.amplitude_label)
-        Optional_vbox.addWidget(self.amplitude_edit)
+        Optional_vbox.addWidget(self.correction_label)
+        Optional_vbox.addWidget(self.correction_edit)
+        #Optional_vbox.addWidget(self.ndivs_label)
+        #Optional_vbox.addWidget(self.ndivs_edit)
+        #Optional_vbox.addWidget(self.amplitude_label)
+        #Optional_vbox.addWidget(self.amplitude_edit)
         self.Optional_features_group.setLayout(Optional_vbox)
         
         self.vbox.addWidget(self.Optional_features_group)
@@ -228,16 +233,12 @@ class RionID_GUI(QWidget):
             self.signalError.emit(str(e))
 
     def customEvent(self, event):
-        print('Inside customEvent')
-        print(event.type(), CustomEvent.EventType)
         if event.type() == CustomEvent.EventType:
-            print("Custom event received.")
             print("Data is present. Launching visualization...")
             self.launch_visualization(event.data)
 
     def launch_visualization(self, data):
         # Check for an existing QApplication instance
-        #if QApplication.instance(): #it is important to have them as self., not static.
         if not self.visualization_window:
             self.visualization_window = CreatePyGUI(data.experimental_data, data.simulated_data_dict)
             self.visualization_window.show()
