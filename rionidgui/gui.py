@@ -65,10 +65,10 @@ class RionID_GUI(QWidget):
         self.alphap_label = QLabel('<i>&alpha;<sub>p</sub> or &gamma;<sub>t</sub> :</i>')
         self.alphap_edit = QLineEdit()
 
-        self.harmonics_label = QLabel('Harmonics:')
+        self.harmonics_label = QLabel('Harmonics (e.g 124 125 126):')
         self.harmonics_edit = QLineEdit()
 
-        self.refion_label = QLabel('Reference Ion (AAEl+QQ ; e.g. 72Ge+32):')
+        self.refion_label = QLabel('Reference Ion with format AAEl+QQ (e.g. 72Ge+32):')
         self.refion_edit = QLineEdit()
 
         self.mode_label = QLabel('Mode:')
@@ -78,9 +78,9 @@ class RionID_GUI(QWidget):
         self.value_edit = QLineEdit()
 
         
-        self.nions_label = QLabel('Number of ions to display:')
+        self.nions_label = QLabel('Number of ions to display (e.g. if 5, it will display the 5 most expected fragments):')
         self.nions_edit = QLineEdit()
-        self.correction_label = QLabel('<i>a<sub>0</sub> &middot; x<sup>2</sup> + a<sub>1</sub> &middot; x<sup>1</sup> + a<sub>2</sub> &middot; x<sup>0</sup>:</i>')        
+        self.correction_label = QLabel('Add second order correction to the simulated frequencies with the form: <i>a<sub>0</sub> &middot; x<sup>2</sup> + a<sub>1</sub> &middot; x<sup>1</sup> + a<sub>2</sub> &middot; x<sup>0</sup>:</i>')        
         self.correction_edit = QLineEdit()
         #self.ndivs_label = QLabel('Number of divisions:')
         #self.ndivs_edit = QLineEdit()
