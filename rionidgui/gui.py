@@ -73,18 +73,19 @@ class RionID_GUI(QWidget):
 
         self.mode_label = QLabel('Mode:')
         self.mode_combo = QComboBox()
-        self.mode_combo.addItems(['Bρ', 'Frequency', 'Kinetic Energy'])
+        self.mode_combo.addItems(['Frequency', 'Bρ', 'Kinetic Energy'])
         self.value_label = QLabel('Value:')
         self.value_edit = QLineEdit()
 
-        self.ndivs_label = QLabel('Number of divisions:')
-        self.ndivs_edit = QLineEdit()
-        self.amplitude_label = QLabel('Scale amplitude of the simulated peaks:')
-        self.amplitude_edit = QLineEdit()
+        
         self.nions_label = QLabel('Number of ions to display:')
         self.nions_edit = QLineEdit()
-        self.correction_label = QLabel(r'<i>$a_0\cdot x^2 + a_1 \cdot x^1 + a_2 \cdot x^0$:</i>')
+        self.correction_label = QLabel('<i>a<sub>0</sub> &middot; x<sup>2</sup> + a<sub>1</sub> &middot; x<sup>1</sup> + a<sub>2</sub> &middot; x<sup>0</sup>:</i>')        
         self.correction_edit = QLineEdit()
+        #self.ndivs_label = QLabel('Number of divisions:')
+        #self.ndivs_edit = QLineEdit()
+        #self.amplitude_label = QLabel('Scale amplitude of the simulated peaks:')
+        #self.amplitude_edit = QLineEdit()
 
         hbox3 = QHBoxLayout()
         hbox3.addWidget(self.alphap_label)
