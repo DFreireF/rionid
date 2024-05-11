@@ -11,9 +11,10 @@ class ProcessSchottkyData(object):
         self.filename = filename
         self.iq = get_iq_object(filename)
         self.method = method #['npfft', 'fftw', 'welch', 'mtm']
+        self.read_all = False
 
         if binning is not None:
-            self.binning = binning
+            self.binning = int(binning)
         elif time_bin_size is not None:
             self.binning = int(self.iq.fs * time_bin_size)
 
@@ -22,55 +23,27 @@ class ProcessSchottkyData(object):
             self.sframes = int(skip_time     * self.iq.fs / self.binning)
         else:
             self.read_all = True
-
-    def tdms_data(self, read_all = False):
-
-        iq = get_iq_object(self.filename)
-        if not read_all:
-            nframes = int(self.analysis_time * iq.fs / self.binning)
-            sframes = int(self.skip_time * iq.fs / self.binning)
-            iq.read(nframes = nframes, lframes = self.binning, sframes = sframes)
-        else:
-            iq.read_samples(iq.nsamples_total)
-        
-        xx, _, zz = iq.get_spectrogram(nframes = nframes, lframes = self.binning)
-        
-        freq = xx[0,:] + iq.center
-        power = (azz[0, :]).reshape(len(azz[0, :]), 1) #power
-        return freq, power
-    
-    def tiq_data(self, time = None, skip = None):
-        
-        if time and skip:
-            nframes = int(self.analysis_time * self.iq.fs / self.binning)
-            sframes = int(self.skip_time * self.iq.fs / self.binning)
-            iq.read(nframes = nframes, lframes = self.binning, sframes = sframes)
-        else:
-            iq.read_samples(iq.nsamples_total)
-        
-        if self.fft:
-            f, p, _ = iq.get_fft(nframes = nframes, lframes = self.binning)
-            f = f + iq.center
-        else:
-            xx, yy, zz = iq.get_spectrogram(nframes = nframes, lframes = self.binning)
-            axx, ayy, azz = get_averaged_spectrogram(xx, yy, zz, len(xx[:, 0]))
-            freq = (axx[0, :] + iq.center).reshape(len(axx[0, :]), 1) #frequency, index 0 as xx is 2d array
-            power = (azz[0, :]).reshape(len(azz[0, :]), 1) #power
-        normalized_power = power / power.max()
-        return freq, normalized_power
+            self.nframes = int(self.iq.nsamples_total / self.binning)
 
     def get_exp_data(self):
-        if 'tdms' in self.filename: 
-            self.frequency, self.power = self.tdms_data()
-        elif 'tiq' in self.filename: 
-            self.frequency, self.power = self.tiq_data()        
-        else: 
-            sys.exit()
 
-    def save_exp_data(self):
+        if not self.read_all:
+            self.iq.read(nframes = self.nframes, lframes = self.binning, sframes = self.sframes)
+        else:
+            self.iq.read_samples(self.iq.nsamples_total)
+        
+        xx, _, zz = self.iq.get_power_spectrogram(nframes = self.nframes, lframes = self.binning, sparse = True)
+        
+        self.freq = xx[0,:] + self.iq.center
+        self.power = np.average(zz, axis = 0) #power
+
+    def save_exp_data(self, outdir = None):
         #add also path
-        outfile = f'{self.filename}_{datetime.now().strftime('%d-%H.%M.%S')}'
-        np.savez(outfile, x = self.frequency, y = self.power)
+        if outdir:
+            outfile = outdir + '_'+datetime.now().strftime('%Y-%M-%d_%H.%M.%S')
+        else:
+            outfile = self.filename+'_'+datetime.now().strftime('%Y-%M-%d_%H.%M.%S')
+        np.savez(outfile, x = self.freq, y = self.power)
 
 #def root_data(self):
 #        
