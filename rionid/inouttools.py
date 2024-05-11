@@ -35,8 +35,8 @@ def handle_read_tdsm_bin(path):
     return frequency, amplitude_avg
 
 def handle_read_rsa_specan_xml(filename):
-    f, p, _ = read_rsa_specan_xml(filename)
-    return f, p
+    frequency, amplitude, _ = read_rsa_specan_xml(filename)
+    return frequency, amplitude
 
 def handle_read_rsa_data_csv(filename):
     data = read_rsa_data_csv(filename)
@@ -44,10 +44,13 @@ def handle_read_rsa_data_csv(filename):
     return data
 
 def handle_read_rsa_result_csv(filename):
-    f, p = read_rsa_result_csv(filename)
-    return f, p
+    frequency, amplitude = read_rsa_result_csv(filename)
+    return frequency, amplitude
 
 def read_psdata(filename, dbm = False):
-    if dbm: return np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
-    else: return np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))
-
+    if dbm: 
+        frequency, amplitude = np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
+    else: 
+        frequency, amplitude = np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))
+        
+    return frequency, amplitude

@@ -76,7 +76,6 @@ class RionID_GUI(QWidget):
         self.mode_combo.addItems(['Frequency', 'Bρ', 'Kinetic Energy'])
         self.value_label = QLabel('Value:')
         self.value_edit = QLineEdit()
-
         
         self.nions_label = QLabel('Number of ions to display (e.g. if 5, it will display the 5 most expected fragments):')
         self.nions_edit = QLineEdit()
