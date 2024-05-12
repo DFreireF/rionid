@@ -184,7 +184,7 @@ class RionID_GUI(QWidget):
 
     def thread_complete(self):
         self.thread = None
-        self.stop_button.setEnabled(False)
+        #self.stop_button.setEnabled(False)
     
     def handle_error(self, error_message):
         QMessageBox.critical(None, 'Simulation Error', f'An error occurred: {error_message}')
@@ -195,13 +195,13 @@ class RionID_GUI(QWidget):
             self.thread.signalError.connect(self.handle_error)
             self.thread.start()
             self.thread.finished.connect(self.thread_complete)
-            self.stop_button.setEnabled(True)
+            #self.stop_button.setEnabled(True)
 
     def stop_script(self):
         if self.thread:
             self.thread.requestStop()
             self.thread.wait()
-            self.stop_button.setEnabled(False)
+            #self.stop_button.setEnabled(False)
 
     def actual_run_script(self):
         try:
@@ -214,12 +214,12 @@ class RionID_GUI(QWidget):
             value = self.value_edit.text()
             harmonics = self.harmonics_edit.text()
             #optional
-            ndivs = self.ndivs_edit.text()
+            #ndivs = self.ndivs_edit.text()
             nions = self.nions_edit.text()
-            amplitude = self.amplitude_edit.text()
+            #amplitude = self.amplitude_edit.text()
             args = argparse.Namespace(datafile=datafile or None, filep=filep or None, alphap=alphap or None,
-                          refion=refion or None, harmonics=harmonics or None, ndivs=ndivs or None,
-                          nions=nions or None, amplitude=amplitude or None, mode=mode or None, value=value or None)
+                          refion=refion or None, harmonics=harmonics or None,
+                          nions=nions or None, mode=mode or None, value=value or None)
             data = controller_pyqt(**vars(args))
             if data:
                 print("Data generated successfully, posting event...")
