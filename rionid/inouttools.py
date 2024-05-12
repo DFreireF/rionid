@@ -47,10 +47,15 @@ def handle_read_rsa_result_csv(filename):
     frequency, amplitude = read_rsa_result_csv(filename)
     return frequency, amplitude
 
+def handle_npz_data(filename):
+    xx, _, zz = np.load(filename)
+    za = np.average(zz, axis=0)
+    return xx, za
+
 def read_psdata(filename, dbm = False):
     if dbm: 
         frequency, amplitude = np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
     else: 
         frequency, amplitude = np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))
-        
+
     return frequency, amplitude

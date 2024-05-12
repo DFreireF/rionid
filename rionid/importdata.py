@@ -11,7 +11,6 @@ from lisereader.reader import LISEreader
 from rionid.inouttools import * 
 
 
-
 class ImportData(object):
     '''
     Model (MVC)
@@ -42,6 +41,8 @@ class ImportData(object):
             #substitute this
         if file_extension.lower() == '.xml':
             self.experimental_data = handle_read_rsa_specan_xml(filename)
+        if file_extension.lower() == '.npz':
+            self.experimental_data = handle_npz_data(filename)
         #if :
         #    handle_read_rsa_result_csv(filename)
         #if :
@@ -174,7 +175,3 @@ class ImportData(object):
     @staticmethod
     def calc_revolution_frequency(velocity, ring_circumference):
         return velocity / ring_circumference
-    
-def read_psdata(filename, dbm = False):
-    if dbm: return genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,2))
-    else: return genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))
