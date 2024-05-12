@@ -224,7 +224,6 @@ class RionID_GUI(QWidget):
             if data:
                 print("Data generated successfully, posting event...")
                 event = CustomEvent(data)
-                print(event)
                 QApplication.postEvent(self, event)
 
         except Exception as e:
