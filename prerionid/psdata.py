@@ -45,6 +45,10 @@ class ProcessSchottkyData(object):
             outfile = self.filename+'_'+datetime.now().strftime('%Y-%M-%d_%H.%M.%S')
         np.savez(outfile, x = self.freq, y = self.power)
 
+    
+    def correct_and_sum(filename):
+        #filename or file 
+
 #def root_data(self):
 #        
 #    from ROOT import TFile

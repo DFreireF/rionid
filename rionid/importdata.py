@@ -42,7 +42,12 @@ class ImportData(object):
         if file_extension.lower() == '.xml':
             self.experimental_data = handle_read_rsa_specan_xml(filename)
         if file_extension.lower() == '.npz':
-            self.experimental_data = handle_npz_data(filename)
+            if file_extension.lower() == 'tiq.npz':
+                #Shahab processed tiq files format (with 3 arrays)
+                self.experimental_data = handle_tiqnpz_data(filename)
+            else:    
+                # Spectrum data (2 arrays)
+                self.experimental_data = handle_prerionidnpz_data(filename)
         #if :
         #    handle_read_rsa_result_csv(filename)
         #if :

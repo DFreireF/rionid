@@ -47,10 +47,18 @@ def handle_read_rsa_result_csv(filename):
     frequency, amplitude = read_rsa_result_csv(filename)
     return frequency, amplitude
 
-def handle_npz_data(filename):
-    xx, _, zz = np.load(filename)
-    za = np.average(zz, axis=0)
-    return xx, za
+def handle_tiqnpz_data(filename):
+    data = np.load(filename)
+    frequency = data['arr_0'].flatten()
+    amplitude = data['arr_2']
+    amplitude_average = np.average(amplitude, axis=0)
+    return frequency, amplitude_average
+
+def handle_prerionidnpz_data(filename):
+    data = np.load(filename)
+    frequency = data['x']
+    amplitude = data['y']
+    return frequency, amplitude
 
 def read_psdata(filename, dbm = False):
     if dbm: 
