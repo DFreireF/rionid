@@ -33,7 +33,7 @@ class Watcher:
         try:
             while True:
                 logger.info("Waiting for new files... Stop otherwise.")
-                sleep(5)
+                sleep(1)
         except KeyboardInterrupt:
             self.observer.stop()
             logger.info("Observer stopped")
@@ -50,7 +50,8 @@ class Handler(FileSystemEventHandler):
     
     def on_modified(self, event):
         if not event.is_directory and event.src_path.endswith('.tiq'):
-            logger.info(f"File modifieds: {event.src_path}")
+            logger.info(f"File modified: {event.src_path}")
+            sleep(2)
             self.queue.put(event.src_path)
 
 
