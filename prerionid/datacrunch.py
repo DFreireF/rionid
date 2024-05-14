@@ -51,7 +51,6 @@ class Handler(FileSystemEventHandler):
     def on_modified(self, event):
         if not event.is_directory and event.src_path.endswith('.tiq'):
             logger.info(f"File modified: {event.src_path}")
-            sleep(2)
             self.queue.put(event.src_path)
 
 
