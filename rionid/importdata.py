@@ -28,7 +28,8 @@ class ImportData(object):
         self.experimental_data = None
         
         # Get the experimental data
-        if filename: self._get_experimental_data(filename)
+        if filename is not None: 
+            self._get_experimental_data(filename)
             
     def _get_experimental_data(self, filename):
         _, file_extension = os.path.splitext(filename)
@@ -44,12 +45,13 @@ class ImportData(object):
         if file_extension.lower() == '.Specan':
             self.experimental_data = handle_read_rsa_specan_xml(filename)
         if file_extension.lower() == '.npz':
-            if file_extension.lower() == 'tiq.npz':
-                #Shahab processed tiq files format (with 3 arrays)
-                self.experimental_data = handle_tiqnpz_data(filename)
-            else:    
-                # Spectrum data (2 arrays)
-                self.experimental_data = handle_prerionidnpz_data(filename)
+            self.experimental_data = handle_tiqnpz_data(filename)
+            #if file_extension.lower() == 'tiq.npz':
+            #    #Shahab processed tiq files format (with 3 arrays)
+            #    self.experimental_data = handle_tiqnpz_data(filename)
+            #else:    
+            #    # Spectrum data (2 arrays)
+            #    self.experimental_data = handle_prerionidnpz_data(filename)
         #if :
         #    handle_read_rsa_result_csv(filename)
         #if :
