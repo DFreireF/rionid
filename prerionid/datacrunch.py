@@ -28,12 +28,12 @@ class Watcher:
 
     def run(self):
         event_handler = Handler(self.queue)
-        self.observer.schedule(event_handler, self.directory, recursive=True)
+        self.observer.schedule(event_handler, self.directory, recursive=False)
         self.observer.start()
         try:
             while True:
                 logger.info("Waiting for new files... Stop otherwise.")
-                sleep(1)
+                sleep(5)
         except KeyboardInterrupt:
             self.observer.stop()
             logger.info("Observer stopped")
@@ -169,28 +169,33 @@ def process_file(file_path, output_path, lframes, nframes, n_avg, zoom_center, w
     file_name = file_path.split('/')[-1]
     RSA_name = file_path.split('/')[-2]
     saved_name = output_path + file_name
+    try:
+        iq = get_iq_object(file_path)
+        iq.read(nframes = nframes, lframes = lframes)
 
-    iq = get_iq_object(file_path)
-    iq.read(nframes = nframes, lframes = lframes)
-    
-    xx, yy, zz = iq.get_power_spectrogram(nframes = nframes, lframes = lframes, sparse = True)
-    logger.info('Plotting into a png file...')
-    plot_and_save_spectrogram(xx, yy, zz, saved_name)
-    #plot_spectrogram_2(xx, yy, zz, filename=saved_name, cen=iq.center, title=saved_name)
-    logger.info('Creating a NPZ file...')
-    np.savez(saved_name, arr_0 = xx + iq.center, arr_1 = yy, arr_2 = zz)
+        xx, yy, zz = iq.get_power_spectrogram(nframes = nframes, lframes = lframes, sparse = True)
+        logger.info('Plotting into a png file...')
+        plot_and_save_spectrogram(xx, yy, zz, saved_name)
+        #plot_spectrogram_2(xx, yy, zz, filename=saved_name, cen=iq.center, title=saved_name)
+        logger.info('Creating a NPZ file...')
+        np.savez(saved_name, arr_0 = xx + iq.center, arr_1 = yy, arr_2 = zz)
 
-    axx, ayy, azz = average_spectrogram(xx,yy,zz, n_avg)
-    logger.info('Save averaged spectrogram into png file...')
-    plot_and_save_spectrogram(axx, ayy, azz, saved_name +'_zoom', span = 1000000)
-    #plot_spectrogram_2(axx, ayy, azz, filename=saved_name+'_zoom', cen=iq.center+zoom_center, title=saved_name, span = 1000000)
+        axx, ayy, azz = average_spectrogram(xx,yy,zz, n_avg)
+        logger.info('Save averaged spectrogram into png file...')
+        plot_and_save_spectrogram(axx, ayy, azz, saved_name +'_zoom', span = 1000000)
+        #plot_spectrogram_2(axx, ayy, azz, filename=saved_name+'_zoom', cen=iq.center+zoom_center, title=saved_name, span = 1000000)
 
-    if www_path:
-        logger.info(f'Copy files related to {file_path} to {www_path}...')
-        shutil.copy(file_path, output_path)
-        shutil.copy(saved_name+'.png', www_path + RSA_name + '.png')
-        shutil.copy(saved_name+'_zoom.png', www_path + 'zoom_' + RSA_name + '.png')
-        logger.info(f'Files  related to {file_path} to {www_path}...')
+        if www_path:
+            logger.info(f'Copy files related to {file_path} to {www_path}...')
+            shutil.copy(file_path, output_path)
+            shutil.copy(saved_name+'.png', www_path + RSA_name + '.png')
+            shutil.copy(saved_name+'_zoom.png', www_path + 'zoom_' + RSA_name + '.png')
+            logger.info(f'Files  related to {file_path} to {www_path}...')
+    except ValueError as e:
+        logger.error(f"Error processing file {file_path}: {e}")
+        # Handle specific errors e.g., retrying or moving file to error directory
+    except Exception as e:
+        logger.error(f"Unhandled exception for file {file_path}: {e}")
 
 def worker(task_queue, processed_files, tracking_file_path, lframes, nframes, output_path,  n_avg, zoom_center, www_path):
     """ Thread worker function to process files from a queue if not already processed. """
@@ -200,17 +205,26 @@ def worker(task_queue, processed_files, tracking_file_path, lframes, nframes, ou
             task_queue.task_done()
             break  # None is the signal to stop
         
-        if file_path not in processed_files:
-            process_file(file_path, output_path, lframes, nframes, n_avg, zoom_center, www_path)
-            processed_files.add(file_path)
-            save_processed_files(processed_files, tracking_file_path)
-            task_queue.task_done()
+        #if file_path not in processed_files:
+        process_file(file_path, output_path, lframes, nframes, n_avg, zoom_center, www_path)
+        processed_files.add(file_path)
+        save_processed_files(processed_files, tracking_file_path)
+        task_queue.task_done()
 
 def file_needs_processing(file_path, output_path, processed_files):
     # Define when a file needs to be reprocessed
     file_name = file_path.split('/')[-1]
     npz_file = f"{output_path}+{file_name}.npz"
     return not os.path.exists(npz_file) or file_path not in processed_files
+
+def load_existing_files(directory, queue, processed_files):
+    """ Load existing files into the queue at startup. """
+    for filename in os.listdir(directory):
+        if filename.endswith('.tiq'):
+            file_path = os.path.join(directory, filename)
+            if file_path not in processed_files:
+                logger.info(f"Loading existing file: {filename}")
+                queue.put(file_path)
 
 def main(folder_path, tracking_file_path, num_threads, nframes, lframes, output_path,  n_avg, zoom_center,www_path):
     processed_files = load_processed_files(tracking_file_path)
@@ -222,11 +236,7 @@ def main(folder_path, tracking_file_path, num_threads, nframes, lframes, output_
         thread.start()
         threads.append(thread)
 
-    # Load existing files into the queue
-    for file_name in os.listdir(folder_path):
-        full_path = os.path.join(folder_path, file_name)
-        if file_name.endswith('.tiq') and full_path not in processed_files:
-            task_queue.put(full_path)
+    load_existing_files(folder_path, task_queue, processed_files)
 
     watcher = Watcher(folder_path, task_queue)
     watcher.run()
