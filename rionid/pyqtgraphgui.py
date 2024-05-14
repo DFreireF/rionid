@@ -38,7 +38,8 @@ class CreatePyGUI(QMainWindow):
             '<span style="color: white; font-size: 20px">Frequency (MHz)</span>'
         )
         # Set the initial X-range to encompass all experimental data
-        self.x_exp, self.z_exp = self.exp_data[:, 0]*1e-6, self.exp_data[:, 1] # 1e-6 for having MHz
+        self.x_exp, self.z_exp = self.exp_data[0]*1e-6, self.exp_data[1]
+        #self.x_exp, self.z_exp = self.exp_data[:, 0]*1e-6, self.exp_data[:, 1] # 1e-6 for having MHz
         self.initial_x_range = (min(self.x_exp), max(self.x_exp))
         self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
 
