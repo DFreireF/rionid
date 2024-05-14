@@ -47,6 +47,12 @@ class Handler(FileSystemEventHandler):
         if not event.is_directory and event.src_path.endswith('.tiq'):
             logger.info(f"New file detected: {event.src_path}")
             self.queue.put(event.src_path)
+    
+    def on_modified(self, event):
+        if not event.is_directory and event.src_path.endswith('.tiq'):
+            logger.info(f"File modifieds: {event.src_path}")
+            self.queue.put(event.src_path)
+
 
 def load_config_file(configfile):
     logger.info(f"Configuration file has been provided: {configfile}")
