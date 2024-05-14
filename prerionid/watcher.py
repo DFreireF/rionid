@@ -24,9 +24,22 @@ class Watcher:
         self.observer.join()
 
 class Handler(FileSystemEventHandler):
-    def on_any_event(self, event):
+    def on_created(self, event):
         if not event.is_directory:
-            count_files(event.src_path)
+            logger.info(f"File created: {event.src_path}")
+
+    def on_deleted(self, event):
+        if not event.is_directory:
+            logger.info(f"File deleted: {event.src_path}")
+
+    def on_modified(self, event):
+        if not event.is_directory:
+            logger.info(f"File modified: {event.src_path}")
+
+    def on_moved(self, event):
+        if not event.is_directory:
+            logger.info(f"File moved from {event.src_path} to {event.dest_path}")
+
 
 def count_files(file):
     # Count all files in the directory
