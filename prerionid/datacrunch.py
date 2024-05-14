@@ -53,7 +53,6 @@ class Handler(FileSystemEventHandler):
             logger.info(f"File modified: {event.src_path}")
             self.queue.put(event.src_path)
 
-
 def load_config_file(configfile):
     logger.info(f"Configuration file has been provided: {configfile}")
     try:
@@ -157,7 +156,7 @@ def load_processed_files(tracking_file_path):
     """ Load the list of processed files from a TOML file. If not found, create an empty set. """
     with lock:
         try:
-            with open(tracking_file_path, 'w') as file:
+            with open(tracking_file_path, 'r') as file:
                 data = toml.load(file)
                 return set(data.get('processed', []))
         except FileNotFoundError:
@@ -197,6 +196,7 @@ def process_file(file_path, output_path, lframes, nframes, n_avg, zoom_center, w
             shutil.copy(saved_name+'.png', www_path + RSA_name + '.png')
             shutil.copy(saved_name+'_zoom.png', www_path + 'zoom_' + RSA_name + '.png')
             logger.info(f'Files  related to {file_path} to {www_path}...')
+
     except ValueError as e:
         logger.error(f"Error processing file {file_path}: {e}")
         # Handle specific errors e.g., retrying or moving file to error directory
