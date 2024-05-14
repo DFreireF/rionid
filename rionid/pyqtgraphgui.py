@@ -12,7 +12,6 @@ class CreatePyGUI(QMainWindow):
     def __init__(self, exp_data, simulated_data_dict):
         super().__init__()
         self.exp_data = exp_data
-        print(exp_data)
         self.simulated_data = simulated_data_dict
         self.setup_ui()
 
