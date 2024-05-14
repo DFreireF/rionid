@@ -97,7 +97,8 @@ class CreatePyGUI(QMainWindow):
         self.clear_simulated_data()
         self.exp_data = new_exp_data
         self.simulated_data = new_simulated_data_dict
-        self.x_exp, self.z_exp = self.exp_data[:, 0] * 1e-6, self.exp_data[:, 1]
+        #self.x_exp, self.z_exp = self.exp_data[:, 0] * 1e-6, self.exp_data[:, 1]
+        self.x_exp, self.z_exp = self.exp_data[ 0] * 1e-6, self.exp_data[ 1]
         self.plot_experimental_data()  # Re-plot experimental data
         self.plot_simulated_data()  # Re-plot simulated data
 
