@@ -157,7 +157,7 @@ def load_processed_files(tracking_file_path):
     """ Load the list of processed files from a TOML file. If not found, create an empty set. """
     with lock:
         try:
-            with open(tracking_file_path, 'a') as file:
+            with open(tracking_file_path, 'w') as file:
                 data = toml.load(file)
                 return set(data.get('processed', []))
         except FileNotFoundError:
