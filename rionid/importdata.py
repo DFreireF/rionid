@@ -28,7 +28,7 @@ class ImportData(object):
         self.experimental_data = None
         
         # Get the experimental data
-        #if filename: self._get_experimental_data(filename)
+        if filename: self._get_experimental_data(filename)
             
     def _get_experimental_data(self, filename):
         _, file_extension = os.path.splitext(filename)
