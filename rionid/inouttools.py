@@ -35,8 +35,12 @@ def handle_read_tdsm_bin(path):
     return frequency, amplitude_avg
 
 def handle_read_rsa_specan_xml(filename):
-    frequency, amplitude, _ = read_rsa_specan_xml(filename)
-    return frequency, amplitude
+    #frequency, amplitude, _ = read_rsa_specan_xml(filename)
+    freq, power, _ = read_rsa_specan_xml(self.filename)
+    power = power - power.min() #in order to avoid negative values: power - (-|value_min|) > #power
+    #normalized_power = power / power.max()
+    return freq, power
+    #return frequency, amplitude
 
 def handle_read_rsa_data_csv(filename):
     data = read_rsa_data_csv(filename)

@@ -28,7 +28,7 @@ class ImportData(object):
         self.experimental_data = None
         
         # Get the experimental data
-        if filename: self._get_experimental_data(filename)
+        #if filename: self._get_experimental_data(filename)
             
     def _get_experimental_data(self, filename):
         _, file_extension = os.path.splitext(filename)
@@ -40,6 +40,8 @@ class ImportData(object):
             self.experimental_data = handle_read_tdsm(filename)
             #substitute this
         if file_extension.lower() == '.xml':
+            self.experimental_data = handle_read_rsa_specan_xml(filename)
+        if file_extension.lower() == '.Specan':
             self.experimental_data = handle_read_rsa_specan_xml(filename)
         if file_extension.lower() == '.npz':
             if file_extension.lower() == 'tiq.npz':
