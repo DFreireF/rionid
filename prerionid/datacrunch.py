@@ -28,7 +28,7 @@ class Watcher:
 
     def run(self):
         event_handler = Handler(self.queue)
-        self.observer.schedule(event_handler, self.directory, recursive=False)
+        self.observer.schedule(event_handler, self.directory, recursive=True)
         self.observer.start()
         try:
             while True:
