@@ -56,8 +56,13 @@ def handle_tiqnpz_data(filename):
     frequency = data['arr_0'].flatten()
     amplitude = data['arr_2']
     amplitude_average = np.average(amplitude, axis=0)
-    print(frequency, amplitude_average)
     return frequency, amplitude_average
+
+def handle_spectrumnpz_data(filename):
+    data = np.load(filename)
+    frequency = data['arr_0'].flatten()
+    amplitude = data['arr_2']
+    return frequency, amplitude
 
 def handle_prerionidnpz_data(filename):
     data = np.load(filename)
