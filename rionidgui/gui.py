@@ -275,7 +275,12 @@ def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmoni
         # Calculations
         if float(alphap) > 1: alphap = 1/float(alphap)**2 # handling alphap and gammat
         mydata = ImportData(refion, float(alphap), filename = datafile)
-        logger.info(f'Revolution (or meassured) frequency of {ref_ion} = {mydata.ref_frequency}')
+
+        logger.info(f'Simulation results (ordered by frequency) = ')
+        sort_index = argsort(mydata.srrf)
+        for i in sort_index:
+            log.info(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
+
         mydata._set_particles_to_simulate_from_file(filep)
 
         fref = brho = ke = gam = None
