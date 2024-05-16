@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt, QLoggingCategory, QThread, pyqtSignal, QTimer, QEve
 import argparse
 import os
 import logging as log
+from loguru import logger
 from numpy import argsort, where, append, shape 
 from rionid.importdata import ImportData
 from rionid.pyqtgraphgui import CreatePyGUI
@@ -14,9 +15,9 @@ class RionID_GUI(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('RionID Controller')
-        #width = QDesktopWidget().screenGeometry(-1).width()
-        #height = QDesktopWidget().screenGeometry(-1).height()
-        self.setGeometry(100, 100, 1080, 900)  # Set window size
+        width = QDesktopWidget().screenGeometry(-1).width()
+        height = QDesktopWidget().screenGeometry(-1).height()
+        self.setGeometry(100, 100, width, height)  # Set window size
         self.setStyleSheet("""
             background-color: #f0f0f0;
             font-size: 18pt;
@@ -274,7 +275,7 @@ def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmoni
         # Calculations
         if float(alphap) > 1: alphap = 1/float(alphap)**2 # handling alphap and gammat
         mydata = ImportData(refion, float(alphap), filename = datafile)
-        
+        logger.info(f'Revolution (or meassured) frequency of {ref_ion} = {mydata.ref_frequency}')
         mydata._set_particles_to_simulate_from_file(filep)
 
         fref = brho = ke = gam = None

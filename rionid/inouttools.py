@@ -77,3 +77,18 @@ def read_psdata(filename, dbm = False):
         frequency, amplitude = np.genfromtxt(filename, skip_header = 1, delimiter='|', usecols = (0,1))
 
     return frequency, amplitude
+
+def write_arrays_to_ods(file_name, sheet_name, names, *arrays):
+    # Create the ods spreadsheet and add a sheet
+    spreadsheet = ezodf.newdoc(doctype='ods', filename=file_name)
+    max_len = max(len(arr) for arr in arrays)
+    sheet = ezodf.Sheet(sheet_name,size=(max_len+1,len(arrays)))
+    spreadsheet.sheets += sheet
+    
+    for i, arr in enumerate(arrays):
+        sheet[(0, i)].set_value(str(names[i]))
+        for j in range(len(arr)):
+            sheet[j+1, i].set_value(arr[j])
+
+    # Save the spreadsheet
+    spreadsheet.save()

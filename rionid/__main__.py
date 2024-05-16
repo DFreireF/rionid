@@ -5,6 +5,7 @@ import ezodf
 import sys
 from numpy import argsort, where, append, shape
 from rionid import CreateGUI, ImportData, CreatePyGUI
+from rionid.inouttools import *
 from PyQt5.QtWidgets import QApplication
 
 def main():
@@ -128,21 +129,6 @@ def controller2(data_file, particles_to_simulate, alphap, ref_ion, ndivs, amplit
 def read_masterfile(master_filename):
     # reads list filenames with experiment data. [:-1] to remove eol sequence.
     return [file[:-1] for file in open(master_filename).readlines()]
-
-def write_arrays_to_ods(file_name, sheet_name, names, *arrays):
-    # Create the ods spreadsheet and add a sheet
-    spreadsheet = ezodf.newdoc(doctype='ods', filename=file_name)
-    max_len = max(len(arr) for arr in arrays)
-    sheet = ezodf.Sheet(sheet_name,size=(max_len+1,len(arrays)))
-    spreadsheet.sheets += sheet
-    
-    for i, arr in enumerate(arrays):
-        sheet[(0, i)].set_value(str(names[i]))
-        for j in range(len(arr)):
-            sheet[j+1, i].set_value(arr[j])
-
-    # Save the spreadsheet
-    spreadsheet.save()
 
 if __name__ == '__main__':
     main()
