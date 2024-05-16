@@ -291,14 +291,15 @@ def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmoni
         mydata._calculate_moqs()
         mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = False)
 
-        logger.info(f'Simulation results (ordered by frequency) = ')
-        sort_index = argsort(mydata.srrf)
-        for i in sort_index:
-            log.info(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
-
         harmonics = [float(h) for h in harmonics.split()]
         mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
         if nions: display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
+
+        logger.info(f'Simulation results (ordered by frequency) = ')
+        sort_index = argsort(mydata.srrf)
+        for i in sort_index:
+            logger.info(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
+            
         return mydata
     except Exception as e:
         print(f"Error during calculations: {str(e)}")
