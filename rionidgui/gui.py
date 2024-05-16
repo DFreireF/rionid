@@ -14,9 +14,9 @@ class RionID_GUI(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('RionID Controller')
-        width = QDesktopWidget().screenGeometry(-1).width()
-        height = QDesktopWidget().screenGeometry(-1).height()
-        self.setGeometry(100, 100, width, height)  # Set window size
+        #width = QDesktopWidget().screenGeometry(-1).width()
+        #height = QDesktopWidget().screenGeometry(-1).height()
+        self.setGeometry(100, 100, 1080, 900)  # Set window size
         self.setStyleSheet("""
             background-color: #f0f0f0;
             font-size: 18pt;

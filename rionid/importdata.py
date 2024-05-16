@@ -32,7 +32,7 @@ class ImportData(object):
             self._get_experimental_data(filename)
             
     def _get_experimental_data(self, filename):
-        _, file_extension = os.path.splitext(filename)
+        base, file_extension = os.path.splitext(filename)
         if file_extension.lower() == '.csv':
             self.experimental_data = read_psdata(filename, dbm = False)
         if file_extension.lower() == '.bin_fre' or file_extension.lower() == '.bin_time' or file_extension.lower() == '.bin_amp':
@@ -45,7 +45,7 @@ class ImportData(object):
         if file_extension.lower() == '.Specan':
             self.experimental_data = handle_read_rsa_specan_xml(filename)
         if file_extension.lower() == '.npz':
-            if file_extension == 'spectrum.npz':
+            if 'spectrum' in base:
                 self.experimental_data = handle_spectrumnpz_data(filename)
             else:
                 self.experimental_data = handle_tiqnpz_data(filename)

@@ -17,7 +17,9 @@ class CreatePyGUI(QMainWindow):
 
     def setup_ui(self):
         self.setWindowTitle('Schottky Signals Identifier')
-        self.setGeometry(100, 100, 800, 600)
+        width = QDesktopWidget().screenGeometry(-1).width()
+        height = QDesktopWidget().screenGeometry(-1).height()
+        self.setGeometry(100, 100, width, height)  # Set window size
         self.main_widget = QWidget(self)
         self.setCentralWidget(self.main_widget)
         main_layout = QVBoxLayout(self.main_widget)
