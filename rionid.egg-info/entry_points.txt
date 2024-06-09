@@ -1,0 +1,3 @@
+[console_scripts]
+rionid = rionid.__main__:main
+rionidgui = rionidgui.__main__:main
