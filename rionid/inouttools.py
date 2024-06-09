@@ -11,7 +11,8 @@ def read_tdsm_bin(path):
     try:
         fre = np.fromfile(bin_fre_path, dtype=np.float64)
         time = np.fromfile(bin_time_path, dtype=np.float32)
-        amp = np.fromfile(bin_amp_path, dtype=np.float32)
+        #amp = np.fromfile(bin_amp_path, dtype=np.float32)
+        amp = np.memmap(bin_amp_path, dtype=np.float32, mode='r', shape=(len(time), len(fre)))
     except IOError as e:
         raise Exception(f"Error reading files: {e}")
     
@@ -55,7 +56,7 @@ def handle_tiqnpz_data(filename):
     data = np.load(filename)
     frequency = data['arr_0'].flatten()
     amplitude = data['arr_2']
-    amplitude_average = np.average(amplitude, axis=0)
+    amplitude_average = np.average(amplitude[5:,:], axis=0)
     return frequency, amplitude_average
 
 def handle_spectrumnpz_data(filename):

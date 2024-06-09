@@ -15,22 +15,34 @@ class ImportData(object):
     '''
     Model (MVC)
     '''
-    def __init__(self, refion, alphap, filename = None):
+    def __init__(self, refion, alphap, filename = None, reload_data = None, circumference = None):
 
         # Argparser arguments
         self.ref_ion = refion
         self.alphap = alphap
         
         # Extra objects
-        self.ring = Ring('ESR', 108.4)
+        self.ring = Ring('ESR', circumference)
         self.ref_charge = int(refion[refion.index('+'):])
         self.ref_aa = int(re.split('(\d+)', refion)[1])
         self.experimental_data = None
-        
+        self.brho = 0 
+        # Data cache file path
+        self.cache_file = self._get_cache_file_path(filename)
+
         # Get the experimental data
-        if filename is not None: 
-            self._get_experimental_data(filename)
-            
+        if filename is not None:
+            if reload_data:
+                #print("reload_data ", reload_data)
+                self._get_experimental_data(filename)
+                self._save_experimental_data()
+            else:
+                self._load_experimental_data()
+
+    def _get_cache_file_path(self, filename):
+        base, _ = os.path.splitext(filename)
+        return f"{base}_cache.npz"
+    
     def _get_experimental_data(self, filename):
         base, file_extension = os.path.splitext(filename)
         if file_extension.lower() == '.csv':
@@ -59,6 +71,20 @@ class ImportData(object):
         #    handle_read_rsa_result_csv(filename)
         #if :
         #    handle_read_rsa_data_csv
+
+    def _save_experimental_data(self):
+        if self.experimental_data is not None:
+            frequency, amplitude_avg = self.experimental_data
+            np.savez_compressed(self.cache_file, frequency=frequency, amplitude_avg=amplitude_avg)                        
+            
+    def _load_experimental_data(self):
+        if os.path.exists(self.cache_file):
+            data = np.load(self.cache_file, allow_pickle=True)
+            frequency = data['frequency']
+            amplitude_avg = data['amplitude_avg']
+            self.experimental_data = (frequency, amplitude_avg)
+        else:
+            raise FileNotFoundError("Cached data file not found. Please set reload_data to True to generate it.")
 
     def _set_particles_to_simulate_from_file(self, particles_to_simulate):
         
@@ -91,25 +117,34 @@ class ImportData(object):
                         else: self.moq[ion_name] = pp.get_ionic_moq_in_u()
 
     def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None):
+        print("chenrj ...")
         if moqs:
             self.moq = moqs
         
         self.ref_mass = AMEData.to_mev(self.moq[self.ref_ion] * self.ref_charge)
         self.ref_frequency = self.reference_frequency(fref = fref, brho = brho, ke = ke, gam = gam)
-
+        
         # Simulated relative revolution frequencies (respect to the reference particle)
         self.srrf = array([1 - self.alphap * (self.moq[name] - self.moq[self.ref_ion]) / self.moq[self.ref_ion]
-                              for name in self.moq])
+                           for name in self.moq])
         if correct:
             self.srrf = self.srrf + polyval(array(correct), self.srrf * self.ref_frequency) / self.ref_frequency
-        
-    def _simulated_data(self, harmonics = None, particles = False):
+
+            
+    def _simulated_data(self, harmonics = None, particles = False,mode = None):
+        for harmonic in harmonics:
+            ref_moq = self.moq[self.ref_ion]
+            ref_frequency =  self.ref_frequency
+            self.brho = self.calculate_brho_relativistic(ref_moq, ref_frequency, self.ring.circumference, harmonic)
         # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
         self.simulated_data_dict = dict()
         
         # Set the yield of the particles to simulate
-        if particles: self.yield_data = array([1 for i in range(len(self.moq))])
-        else: self.yield_data = array([lise[5] for lise in self.particles_to_simulate])
+        if particles:
+            self.yield_data = array([1 for i in range(len(self.moq))])
+        else:
+            self.yield_data = array([lise[5] for lise in self.particles_to_simulate])
+        
         # We normalize the yield to avoid problems with ranges and printing
         #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
 
@@ -122,16 +157,56 @@ class ImportData(object):
             array_stack = array([])
         
             # get srf data
-            harmonic_frequency = self.srrf * self.ref_frequency * harmonic
-        
+            if mode == 'Frequency':
+                harmonic_frequency = self.srrf * self.ref_frequency
+            else:
+                harmonic_frequency = self.srrf * self.ref_frequency * harmonic
+            
+            #print("self.ref_frequency ",self.ref_frequency)
+            #print("self.moq[self.ref_ion] ", self.moq[self.ref_ion])
+            
             # attach harmonic, frequency, yield data and ion properties together:
             array_stack = stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
             simulated_data = append(simulated_data, array_stack)
         
             simulated_data = simulated_data.reshape(len(array_stack), 3)
             name = f'{harmonic}'
+            
             self.simulated_data_dict[name] = simulated_data
             
+    def calculate_brho_relativistic(self, moq, frequency, circumference, harmonic):
+        """
+            Calculate the relativistic magnetic rigidity (Bρ) of an ion.
+            
+            Parameters:
+            moq (float): mass-to-charge ratio (m/q) of the ion
+            frequency (float): frequency of the ion in Hz
+            circumference (float): circumference of the ring in meters
+            harmonic (float): harmonic number
+            
+            Returns:
+            float: magnetic rigidity (Bρ) in T*m (Tesla meters)
+            """
+        # Speed of light in m/s
+        c = 299792458.0
+        
+        # Calculate the actual frequency of the ion
+        actual_frequency = frequency / harmonic
+        
+        # Calculate the velocity of the ion
+        v = actual_frequency * circumference
+        
+        # Calculate the Lorentz factor gamma
+        gamma = 1 / np.sqrt(1 - (v / c) ** 2)
+        
+        # Calculate the momentum p = γ m v
+        p = gamma * moq * v
+        
+        # Calculate the magnetic rigidity (Bρ)
+        brho = p
+        
+        return brho/1e8
+                                                            
     def reference_frequency(self, fref = None, brho = None, ke = None, gam = None):
         
         # If no frev given, calculate frev with brho or with ke, whatever you wish
