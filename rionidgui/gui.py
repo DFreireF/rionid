@@ -9,6 +9,7 @@ from numpy import argsort, where, append, shape
 from rionid.importdata import ImportData
 from rionid.pyqtgraphgui import CreatePyGUI
 import toml
+from barion.amedata import AMEData
 
 log.basicConfig(level=log.DEBUG)
 class RionID_GUI(QWidget):
@@ -319,7 +320,7 @@ class ScriptThread(QThread):
 
     def requestStop(self):
         self._stop_requested = True
-
+    
 class CustomEvent(QEvent):
     EventType = QEvent.Type(QEvent.registerEventType())
 
@@ -367,7 +368,8 @@ def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmoni
                 logger.info(header0)
                 file.write(header0 + '\n')
                 
-            header1 = f"{'ion':<15}{'fre[Hz]':<30}{'yield [pps]':<15}"
+            #header1 = f"{'ion':<15}{'fre[Hz]':<30}{'yield [pps]':<15}"
+            header1 = f"{'ion':<15}{'fre[Hz]':<30}{'yield [pps]':<15}{'m/q [u]':<15}{'m [eV]':<15}"
             file.write(header1 + '\n')
             file.write('-' * len(header1) + '\n')
             logger.info(header1)
@@ -375,7 +377,11 @@ def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmoni
                 ion = mydata.nuclei_names[i]
                 fre = mydata.srrf[i] * mydata.ref_frequency
                 yield_ = mydata.yield_data[i]
-                result_line = f"{ion:<15}{fre:<30.10f}{yield_:<15.4e}"
+                moq = mydata.moq[ion]
+                mass_u = mydata.total_mass[ion]
+                mass = AMEData.to_mev(mass_u)*1e6
+                #result_line = f"{ion:<15}{fre:<30.10f}{yield_:<15.4e}"
+                result_line = f"{ion:<15}{fre:<30.10f}{yield_:<15.4e}{moq:<15.12f}{mass:<15.3f}"
                 logger.info(result_line)
                 file.write(result_line + '\n')
         return mydata

@@ -20,7 +20,6 @@ class ImportData(object):
         # Argparser arguments
         self.ref_ion = refion
         self.alphap = alphap
-        
         # Extra objects
         self.ring = Ring('ESR', circumference)
         self.ref_charge = int(refion[refion.index('+'):])
@@ -100,11 +99,14 @@ class ImportData(object):
         
         # Calculate the  moq from barion of the particles present in LISE file or of the particles introduced
         self.moq = dict()
+        self.total_mass = dict()  # Initialize the total mass dictionary
         
         if particles:
             for particle in particles:
                 ion_name = f'{particle.tbl_aa}{particle.tbl_name}+{particle.qq}'
-                self.moq[ion_name] = particle.get_ionic_moq_in_u()
+                m_q = particle.get_ionic_moq_in_u()
+                self.moq[ion_name] = m_q
+                self.total_mass[ion_name] = m_q * particle.qq  # Calculate and store the total mass
         else:
             for particle in self.particles_to_simulate:
                 ion_name = f'{particle[1]}{particle[0]}+{particle[4][0]}'
@@ -112,9 +114,9 @@ class ImportData(object):
                     if particle[0] == ame[6] and particle[1] == ame[5]:
                         pp = Particle(particle[2], particle[3], self.ame, self.ring)
                         pp.qq = particle[4][0]
-                        # implement into simtofat lines below
-                        if ion_name == self.ref_ion: self.moq[ion_name] = pp.get_ionic_moq_in_u()
-                        else: self.moq[ion_name] = pp.get_ionic_moq_in_u()
+                        m_q = pp.get_ionic_moq_in_u()
+                        self.moq[ion_name] = m_q
+                        self.total_mass[ion_name] = m_q * pp.qq  # Calculate and store the total mass
 
     def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None):
         print("chenrj ...")
