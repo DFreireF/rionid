@@ -9,14 +9,9 @@ class CreatePyGUI(QMainWindow):
     '''
     PyView (MVC)
     '''
-    #def __init__(self, exp_data, simulated_data_dict):
-    def __init__(self, data):
+    def __init__(self):
         super().__init__()
-        self.brho = data.brho
-        self.circumference = data.ring.circumference
-        self.ref_frequency = data.ref_frequency
-        self.exp_data = data.experimental_data
-        self.simulated_data = data.simulated_data_dict
+        self.simulated_items = []
         self.setup_ui()
 
     def setup_ui(self):
@@ -47,11 +42,6 @@ class CreatePyGUI(QMainWindow):
             "bottom",
             '<span style="color: white; font-size: 20px">Frequency (MHz)</span>'
         )
-        # Set the initial X-range to encompass all experimental data
-        self.x_exp, self.z_exp = self.exp_data[0]*1e-6, self.exp_data[1]
-        #self.x_exp, self.z_exp = self.exp_data[:, 0]*1e-6, self.exp_data[:, 1] # 1e-6 for having MHz
-        self.initial_x_range = (min(self.x_exp), max(self.x_exp))
-        self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
         
         # Customizing tick label font size
         font_ticks = QFont()
@@ -70,26 +60,34 @@ class CreatePyGUI(QMainWindow):
         
         # Add control buttons
         self.add_buttons(main_layout)
-        
-        # Plot experimental data
-        self.plot_experimental_data()
-        #simulated
-        self.simulated_items = []
-        self.plot_simulated_data()
+    
+    def plot_all_data(self, data):
+        self.plot_widget.clear()
+        self.plot_experimental_data(data)
+        self.plot_simulated_data(data)
 
-    def plot_experimental_data(self):
+    def plot_experimental_data(self, data):
+        self.exp_data = data.experimental_data
         # Plot experimental data
         if hasattr(self, 'exp_data_line'):
             self.plot_widget.removeItem(self.exp_data_line)
+
+        # Set the initial X-range to encompass all experimental data
+        self.x_exp, self.z_exp = self.exp_data[0]*1e-6, self.exp_data[1]
+        #self.x_exp, self.z_exp = self.exp_data[:, 0]*1e-6, self.exp_data[:, 1] # 1e-6 for having MHz
+        self.initial_x_range = (min(self.x_exp), max(self.x_exp))
+        self.plot_widget.setXRange(*self.initial_x_range, padding=0.05)
+
         self.exp_data_line = self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
         self.legend.addItem(self.exp_data_line, 'Experimental Data')
 
-    def plot_simulated_data(self):
+    def plot_simulated_data(self, data):
+        self.simulated_data = data.simulated_data_dict
         max_z = max(self.z_exp)
         min_z = np.min(self.z_exp[self.z_exp > 0])
-        for i, (harmonic, data) in enumerate(self.simulated_data.items()):
+        for i, (harmonic, sdata) in enumerate(self.simulated_data.items()):
             color = pg.intColor(i, hues=len(self.simulated_data))
-            for entry in data:
+            for entry in sdata:
                 freq = float(entry[0])*1e-6
                 label = entry[2]
                 # Find the corresponding z_exp for the given freq
@@ -109,13 +107,9 @@ class CreatePyGUI(QMainWindow):
                     text.setPos(freq, np.log10(z_value) + 0.2)  # Adjust 0.1 as needed for visibility
                 else:
                     text.setPos(freq, z_value * 1.05)
-
                 self.simulated_items.append((line, text))  # Add as a tuple
-                
-            brho = self.brho
-            
-            #self.legend.addItem(line, f'Harmonic {int(harmonic)} Bp {brho:.6f} [Tm]')
-            self.legend.addItem(line, f'Harmonic = {int(float(harmonic))} ; Bρ = {brho:.6f} [Tm].')
+
+            self.legend.addItem(line, f'Harmonic = {float(harmonic)} ; Bρ = {data.brho:.6f} [Tm].')
             
     def get_z_exp_at_freq(self, freq, freq_range):
         # Check if self.x_exp and self.z_exp are not empty
@@ -135,19 +129,10 @@ class CreatePyGUI(QMainWindow):
         return np.max(self.z_exp[indices])
                                                         
     def updateData(self, data):
-        new_exp_data = data.experimental_data
-        new_simulated_data_dict = data.simulated_data_dict
-        new_brho = data.brho
         print("Updating data in visualization GUI...")
         self.clear_experimental_data()
         self.clear_simulated_data()
-        self.exp_data = new_exp_data
-        self.simulated_data = new_simulated_data_dict
-        self.brho = new_brho
-        #self.x_exp, self.z_exp = self.exp_data[:, 0] * 1e-6, self.exp_data[:, 1]
-        self.x_exp, self.z_exp = self.exp_data[ 0] * 1e-6, self.exp_data[ 1]
-        self.plot_experimental_data()  # Re-plot experimental data
-        self.plot_simulated_data()  # Re-plot simulated data
+        self.plot_all_data(data)
 
     def clear_simulated_data(self):
         print("Clearing simulated data plots...")

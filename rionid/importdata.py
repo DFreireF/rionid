@@ -137,7 +137,7 @@ class ImportData(object):
         for harmonic in harmonics:
             ref_moq = self.moq[self.ref_ion]
             ref_frequency =  self.ref_frequency
-            self.brho = self.calculate_brho_relativistic(ref_moq, ref_frequency, self.ring.circumference, harmonic)
+            self.brho = self.calculate_brho_relativistic(ref_moq, ref_frequency, self.ring.circumference, harmonic) #improve this line
         # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
         self.simulated_data_dict = dict()
         
