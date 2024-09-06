@@ -25,4 +25,3 @@ rionid.egg-info/top_level.txt
 rionidgui/__init__.py
 rionidgui/__main__.py
 rionidgui/gui.py
-tests/test_importdata.py
