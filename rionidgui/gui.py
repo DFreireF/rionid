@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox, QGroupBox, QGridLayout, QDesktopWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QComboBox, QGroupBox, QGridLayout, QDesktopWidget,  QCheckBox
 from PyQt5.QtCore import Qt, QLoggingCategory, QThread, pyqtSignal, QTimer, QEvent
 import argparse
 import os
@@ -8,6 +8,8 @@ from loguru import logger
 from numpy import argsort, where, append, shape 
 from rionid.importdata import ImportData
 from rionid.pyqtgraphgui import CreatePyGUI
+import toml
+from barion.amedata import AMEData
 
 log.basicConfig(level=log.DEBUG)
 class RionID_GUI(QWidget):
@@ -26,9 +28,43 @@ class RionID_GUI(QWidget):
         QLoggingCategory.setFilterRules('*.warning=false\n*.critical=false') #logging annoying messages
         self.thread = None
         self.initUI()
+        self.load_parameters()  # Load parameters after initializing UI
         self.visualization_window = None
         self.visualization_signal.connect(self.launch_visualization)
         
+    def load_parameters(self, filepath='parameters_cache.toml'):
+        try:
+            with open(filepath, 'r') as f:
+                parameters = toml.load(f)
+                self.datafile_edit.setText(parameters.get('datafile', ''))
+                self.filep_edit.setText(parameters.get('filep', ''))
+                self.alphap_edit.setText(parameters.get('alphap', ''))
+                self.harmonics_edit.setText(parameters.get('harmonics', ''))
+                self.refion_edit.setText(parameters.get('refion', ''))
+                self.circumference_edit.setText(parameters.get('circumference', ''))
+                self.mode_combo.setCurrentText(parameters.get('mode', 'Frequency'))
+                self.value_edit.setText(parameters.get('value', ''))
+                self.reload_data_checkbox.setChecked(parameters.get('reload_data', True))
+                self.nions_edit.setText(parameters.get('nions', ''))
+        except FileNotFoundError:
+            pass  # No parameters file exists yet
+        
+    def save_parameters(self, filepath='parameters_cache.toml'):
+        parameters ={
+            'datafile': self.datafile_edit.text(),
+            'filep': self.filep_edit.text(),
+            'alphap': self.alphap_edit.text(),
+            'harmonics': self.harmonics_edit.text(),
+            'refion': self.refion_edit.text(),
+            'circumference': self.circumference_edit.text(),
+            'mode': self.mode_combo.currentText(),
+            'value': self.value_edit.text(),
+            'reload_data': self.reload_data_checkbox.isChecked(),
+            'nions': self.nions_edit.text()
+        }
+        with open(filepath, 'w') as f:
+            toml.dump(parameters, f)
+            
     def initUI(self):
         self.setup_layout()
         self.setLayout(self.vbox)
@@ -65,7 +101,7 @@ class RionID_GUI(QWidget):
     def setup_parameters(self):
         self.alphap_label = QLabel('<i>&alpha;<sub>p</sub> or &gamma;<sub>t</sub> :</i>')
         self.alphap_edit = QLineEdit()
-
+        
         self.harmonics_label = QLabel('Harmonics (e.g 124 125 126):')
         self.harmonics_edit = QLineEdit()
 
@@ -78,6 +114,12 @@ class RionID_GUI(QWidget):
         self.value_label = QLabel('Value:')
         self.value_edit = QLineEdit()
         
+        self.reload_data_checkbox = QCheckBox('Reload Experimental Data')
+        self.reload_data_checkbox.setChecked(True)  # Default is to reload data
+
+        self.circumference_label = QLabel('Circumference (m):')  # Add label for orbit length
+        self.circumference_edit = QLineEdit()  # Add QLineEdit for orbit length        
+        
         self.nions_label = QLabel('Number of ions to display (e.g. if 5, it will display the 5 most expected fragments):')
         self.nions_edit = QLineEdit()
         self.correction_label = QLabel('Add second order correction to the simulated frequencies with the form: <i>a<sub>0</sub> &middot; x<sup>2</sup> + a<sub>1</sub> &middot; x<sup>1</sup> + a<sub>2</sub> &middot; x<sup>0</sup>:</i>')        
@@ -86,27 +128,33 @@ class RionID_GUI(QWidget):
         #self.ndivs_edit = QLineEdit()
         #self.amplitude_label = QLabel('Scale amplitude of the simulated peaks:')
         #self.amplitude_edit = QLineEdit()
+        
+        hbox_alphap = QHBoxLayout()
+        hbox_alphap.addWidget(self.alphap_label)
+        hbox_alphap.addWidget(self.alphap_edit)
 
-        hbox3 = QHBoxLayout()
-        hbox3.addWidget(self.alphap_label)
-        hbox3.addWidget(self.alphap_edit)
+        hbox_harmonics = QHBoxLayout()
+        hbox_harmonics.addWidget(self.harmonics_label)
+        hbox_harmonics.addWidget(self.harmonics_edit)
+        
+        hbox_refion = QHBoxLayout()
+        hbox_refion.addWidget(self.refion_label)
+        hbox_refion.addWidget(self.refion_edit)
 
-        hboxH = QHBoxLayout()
-        hboxH.addWidget(self.harmonics_label)
-        hboxH.addWidget(self.harmonics_edit)
-
-        hbox4 = QHBoxLayout()
-        hbox4.addWidget(self.refion_label)
-        hbox4.addWidget(self.refion_edit)
-
+        hbox_circumference = QHBoxLayout()  # Add layout for orbit length
+        hbox_circumference.addWidget(self.circumference_label)
+        hbox_circumference.addWidget(self.circumference_edit)
+        
         hbox_mode_value = QHBoxLayout()
         hbox_mode_value.addWidget(self.mode_label)
         hbox_mode_value.addWidget(self.mode_combo)
         hbox_mode_value.addWidget(self.value_edit)
         
-        self.vbox.addLayout(hbox3)
-        self.vbox.addLayout(hboxH)
-        self.vbox.addLayout(hbox4)
+        self.vbox.addWidget(self.reload_data_checkbox)
+        self.vbox.addLayout(hbox_circumference)  # Add orbit length layout to the main layout
+        self.vbox.addLayout(hbox_alphap)
+        self.vbox.addLayout(hbox_harmonics)
+        self.vbox.addLayout(hbox_refion)
         self.vbox.addLayout(hbox_mode_value)
         
         self.Optional_features_group = QGroupBox("Optional Features")
@@ -196,7 +244,6 @@ class RionID_GUI(QWidget):
             self.thread.signalError.connect(self.handle_error)
             self.thread.start()
             self.thread.finished.connect(self.thread_complete)
-            #self.stop_button.setEnabled(True)
 
     def stop_script(self):
         if self.thread:
@@ -208,19 +255,30 @@ class RionID_GUI(QWidget):
         try:
             print("Running script...")
             datafile = self.datafile_edit.text()
-            alphap = self.alphap_edit.text()
-            refion = self.refion_edit.text()
             filep = self.filep_edit.text()
+            alphap = float(self.alphap_edit.text())
+            harmonics = self.harmonics_edit.text()
+            refion = self.refion_edit.text()
+            circumference = float(self.circumference_edit.text())
             mode = self.mode_combo.currentText()
             value = self.value_edit.text()
-            harmonics = self.harmonics_edit.text()
-            #optional
-            #ndivs = self.ndivs_edit.text()
+            reload_data = self.reload_data_checkbox.isChecked()
             nions = self.nions_edit.text()
-            #amplitude = self.amplitude_edit.text()
-            args = argparse.Namespace(datafile=datafile or None, filep=filep or None, alphap=alphap or None,
-                          refion=refion or None, harmonics=harmonics or None,
-                          nions=nions or None, mode=mode or None, value=value or None)
+            
+            args = argparse.Namespace(datafile=datafile or None,
+                                      filep=filep or None,
+                                      alphap=alphap or None,
+                                      harmonics=harmonics or None,
+                                      refion=refion or None,
+                                      nions=nions or None,
+                                      circumference=circumference or None,
+                                      mode=mode or None,
+                                      value=value or None,
+                                      reload_data=reload_data or None)
+
+            # Save parameters before running the script
+            self.save_parameters()
+            
             data = controller_pyqt(**vars(args))
             if data:
                 print("Data generated successfully, posting event...")
@@ -240,11 +298,11 @@ class RionID_GUI(QWidget):
     def launch_visualization(self, data):
         # Check for an existing QApplication instance
         if not self.visualization_window:
-            self.visualization_window = CreatePyGUI(data.experimental_data, data.simulated_data_dict)
+            self.visualization_window = CreatePyGUI(data)
             self.visualization_window.show()
         else:
-            self.visualization_window.updateData(data.experimental_data, data.simulated_data_dict)
-
+            self.visualization_window.updateData(data)
+            
 class ScriptThread(QThread):
     signalError = pyqtSignal(str)
 
@@ -262,7 +320,7 @@ class ScriptThread(QThread):
 
     def requestStop(self):
         self._stop_requested = True
-
+    
 class CustomEvent(QEvent):
     EventType = QEvent.Type(QEvent.registerEventType())
 
@@ -270,11 +328,11 @@ class CustomEvent(QEvent):
         super().__init__(CustomEvent.EventType)
         self.data = data
 
-def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmonics = None, ndivs=None, nions = None, amplitude=None, mode=None, value=None):
+def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmonics = None, ndivs=None, nions = None, amplitude=None, circumference = None, mode=None, value=None, reload_data=None):
     try:
         # Calculations
         if float(alphap) > 1: alphap = 1/float(alphap)**2 # handling alphap and gammat
-        mydata = ImportData(refion, float(alphap), filename = datafile)
+        mydata = ImportData(refion, float(alphap), filename = datafile, reload_data = reload_data, circumference = circumference)
 
         mydata._set_particles_to_simulate_from_file(filep)
 
@@ -289,18 +347,45 @@ def controller_pyqt(datafile=None, filep=None, alphap=None, refion=None, harmoni
             gam = float(value)
 
         mydata._calculate_moqs()
+        
         mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = False)
-
+        
         harmonics = [float(h) for h in harmonics.split()]
-        mydata._simulated_data(harmonics = harmonics) # -> simulated frecs
-        if nions: display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
-
+        mydata._simulated_data(harmonics = harmonics, mode = mode) # -> simulated frecs
+        
+        if nions:
+            display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
+        
         logger.info(f'Simulation results (ordered by frequency) = ')
         sort_index = argsort(mydata.srrf)
-        for i in sort_index:
-            logger.info(f'{mydata.nuclei_names[i]} with simulated rev freq: {mydata.srrf[i] * mydata.ref_frequency} and yield: {mydata.yield_data[i]}')
-            
+
+        # Save the results to a file with the specified format
+        with open('simulation_result.out', 'w') as file:
+            for harmonic in harmonics:
+                brho = mydata.brho
+                header0 = f'Harmonic: {harmonic} , Bp: {brho:.6f} [Tm]'
+                #file.write(f'Harmonic: {harmonic} , Bp: {brho:.6f} [Tm]\n')
+                logger.info(header0)
+                file.write(header0 + '\n')
+                
+            #header1 = f"{'ion':<15}{'fre[Hz]':<30}{'yield [pps]':<15}"
+            header1 = f"{'ion':<15}{'fre[Hz]':<30}{'yield [pps]':<15}{'m/q [u]':<15}{'m [eV]':<15}"
+            file.write(header1 + '\n')
+            file.write('-' * len(header1) + '\n')
+            logger.info(header1)
+            for i in sort_index:
+                ion = mydata.nuclei_names[i]
+                fre = mydata.srrf[i] * mydata.ref_frequency
+                yield_ = mydata.yield_data[i]
+                moq = mydata.moq[ion]
+                mass_u = mydata.total_mass[ion]
+                mass = AMEData.to_mev(mass_u)*1e6
+                #result_line = f"{ion:<15}{fre:<30.10f}{yield_:<15.4e}"
+                result_line = f"{ion:<15}{fre:<30.10f}{yield_:<15.4e}{moq:<15.12f}{mass:<15.3f}"
+                logger.info(result_line)
+                file.write(result_line + '\n')
         return mydata
+    
     except Exception as e:
         print(f"Error during calculations: {str(e)}")
         return None

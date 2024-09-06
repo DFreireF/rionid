@@ -57,6 +57,7 @@ class CreateGUI(object):
 
     def histogram_fill(self):
         for key in self.histogram_dict:
+            print(f"Filling histogram for data: {key}")  # 输出数据名称
             xbin = (self.histogram_dict[key][0].GetXaxis().FindBin(frec) for frec in self.histogram_dict[key][1][:, 0])
             values = (self.histogram_dict[key][1][i, 1] for i in range(self.histogram_dict[key][1].shape[0]))
             [self.histogram_dict[key][0].AddBinContent(x, v) for x, v in zip(xbin, values)]
