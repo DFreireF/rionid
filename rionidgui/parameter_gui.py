@@ -224,6 +224,9 @@ class RionID_GUI(QWidget):
         try:
             print("Running script...")
             datafile = self.datafile_edit.text()
+            if not datafile:
+                raise ValueError("No experimental data provided. Please enter any filename and click Run, the program will automatically calculate the simulated data.")
+
             filep = self.filep_edit.text()
             alphap = float(self.alphap_edit.text())
             harmonics = self.harmonics_edit.text()
@@ -234,7 +237,7 @@ class RionID_GUI(QWidget):
             reload_data = self.reload_data_checkbox.isChecked()
             nions = self.nions_edit.text()
 
-            args = argparse.Namespace(datafile=datafile or None,
+            args = argparse.Namespace(datafile=datafile,
                                         filep=filep or None,
                                         alphap=alphap or None,
                                         harmonics=harmonics or None,
