@@ -11,8 +11,8 @@ class CreatePyGUI(QMainWindow):
     '''
     def __init__(self):
         super().__init__()
-        self.saved_x_range = None  # 用于保存 X 轴的范围
-        self.saved_y_range = None  # 用于保存 Y 轴的范围
+        self.saved_x_range = None  
+        self.saved_y_range = None 
         self.simulated_items = []
         self.setup_ui()
 
