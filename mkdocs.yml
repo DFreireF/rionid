@@ -1,5 +1,5 @@
 site_name: RionID Documentation
-site_description: "Ringed Ions IDdentification: Library to perform particle identification of a Schottky spectrum."
+site_description: "Ring-stored ion IDdentification: Library to perform particle identification of a Schottky spectrum."
 site_url: "https://DFreireF.github.io/rionid"
 repo_url: "https://github.com/DFreireF/rionid"
 edit_uri: "blob/main/docs/"
@@ -9,6 +9,7 @@ watch: [README.md]
 
 theme:
   name: material
+  logo: img/rionid2.png
   highlightjs: true
   features:
     - content.code.copy
@@ -47,11 +48,25 @@ plugins:
 
 nav:
   - Main page: index.md
-  - Code Reference:
-    - __main__: __main__.md
-    - importdata: importdata.md
-    - creategui: creategui.md
-      
+  - Prerionid:
+    - __main__: prerionid/__main__.md
+    - datacrunch: prerionid/datacrunch.md
+    - e0018: prerionid/e0018.md
+    - psdata: prerionid/psdata.md
+    - watcher: prerionid/watcher.md
+  - RionID:
+    - __main__: rionid/__main__.md
+    - creategui: rionid/creategui.md
+    - importdata: rionid/importdata.md
+    - inputtools: rionid/inputtools.md
+    - pypeaks: rionid/pypeaks.md
+    - pyqtgraphgui: rionid/pyqtgraphgui.md
+  - RionID GUI:
+    - __main__: rionidgui/__main__.md
+    - gui: rionidgui/gui.md
+    - gui_controller: rionidgui/gui_controller.md
+    - parameter_gui: rionidgui/parameter_gui.md
+
 extra:
   social:
   - icon: fontawesome/brands/github

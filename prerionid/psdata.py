@@ -44,23 +44,3 @@ class ProcessSchottkyData(object):
         else:
             outfile = self.filename+'_'+datetime.now().strftime('%Y-%M-%d_%H.%M.%S')
         np.savez(outfile, x = self.freq, y = self.power)
-
-    
-    def correct_and_sum(filename):
-        #filename or file 
-
-#def root_data(self):
-#        
-#    from ROOT import TFile
-#    fdata = TFile(self.filename)
-#    histogram = fdata.Get(fdata.GetListOfKeys()[0].GetName())
-#    freq = np.array([[histogram.GetXaxis().GetBinCenter(i) * 1e6] for i in range(1,histogram.#GetNbinsX())]) # 1e6 for units
-#    power = np.array([[histogram.GetBinContent(i)] for i in range(1, histogram.GetNbins#())])          
-#    return freq, power
-#
-#def specan_data(self):
-#        
-#    freq, power, _ = read_rsa_specan_xml(self.filename)
-#    power = power - power.min() #in order to avoid negative values: power - (-|value_min|) > #power
-#    normalized_power = power / power.max()
-#    return freq, normalized_power
