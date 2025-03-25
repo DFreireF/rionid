@@ -1,0 +1,15 @@
+name: Python Development Environment
+
+image: mcr.microsoft.com/devcontainers/python:3.12
+
+features:
+  - ghcr.io/devcontainers/features/apt-packages:1:
+      packages:
+        - libssl-dev
+
+postCreateCommand: |
+  echo "Python version: $(python --version)"
+  echo "Pip version: $(pip --version || echo 'pip not found')"
+  python -m ensurepip --upgrade
+  python -m pip install --upgrade pip
+  python -m pip install pipreqs
