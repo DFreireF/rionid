@@ -3,7 +3,7 @@
     "name": "Python Development Environment",
     "image": "mcr.microsoft.com/devcontainers/python:3.12",
     "features": {
-      "ghcr.io/devcontainers/features/apt-packages:1": {
+      "ghcr.io/devcontainers-extra/features/apt-packages:1": {
         "packages": ["libssl-dev"]
       }
     },
