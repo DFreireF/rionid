@@ -17,9 +17,10 @@ packages = [
 
 [tool.poetry-dynamic-versioning]
 enable = true
-source = "attr"
-path = "rionid/version.py"
-attribute = "__version__"
+vcs = "git"
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["rionid/version.py"]
 
 [tool.poetry.dependencies]
 python = "*"
@@ -41,9 +42,9 @@ toml = "*"
 watchdog = "*"
 
 # Git dependencies
-iqtools = { git = "https://github.com/xaratustrah/iqtools.git" }
-barion = { git = "https://github.com/xaratustrah/barion.git" }
-lisereader = { git = "https://github.com/gwgwhc/lisereader.git" }
+iqtools = { git = "https://github.com/xaratustrah/iqtools.git" , develop = true}
+barion = { git = "https://github.com/xaratustrah/barion.git" , develop = true}
+lisereader = { git = "https://github.com/gwgwhc/lisereader.git" , develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

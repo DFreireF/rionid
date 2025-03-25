@@ -27,6 +27,9 @@ jobs:
       - name: Enable Poetry dynamic versioning
         run: poetry self add poetry-dynamic-versioning
 
+      - name: Pre-install build dependencies for lisereader
+        run: pip install numpy
+        
       - name: Install dependencies
         run: poetry install --no-root
 
