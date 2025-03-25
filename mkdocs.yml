@@ -9,7 +9,7 @@ watch: [README.md]
 
 theme:
   name: material
-  logo: img/rionid2.png
+  logo: img/rionid.png
   highlightjs: true
   features:
     - content.code.copy
