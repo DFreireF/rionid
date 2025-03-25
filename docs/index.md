@@ -4,7 +4,7 @@
 `RionID` is a Python code that simulates the time-of-flight/revolution-frequency spectrum of particles stored in a storage ring. Here is a guide on how to use `RionID` (for more details please check [dfreiref.github.io/rionid/](https://DFreireF.github.io/rionid/)):
 
 <div class="center">
-  <img src="https://github.com/DFreireF/rionid/raw/master/docs/img/rionid2.png?raw=true" width="50%">
+  <img src="https://github.com/DFreireF/rionid/raw/master/docs/img/rionid.png?raw=true" width="50%">
 </div>
 
 ## Code Structure
