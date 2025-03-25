@@ -1,173 +1,99 @@
-# DataCrunch Module
+# PreRionID Main Module
 
-The `datacrunch.py` module provides a multithreaded system for processing `.tiq` files in a directory. It monitors the directory for new or modified files, processes them to generate spectrograms, and saves the results in various formats. The module also tracks processed files to avoid redundant processing.
-
-## Classes
-
-### `Watcher`
-
-The `Watcher` class monitors a directory for new or modified `.tiq` files and adds them to a processing queue.
-
-#### Constructor: `__init__(self, directory, queue)`
-Initializes the `Watcher` instance.
-
-#### Parameters:
-- `directory` (str): Path to the directory to monitor.
-- `queue` (Queue): Queue to store files for processing.
-
-#### Methods:
-- `run(self)`: Starts the directory monitoring process using `watchdog`.
-
----
-
-### `Handler`
-
-The `Handler` class extends `FileSystemEventHandler` to handle file system events.
-
-#### Constructor: `__init__(self, queue)`
-Initializes the `Handler` instance.
-
-#### Parameters:
-- `queue` (Queue): Queue to store files for processing.
-
-#### Methods:
-- `on_created(self, event)`: Adds newly created `.tiq` files to the queue.
-- `on_modified(self, event)`: Adds modified `.tiq` files to the queue.
-
----
+The `__main__.py` module in the `prerionid` package serves as the entry point for processing Schottky data files. It provides functionality to analyze IQ data, generate spectrums, and save results in `.csv` or `.npz` formats. The module supports batch processing of multiple files and offers various options for customization.
 
 ## Functions
 
-### File Processing
-
-#### `process_file(file_path, output_path, lframes, nframes, n_avg, zoom_center, www_path='')`
-Processes a single `.tiq` file to generate spectrograms and save results.
+### `write_spectrum_to_csv(freq, power, filename, center=0, out=None)`
+Writes the frequency and power spectrum data to a `.csv` file.
 
 #### Parameters:
-- `file_path` (str): Path to the `.tiq` file.
-- `output_path` (str): Directory to save processed files.
-- `lframes` (int): Length of each frame.
-- `nframes` (int): Number of frames to process.
-- `n_avg` (int): Number of frames to average.
-- `zoom_center` (float): Center frequency for zoomed spectrograms.
-- `www_path` (str, optional): Directory to copy files for web access.
+- `freq` (array): Frequency data.
+- `power` (array): Power data.
+- `filename` (str): Name of the input file.
+- `center` (float, optional): Center frequency (default: `0`).
+- `out` (str, optional): Output directory.
+
+#### Workflow:
+1. Combines frequency, power, and dBm values into a single array.
+2. Saves the data to a `.csv` file with a timestamped filename.
 
 ---
 
-#### `worker(task_queue, processed_files, tracking_file_path, lframes, nframes, output_path, n_avg, zoom_center, www_path)`
-Processes files from the queue in a separate thread.
+### `read_masterfile(master_filename)`
+Reads a list of filenames from a master file.
 
 #### Parameters:
-- `task_queue` (Queue): Queue containing files to process.
-- `processed_files` (set): Set of already processed files.
-- `tracking_file_path` (str): Path to the TOML file tracking processed files.
-- `lframes` (int): Length of each frame.
-- `nframes` (int): Number of frames to process.
-- `output_path` (str): Directory to save processed files.
-- `n_avg` (int): Number of frames to average.
-- `zoom_center` (float): Center frequency for zoomed spectrograms.
-- `www_path` (str): Directory to copy files for web access.
-
----
-
-### File Tracking
-
-#### `load_processed_files(tracking_file_path)`
-Loads the list of processed files from a TOML file.
-
-#### Parameters:
-- `tracking_file_path` (str): Path to the TOML file.
+- `master_filename` (str): Path to the master file.
 
 #### Returns:
-- `set`: Set of processed files.
+- `list`: List of filenames.
 
 ---
 
-#### `save_processed_files(processed, tracking_file_path)`
-Saves the list of processed files to a TOML file.
+### `create_exp_spectrum_csv(filename, time, skip, binning, out=None, fft=None)`
+Processes a single file and saves the spectrum data as a `.csv` file.
 
 #### Parameters:
-- `processed` (set): Set of processed files.
-- `tracking_file_path` (str): Path to the TOML file.
+- `filename` (str): Name of the input file.
+- `time` (float): Duration of the analysis (in seconds).
+- `skip` (float): Time to skip at the beginning of the file (in seconds).
+- `binning` (int): Number of frequency bins.
+- `out` (str, optional): Output directory.
+- `fft` (str, optional): FFT method to use.
 
 ---
 
-### Spectrogram Plotting
-
-#### `plot_and_save_spectrogram(xx, yy, zz, filename, span=None)`
-Generates and saves a spectrogram plot.
+### `create_exp_spectrum_npz(filename, time, skip, binning, out=None, fft=None)`
+Processes a single file and saves the spectrum data as a `.npz` file.
 
 #### Parameters:
-- `xx` (array): Frequency data.
-- `yy` (array): Time data.
-- `zz` (array): Power data.
-- `filename` (str): Name of the output file.
-- `span` (float, optional): Frequency span for zoomed plots.
+- `filename` (str): Name of the input file.
+- `time` (float): Duration of the analysis (in seconds).
+- `skip` (float): Time to skip at the beginning of the file (in seconds).
+- `binning` (int): Number of frequency bins.
+- `out` (str, optional): Output directory.
+- `fft` (str, optional): FFT method to use.
 
 ---
 
-#### `average_spectrogram(xx, yy, zz, n_avg)`
-Averages the spectrogram data over a specified number of frames.
+### `main()`
+Main function to parse command-line arguments and process files.
 
-#### Parameters:
-- `xx` (array): Frequency data.
-- `yy` (array): Time data.
-- `zz` (array): Power data.
-- `n_avg` (int): Number of frames to average.
-
-#### Returns:
-- Averaged spectrogram data.
-
----
-
-### Configuration
-
-#### `load_config_file(configfile)`
-Loads and validates a TOML configuration file.
-
-#### Parameters:
-- `configfile` (str): Path to the TOML configuration file.
-
-#### Returns:
-- `dict`: Configuration dictionary.
-
----
-
-### Main Workflow
-
-#### `main(folder_path, tracking_file_path, num_threads, nframes, lframes, output_path, n_avg, zoom_center, www_path)`
-Main function to initialize and run the file processing workflow.
-
-#### Parameters:
-- `folder_path` (str): Directory to monitor for `.tiq` files.
-- `tracking_file_path` (str): Path to the TOML file tracking processed files.
-- `num_threads` (int): Number of threads for processing files.
-- `nframes` (int): Number of frames to process.
-- `lframes` (int): Length of each frame.
-- `output_path` (str): Directory to save processed files.
-- `n_avg` (int): Number of frames to average.
-- `zoom_center` (float): Center frequency for zoomed spectrograms.
-- `www_path` (str): Directory to copy files for web access.
+#### Workflow:
+1. Parses command-line arguments using `argparse`.
+2. Validates the output directory.
+3. Processes files:
+   - If a master file (`.txt`) is provided, processes all files listed in it.
+   - Otherwise, processes individual files.
+4. Saves the results in `.npz` format.
 
 ---
 
 ## Command-Line Interface
 
-The `datacrunch.py` module can be executed as a standalone script. It accepts the following command-line arguments:
+The `__main__.py` module can be executed as a standalone script. It accepts the following command-line arguments:
 
 ### Arguments:
-- `--folder_path` (str): Path to the folder containing `.tiq` files.
-- `--tracking_file_path` (str): Path to the TOML file tracking processed files.
-- `--output_path` (str): Directory to save processed files.
-- `--www_path` (str): Directory to copy files for web access.
-- `--num_threads` (int): Number of threads to use for processing files.
-- `--lframes` (int): Length of each frame.
-- `--nframes` (int): Number of frames to process.
-- `--n_avg` (int): Number of frames to average.
-- `--zoom_center` (float): Center frequency for zoomed spectrograms.
-- `--config` (str): Path to the TOML configuration file.
+
+#### Main Arguments:
+- `filename` (str): Name of the input file(s) or a master file containing a list of filenames.
+
+#### Data Processing Arguments:
+- `-t`, `--time` (float): Duration of the analysis (in seconds).
+- `-s`, `--skip` (float): Time to skip at the beginning of the file (in seconds).
+- `-b`, `--binning` (int): Number of frequency bins (e.g., `1024`).
+- `-ts`, `--timesize` (float): Size of the time bin (in seconds).
+- `-m`, `--method` (str): FFT method to use (`npfft`, `fftw`, `welch`, `mtm`). Default: `npfft`.
+
+#### Fancy Arguments:
+- `-o`, `--outdir` (str): Output directory. Default: current working directory.
+- `-v`, `--verbose`: Increases output verbosity.
+
+---
 
 ### Example Usage:
+
+#### Process a Single File:
 ```bash
-python [datacrunch.py](http://_vscodecontentref_/3) --config config.toml
-```
+python -m prerionid --filename data.iq --time 60 --skip 10 --binning 1024 --outdir ./output
