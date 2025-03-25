@@ -48,7 +48,7 @@ plugins:
 
 nav:
   - Main page: index.md
-  - Prerionid:
+  - preRionID:
     - __main__: prerionid/__main__.md
     - datacrunch: prerionid/datacrunch.md
     - e0018: prerionid/e0018.md
