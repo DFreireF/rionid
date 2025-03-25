@@ -41,11 +41,6 @@ pyqtgraph = "*"
 toml = "*"
 watchdog = "*"
 
-# Git dependencies
-iqtools = { git = "https://github.com/xaratustrah/iqtools.git",  develop = true}
-barion = { git = "https://github.com/xaratustrah/barion.git",  develop = true}
-#lisereader = { git = "https://github.com/gwgwhc/lisereader.git",  develop = true}
-
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
 black = "*"

@@ -27,11 +27,12 @@ jobs:
       - name: Enable Poetry dynamic versioning
         run: poetry self add poetry-dynamic-versioning
 
-      - name: Pre-install lisereader in editable mode with pip
+      - name: Install Git Dependencies
         run: |
           pip install numpy setuptools wheel
+          pip install git+https://github.com/xaratustrah/iqtools.git
+          pip install git+https://github.com/xaratustrah/barion.git
           pip install --no-build-isolation git+https://github.com/gwgwhc/lisereader.git
-
 
       - name: Install dependencies
         run: poetry install --no-root
