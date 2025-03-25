@@ -8,6 +8,7 @@ readme = "README.md"
 homepage = "https://dfreiref.github.io/rionid/"
 repository = "https://github.com/DFreireF/rionid"
 keywords = ["Physics", "Data", "Time series", "Data analysis"]
+python = "^3.12"
 
 packages = [
     { include = "rionid" },
