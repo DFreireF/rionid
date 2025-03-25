@@ -27,9 +27,12 @@ jobs:
       - name: Enable Poetry dynamic versioning
         run: poetry self add poetry-dynamic-versioning
 
-      - name: Pre-install build dependencies for lisereader
-        run: pip install numpy
-        
+      - name: Pre-install lisereader in editable mode with pip
+        run: |
+          pip install numpy
+          pip install --no-build-isolation git+https://github.com/gwgwhc/lisereader.git
+
+
       - name: Install dependencies
         run: poetry install --no-root
 
