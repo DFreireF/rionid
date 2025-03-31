@@ -37,6 +37,8 @@ jobs:
           pip install --no-build-isolation git+https://github.com/gwgwhc/lisereader.git
 
       - name: Install dependencies
+        env:
+          PIP_NO_ISOLATION: 1
         run: poetry install --no-root
 
       - name: Build and publish
