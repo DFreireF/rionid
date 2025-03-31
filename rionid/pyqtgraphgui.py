@@ -134,6 +134,7 @@ class CreatePyGUI(QMainWindow):
 
             self.legend.addItem(line, f'Harmonic = {float(harmonic)} ; Bρ = {data.brho:.6f} [Tm].')
             
+    
     def get_z_exp_at_freq(self, freq, freq_range):
         # Check if self.x_exp and self.z_exp are not empty
         if len(self.x_exp) == 0 or len(self.z_exp) == 0:
@@ -142,15 +143,19 @@ class CreatePyGUI(QMainWindow):
         # Define the frequency range
         lower_bound = freq - freq_range
         upper_bound = freq + freq_range
-        
+
         # Find indices within the specified frequency range
         indices = (self.x_exp >= lower_bound) & (self.x_exp <= upper_bound)
-        if not np.any(indices):
-            return None
-        
-        # Return the maximum z_exp value within the specified range
-        return np.max(self.z_exp[indices])
-                                                        
+    
+        if np.any(indices):
+            # Return the maximum z_exp value within the specified range
+            return np.max(self.z_exp[indices])
+        else:
+            # If no values in the range, return the z_exp at the closest x_exp to freq
+            closest_index = np.argmin(np.abs(self.x_exp - freq))
+            return self.z_exp[closest_index]
+
+    
     def updateData(self, data):
         print("Updating data in visualization GUI...")
         self.clear_experimental_data()
