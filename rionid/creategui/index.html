@@ -1,0 +1,1815 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Ring-stored ion IDdentification: Library to perform particle identification of a Schottky spectrum.">
+      
+      
+      
+        <link rel="canonical" href="https://DFreireF.github.io/rionid/rionid/creategui/">
+      
+      
+        <link rel="prev" href="../__main__/">
+      
+      
+        <link rel="next" href="../importdata/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.10">
+    
+    
+      
+        <title>creategui - RionID Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#creategui-module" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="RionID Documentation" class="md-header__button md-logo" aria-label="RionID Documentation" data-md-component="logo">
+      
+  <img src="../../img/rionid.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RionID Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              creategui
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="lime"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DFreireF/rionid" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DFreireF/rionid
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="RionID Documentation" class="md-nav__button md-logo" aria-label="RionID Documentation" data-md-component="logo">
+      
+  <img src="../../img/rionid.png" alt="logo">
+
+    </a>
+    RionID Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DFreireF/rionid" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DFreireF/rionid
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Main page
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    preRionID
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            preRionID
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prerionid/__main__/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    __main__
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prerionid/datacrunch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    datacrunch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prerionid/e0018/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    e0018
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prerionid/psdata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    psdata
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prerionid/watcher/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    watcher
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    RionID
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            RionID
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../__main__/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    __main__
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    creategui
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    creategui
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creategui" class="md-nav__link">
+    <span class="md-ellipsis">
+      CreateGUI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CreateGUI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-__init__self-ref_ion-ion_names-ndivs-yield_option-show" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constructor: __init__(self, ref_ion, ion_names, ndivs, yield_option, show)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_viewself-exp_data-simulated_data_dict-filenamespectrum-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      _view(self, exp_data, simulated_data_dict, filename='Spectrum', out='')
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="_view(self, exp_data, simulated_data_dict, filename=&#39;Spectrum&#39;, out=&#39;&#39;)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_canvasself" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_canvas(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_histogramsself-exp_data-simulated_data_dict-filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_histograms(self, exp_data, simulated_data_dict, filename)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="create_histograms(self, exp_data, simulated_data_dict, filename)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#histogram_fillself" class="md-nav__link">
+    <span class="md-ellipsis">
+      histogram_fill(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_xrangesself" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_xranges(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_yscalesself" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_yscales(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_stackself-simulated_data_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_stack(self, simulated_data_dict)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="create_stack(self, simulated_data_dict)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw_histogramsself" class="md-nav__link">
+    <span class="md-ellipsis">
+      draw_histograms(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_legendself-legend" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_legend(self, legend)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_legend(self, legend)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#histogram_formatself-histogram-color-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      histogram_format(self, histogram, color, name)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="histogram_format(self, histogram, color, name)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_labelsself-key-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_labels(self, key, color)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="create_labels(self, key, color)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_peaksself-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_peaks(self, key)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_peaks(self, key)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_peak_labelsself-xpeaks-key-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_peak_labels(self, xpeaks, key, color)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_peak_labels(self, xpeaks, key, color)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_pdfself-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      save_pdf(self, name)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="save_pdf(self, name)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_rootself-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      save_root(self, name)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="save_root(self, name)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Usage
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../importdata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    importdata
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inputtools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    inputtools
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pypeaks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    pypeaks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pyqtgraphgui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    pyqtgraphgui
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    RionID GUI
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            RionID GUI
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rionidgui/__main__/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    __main__
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rionidgui/gui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    gui
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rionidgui/gui_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    gui_controller
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rionidgui/parameter_gui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    parameter_gui
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creategui" class="md-nav__link">
+    <span class="md-ellipsis">
+      CreateGUI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CreateGUI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-__init__self-ref_ion-ion_names-ndivs-yield_option-show" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constructor: __init__(self, ref_ion, ion_names, ndivs, yield_option, show)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_viewself-exp_data-simulated_data_dict-filenamespectrum-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      _view(self, exp_data, simulated_data_dict, filename='Spectrum', out='')
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="_view(self, exp_data, simulated_data_dict, filename=&#39;Spectrum&#39;, out=&#39;&#39;)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_canvasself" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_canvas(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_histogramsself-exp_data-simulated_data_dict-filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_histograms(self, exp_data, simulated_data_dict, filename)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="create_histograms(self, exp_data, simulated_data_dict, filename)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#histogram_fillself" class="md-nav__link">
+    <span class="md-ellipsis">
+      histogram_fill(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_xrangesself" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_xranges(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_yscalesself" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_yscales(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_stackself-simulated_data_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_stack(self, simulated_data_dict)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="create_stack(self, simulated_data_dict)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw_histogramsself" class="md-nav__link">
+    <span class="md-ellipsis">
+      draw_histograms(self)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_legendself-legend" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_legend(self, legend)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_legend(self, legend)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#histogram_formatself-histogram-color-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      histogram_format(self, histogram, color, name)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="histogram_format(self, histogram, color, name)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_labelsself-key-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_labels(self, key, color)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="create_labels(self, key, color)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_peaksself-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_peaks(self, key)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_peaks(self, key)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_peak_labelsself-xpeaks-key-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_peak_labels(self, xpeaks, key, color)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="set_peak_labels(self, xpeaks, key, color)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_pdfself-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      save_pdf(self, name)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="save_pdf(self, name)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_rootself-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      save_root(self, name)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="save_root(self, name)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Usage
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="creategui-module">CreateGUI Module</h1>
+<p>The <code>creategui.py</code> module defines the <code>CreateGUI</code> class, which is responsible for visualizing experimental and simulated data using ROOT histograms. It follows the Model-View-Controller (MVC) design pattern, where this class serves as the <strong>View</strong>.</p>
+<h2 id="class">Class</h2>
+<h3 id="creategui"><code>CreateGUI</code></h3>
+<p>The <code>CreateGUI</code> class provides methods to create, format, and display histograms for experimental and simulated data. It also supports saving the visualizations to files.</p>
+<h4 id="constructor-__init__self-ref_ion-ion_names-ndivs-yield_option-show">Constructor: <code>__init__(self, ref_ion, ion_names, ndivs, yield_option, show)</code></h4>
+<p>Initializes the <code>CreateGUI</code> instance.</p>
+<h4 id="parameters">Parameters:</h4>
+<ul>
+<li><code>ref_ion</code> (str): The reference ion used in the simulation.</li>
+<li><code>ion_names</code> (list): List of ion names to display.</li>
+<li><code>ndivs</code> (int): Number of divisions for the histogram display.</li>
+<li><code>yield_option</code> (int): Determines how the yield is displayed (e.g., scaled or constant height).</li>
+<li><code>show</code> (bool): Whether to display the visualization interactively.</li>
+</ul>
+<hr />
+<h2 id="methods">Methods</h2>
+<h3 id="_viewself-exp_data-simulated_data_dict-filenamespectrum-out"><code>_view(self, exp_data, simulated_data_dict, filename='Spectrum', out='')</code></h3>
+<p>Main method to create and display the visualization.</p>
+<h4 id="workflow">Workflow:</h4>
+<ol>
+<li>Creates ROOT canvases and histograms.</li>
+<li>Fills histograms with experimental and simulated data.</li>
+<li>Sets axis ranges and scales.</li>
+<li>Draws histograms and overlays simulated data on experimental data.</li>
+<li>Displays the visualization interactively or saves it to a file.</li>
+</ol>
+<hr />
+<h3 id="create_canvasself"><code>create_canvas(self)</code></h3>
+<p>Creates ROOT canvases for displaying histograms.</p>
+<hr />
+<h3 id="create_histogramsself-exp_data-simulated_data_dict-filename"><code>create_histograms(self, exp_data, simulated_data_dict, filename)</code></h3>
+<p>Creates histograms for experimental and simulated data.</p>
+<h4 id="parameters_1">Parameters:</h4>
+<ul>
+<li><code>exp_data</code> (array): Experimental data.</li>
+<li><code>simulated_data_dict</code> (dict): Simulated data for each harmonic.</li>
+<li><code>filename</code> (str): Name of the histogram.</li>
+</ul>
+<hr />
+<h3 id="histogram_fillself"><code>histogram_fill(self)</code></h3>
+<p>Fills the histograms with data.</p>
+<hr />
+<h3 id="set_xrangesself"><code>set_xranges(self)</code></h3>
+<p>Divides the x-axis into ranges based on the number of divisions (<code>ndivs</code>).</p>
+<hr />
+<h3 id="set_yscalesself"><code>set_yscales(self)</code></h3>
+<p>Sets the y-axis scales for the histograms, including logarithmic scaling if applicable.</p>
+<hr />
+<h3 id="create_stackself-simulated_data_dict"><code>create_stack(self, simulated_data_dict)</code></h3>
+<p>Creates a stack of histograms for simulated data.</p>
+<h4 id="parameters_2">Parameters:</h4>
+<ul>
+<li><code>simulated_data_dict</code> (dict): Simulated data for each harmonic.</li>
+</ul>
+<hr />
+<h3 id="draw_histogramsself"><code>draw_histograms(self)</code></h3>
+<p>Draws the histograms on the ROOT canvases and overlays simulated data on experimental data.</p>
+<hr />
+<h3 id="set_legendself-legend"><code>set_legend(self, legend)</code></h3>
+<p>Formats the legend for the visualization.</p>
+<h4 id="parameters_3">Parameters:</h4>
+<ul>
+<li><code>legend</code> (TLegend): ROOT legend object.</li>
+</ul>
+<hr />
+<h3 id="histogram_formatself-histogram-color-name"><code>histogram_format(self, histogram, color, name)</code></h3>
+<p>Formats individual histograms.</p>
+<h4 id="parameters_4">Parameters:</h4>
+<ul>
+<li><code>histogram</code> (TH1D/TH1F): ROOT histogram object.</li>
+<li><code>color</code> (int): Color for the histogram.</li>
+<li><code>name</code> (str): Name of the histogram.</li>
+</ul>
+<hr />
+<h3 id="create_labelsself-key-color"><code>create_labels(self, key, color)</code></h3>
+<p>Creates labels for peaks in the histograms.</p>
+<h4 id="parameters_5">Parameters:</h4>
+<ul>
+<li><code>key</code> (str): Key identifying the histogram.</li>
+<li><code>color</code> (int): Color for the labels.</li>
+</ul>
+<hr />
+<h3 id="set_peaksself-key"><code>set_peaks(self, key)</code></h3>
+<p>Finds peaks in the histogram using the <code>FitPeaks</code> class.</p>
+<h4 id="parameters_6">Parameters:</h4>
+<ul>
+<li><code>key</code> (str): Key identifying the histogram.</li>
+</ul>
+<h4 id="returns">Returns:</h4>
+<ul>
+<li><code>list</code>: List of peak positions.</li>
+</ul>
+<hr />
+<h3 id="set_peak_labelsself-xpeaks-key-color"><code>set_peak_labels(self, xpeaks, key, color)</code></h3>
+<p>Adds labels to the peaks in the histogram.</p>
+<h4 id="parameters_7">Parameters:</h4>
+<ul>
+<li><code>xpeaks</code> (list): List of peak positions.</li>
+<li><code>key</code> (str): Key identifying the histogram.</li>
+<li><code>color</code> (int): Color for the labels.</li>
+</ul>
+<hr />
+<h3 id="save_pdfself-name"><code>save_pdf(self, name)</code></h3>
+<p>Saves the visualization as a PDF file.</p>
+<h4 id="parameters_8">Parameters:</h4>
+<ul>
+<li><code>name</code> (str): Name of the output file.</li>
+</ul>
+<hr />
+<h3 id="save_rootself-name"><code>save_root(self, name)</code></h3>
+<p>Saves the visualization as a ROOT file.</p>
+<h4 id="parameters_9">Parameters:</h4>
+<ul>
+<li><code>name</code> (str): Name of the output file.</li>
+</ul>
+<hr />
+<h2 id="dependencies">Dependencies</h2>
+<p>The <code>creategui.py</code> module relies on the following libraries and modules:
+- <strong>ROOT</strong>: For creating and managing histograms and canvases.
+- <strong>Numpy</strong>: For numerical operations.
+- <strong>Datetime</strong>: For timestamping output files.
+- <strong>Barion Modules</strong>:
+  - <code>patternfinder</code>: Provides the <code>PatternFinder</code> class for identifying patterns in data.
+- <strong>RionID Modules</strong>:
+  - <code>pypeaks</code>: Provides the <code>FitPeaks</code> class for peak fitting.</p>
+<hr />
+<h2 id="example-usage">Example Usage</h2>
+<p>The <code>CreateGUI</code> class is typically used to visualize simulation results. Below is an example of how to use it:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">rionid.creategui</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateGUI</span>
+
+<span class="c1"># Example data</span>
+<span class="n">ref_ion</span> <span class="o">=</span> <span class="s2">&quot;72Ge+35&quot;</span>
+<span class="n">ion_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;72Ge+35&quot;</span><span class="p">,</span> <span class="s2">&quot;73Ge+35&quot;</span><span class="p">,</span> <span class="s2">&quot;74Ge+35&quot;</span><span class="p">]</span>
+<span class="n">ndivs</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">yield_option</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">show</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Initialize the GUI</span>
+<span class="n">gui</span> <span class="o">=</span> <span class="n">CreateGUI</span><span class="p">(</span><span class="n">ref_ion</span><span class="p">,</span> <span class="n">ion_names</span><span class="p">,</span> <span class="n">ndivs</span><span class="p">,</span> <span class="n">yield_option</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
+
+<span class="c1"># Example experimental and simulated data</span>
+<span class="n">exp_data</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">simulated_data_dict</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="c1"># Create and display the visualization</span>
+<span class="n">gui</span><span class="o">.</span><span class="n">_view</span><span class="p">(</span><span class="n">exp_data</span><span class="p">,</span> <span class="n">simulated_data_dict</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;Spectrum&quot;</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="s2">&quot;./output/&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; 2023 <a href="https://github.com/DFreireF"  target="_blank" rel="noopener">David Freire Fernández</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DFreireF" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
