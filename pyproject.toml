@@ -33,13 +33,17 @@ npTDMS = "*"
 pyTDMS = "*"
 uproot3 = "*"
 uproot3-methods = "*"
-#fortranformat = "*"
+fortranformat = "*"
 ezodf = "*"
 loguru = "*"
 PyQt5 = "*"
 pyqtgraph = "*"
 toml = "*"
 watchdog = "*"
+# Git dependencies (fetched from GitHub)
+iqtools = { git = "https://github.com/xaratustrah/iqtools.git", rev = "master" }
+barion = { git = "https://github.com/xaratustrah/barion.git", rev = "master" }
+lisereader = { git = "https://github.com/gwgwhc/lisereader.git", rev = "master" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
