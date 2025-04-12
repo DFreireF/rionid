@@ -111,7 +111,8 @@ class CreatePyGUI(QMainWindow):
                 if data.experimental_data is None:  # Check if experimental data is available
                     z_value = yield_value
                 else:
-                    z_value = self.get_z_exp_at_freq(freq, freq_range)
+                    z_value = yield_value
+                    #z_value = self.get_z_exp_at_freq(freq, freq_range)
                 label_color = None
                 # Set label color to yellow if it matches the reference ion
                 if label == refion:

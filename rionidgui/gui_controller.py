@@ -3,7 +3,7 @@ from loguru import logger
 from rionid.importdata import ImportData
 from barion.amedata import AMEData
 
-def import_controller(datafile=None, filep=None, alphap=None, refion=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, value=None, reload_data=None):
+def import_controller(datafile=None, filep=None, alphap=None, refion=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, sim_scalingfactor=None, value=None, reload_data=None):
     try:
         # initializations
         if float(alphap) > 1: alphap = 1/float(alphap)**2 # handling alphap and gammat
@@ -18,7 +18,7 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, harmo
         mydata._calculate_moqs()
         mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = False)
         harmonics = [float(h) for h in harmonics.split()]
-        mydata._simulated_data(brho = brho, harmonics = harmonics, mode = mode) # -> simulated frecs
+        mydata._simulated_data(brho = brho, harmonics = harmonics, mode = mode, sim_scalingfactor = sim_scalingfactor) # -> simulated frecs
         # "Outputs"
         if nions:
             display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)

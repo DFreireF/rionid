@@ -127,7 +127,7 @@ class ImportData(object):
             self.srrf = self.srrf + polyval(array(correct), self.srrf * self.ref_frequency) / self.ref_frequency
 
             
-    def _simulated_data(self, brho = None, harmonics = None, particles = False,mode = None):
+    def _simulated_data(self, brho = None, harmonics = None, particles = False,mode = None, sim_scalingfactor = None):
         for harmonic in harmonics:
             ref_moq = self.moq[self.ref_ion]
             if mode == 'Bρ':
@@ -147,7 +147,10 @@ class ImportData(object):
         
         # We normalize the yield to avoid problems with ranges and printing
         #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
-
+        # If a scaling factor is provided, multiply yield_data by scalingfactor
+        if sim_scalingfactor is not None:
+            self.yield_data *= sim_scalingfactor
+        
         # Get nuclei name for labels
         self.nuclei_names = array([nuclei_name for nuclei_name in self.moq])
         

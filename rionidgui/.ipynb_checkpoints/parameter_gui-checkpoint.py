@@ -35,6 +35,7 @@ class RionID_GUI(QWidget):
                 self.refion_edit.setText(parameters.get('refion', ''))
                 self.circumference_edit.setText(parameters.get('circumference', ''))
                 self.mode_combo.setCurrentText(parameters.get('mode', 'Frequency'))
+                self.sim_scalingfactor_edit.setText(parameters.get('sim_scalingfactor', ''))
                 self.value_edit.setText(parameters.get('value', ''))
                 self.reload_data_checkbox.setChecked(parameters.get('reload_data', True))
                 self.nions_edit.setText(parameters.get('nions', ''))
@@ -51,6 +52,7 @@ class RionID_GUI(QWidget):
             'circumference': self.circumference_edit.text(),
             'mode': self.mode_combo.currentText(),
             'value': self.value_edit.text(),
+            'sim_scalingfactor': self.sim_scalingfactor_edit.text(),
             'reload_data': self.reload_data_checkbox.isChecked(),
             'nions': self.nions_edit.text()
         }
@@ -116,6 +118,11 @@ class RionID_GUI(QWidget):
         self.mode_label.setFont(common_font)
         self.mode_combo.setFont(common_font)
 
+        self.sim_scalingfactor_label = QLabel('sim_scalingfactor')
+        self.sim_scalingfactor_edit = QLineEdit()
+        self.sim_scalingfactor_label.setFont(common_font)
+        self.sim_scalingfactor_edit.setFont(common_font)
+
         self.value_label = QLabel('Value:')
         self.value_edit = QLineEdit()
         self.value_label.setFont(common_font)
@@ -160,12 +167,17 @@ class RionID_GUI(QWidget):
         hbox_mode_value.addWidget(self.mode_combo)
         hbox_mode_value.addWidget(self.value_edit)
         
+        hbox_sim_scalingfactor = QHBoxLayout()
+        hbox_sim_scalingfactor.addWidget(self.sim_scalingfactor_label)
+        hbox_sim_scalingfactor.addWidget(self.sim_scalingfactor_edit)
+        
         self.vbox.addWidget(self.reload_data_checkbox)
         self.vbox.addLayout(hbox_circumference)  # Add orbit length layout to the main layout
         self.vbox.addLayout(hbox_alphap)
         self.vbox.addLayout(hbox_harmonics)
         self.vbox.addLayout(hbox_refion)
         self.vbox.addLayout(hbox_mode_value)
+        self.vbox.addLayout(hbox_sim_scalingfactor)
         
         self.optional_features_group = CollapsibleGroupBox("Optional Features")
         self.optional_features_group.setFont(common_font)
@@ -237,6 +249,7 @@ class RionID_GUI(QWidget):
             refion = self.refion_edit.text()
             circumference = float(self.circumference_edit.text())
             mode = self.mode_combo.currentText()
+            sim_scalingfactor = float(self.sim_scalingfactor_edit.text())
             value = self.value_edit.text()
             reload_data = self.reload_data_checkbox.isChecked()
             nions = self.nions_edit.text()
@@ -249,6 +262,7 @@ class RionID_GUI(QWidget):
                                         nions=nions or None,
                                         circumference=circumference or None,
                                         mode=mode or None,
+                                        sim_scalingfactor=sim_scalingfactor or None,
                                         value=value or None,
                                         reload_data=reload_data or None)
             self.save_parameters()  # Save parameters before running the script
