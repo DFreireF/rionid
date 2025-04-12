@@ -125,12 +125,28 @@ class CreatePyGUI(QMainWindow):
                 # Text label at top
                 text = pg.TextItem(text=label, color=label_color, anchor=(0.5, 0))
                 self.plot_widget.addItem(text)
-
+                # Rotate the label text by 90 degrees
+                text.setAngle(90)
+                # Get the width of the text label
+                text_width_pixels = text.boundingRect().width()
+                # Convert the width from pixels to plot data units
+                # Get the scaling factor for the x-axis using the plot's viewbox
+                view_box = self.plot_widget.plotItem.vb
+                text_width_data_units = view_box.mapSceneToView(pg.QtCore.QPointF(text_width_pixels, 0)).x() - view_box.mapSceneToView(pg.QtCore.QPointF(0, 0)).x()
                 logy_checked = self.plot_widget.plotItem.ctrl.logYCheck.isChecked()
+                
+                # Position the text above the vertical line
                 if logy_checked:
-                    text.setPos(freq, np.log10(z_value) + 0.2)  # Adjust 0.1 as needed for visibility
+                    # Adjust vertical positioning slightly above the line
+                    y_position = np.log10(z_value) + 0.4
                 else:
-                    text.setPos(freq, z_value * 1.05)
+                    y_position = z_value * 1.05                
+                # Shift text horizontally by half of its width to center it above the vertical line
+                x_position = freq - (text_width_data_units*0.2)
+                #x_position = freq
+                # Set the final position for the label
+                text.setPos(x_position, y_position)
+                    
                 self.simulated_items.append((line, text))  # Add as a tuple
 
             self.legend.addItem(line, f'Harmonic = {float(harmonic)} ; Bρ = {data.brho:.6f} [Tm].')
