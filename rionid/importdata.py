@@ -15,10 +15,11 @@ class ImportData(object):
     '''
     Model (MVC)
     '''
-    def __init__(self, refion, alphap, filename = None, reload_data = None, circumference = None):
+    def __init__(self, refion, highlight_ions, alphap, filename = None, reload_data = None, circumference = None):
 
         # Argparser arguments
         self.ref_ion = refion
+        self.highlight_ions = highlight_ions
         self.alphap = alphap
         # Extra objects
         self.ring = Ring('ESR', circumference)

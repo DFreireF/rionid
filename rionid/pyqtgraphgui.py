@@ -99,6 +99,7 @@ class CreatePyGUI(QMainWindow):
     def plot_simulated_data(self, data):
         self.simulated_data = data.simulated_data_dict
         refion = data.ref_ion
+        highlight_ions = data.highlight_ions # Get the list of ions to highlight in green
         for i, (harmonic, sdata) in enumerate(self.simulated_data.items()):
             color = pg.intColor(i, hues=len(self.simulated_data))
             for entry in sdata:
@@ -114,8 +115,12 @@ class CreatePyGUI(QMainWindow):
                     z_value = yield_value
                     #z_value = self.get_z_exp_at_freq(freq, freq_range)
                 label_color = None
-                # Set label color to yellow if it matches the reference ion
-                if label == refion:
+                # If the label is in highlight_ions, set color to green
+                
+                if label in highlight_ions:
+                    label_color = 'green'  # Set to green for highlighted ions
+                    print("chenrj highlight_ions = ",highlight_ions, " label = ",label, " label_color = ",label_color)
+                elif label == refion:
                     label_color = 'yellow'  # If matching, use yellow
                 else:
                     label_color = color  # Otherwise, use the default color
