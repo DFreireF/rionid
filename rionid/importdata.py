@@ -15,10 +15,11 @@ class ImportData(object):
     '''
     Model (MVC)
     '''
-    def __init__(self, refion, alphap, filename = None, reload_data = None, circumference = None):
+    def __init__(self, refion, highlight_ions, alphap, filename = None, reload_data = None, circumference = None):
 
         # Argparser arguments
         self.ref_ion = refion
+        self.highlight_ions = highlight_ions
         self.alphap = alphap
         # Extra objects
         self.ring = Ring('ESR', circumference)
@@ -79,15 +80,17 @@ class ImportData(object):
             raise FileNotFoundError("Cached data file not found. Please set reload_data to True to generate it.")
 
     def _set_particles_to_simulate_from_file(self, particles_to_simulate):
-        
+        print("chenrj _set_particles_to_simulate_from_file1")
         # import ame from barion: # This would be moved somewhere else
         self.ame = AMEData()
+        print("chenrj _set_particles_to_simulate_from_file2")
         self.ame_data = self.ame.ame_table
-        
+        print("chenrj _set_particles_to_simulate_from_file3")
         # Read with lise reader  # Extend lise to read not just lise files? 
         lise = LISEreader(particles_to_simulate)
+        print("chenrj _set_particles_to_simulate_from_file4")
         self.particles_to_simulate = lise.get_info_all()
-
+        print("chenrj _set_particles_to_simulate_from_file5")
     def _calculate_moqs(self, particles = None):
         
         # Calculate the  moq from barion of the particles present in LISE file or of the particles introduced
@@ -125,7 +128,7 @@ class ImportData(object):
             self.srrf = self.srrf + polyval(array(correct), self.srrf * self.ref_frequency) / self.ref_frequency
 
             
-    def _simulated_data(self, brho = None, harmonics = None, particles = False,mode = None):
+    def _simulated_data(self, brho = None, harmonics = None, particles = False,mode = None, sim_scalingfactor = None):
         for harmonic in harmonics:
             ref_moq = self.moq[self.ref_ion]
             if mode == 'Bρ':
@@ -136,7 +139,7 @@ class ImportData(object):
                 self.brho = self.calculate_brho_relativistic(ref_moq, ref_frequency, self.ring.circumference, harmonic) #improve this line
         # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
         self.simulated_data_dict = dict()
-        
+        print("chenrj 1")
         # Set the yield of the particles to simulate
         if particles:
             self.yield_data = array([1 for i in range(len(self.moq))])
@@ -145,7 +148,10 @@ class ImportData(object):
         
         # We normalize the yield to avoid problems with ranges and printing
         #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
-
+        # If a scaling factor is provided, multiply yield_data by scalingfactor
+        if sim_scalingfactor is not None:
+            self.yield_data *= sim_scalingfactor
+        
         # Get nuclei name for labels
         self.nuclei_names = array([nuclei_name for nuclei_name in self.moq])
         

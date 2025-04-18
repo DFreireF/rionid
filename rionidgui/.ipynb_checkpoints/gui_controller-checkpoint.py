@@ -3,7 +3,7 @@ from loguru import logger
 from rionid.importdata import ImportData
 from barion.amedata import AMEData
 
-def import_controller(datafile=None, filep=None, alphap=None, refion=None, highlight_ions=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, sim_scalingfactor=None, value=None, reload_data=None):
+def import_controller(datafile=None, filep=None, alphap=None, refion=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, sim_scalingfactor=None, value=None, reload_data=None):
     try:
         # initializations
         if float(alphap) > 1: alphap = 1/float(alphap)**2 # handling alphap and gammat
@@ -13,7 +13,7 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, highl
         elif mode == 'Kinetic Energy': ke = float(value)
         elif mode == 'Gamma': gam = float(value)
         # Calculations | ImportData library
-        mydata = ImportData(refion, highlight_ions, float(alphap), filename = datafile, reload_data = reload_data, circumference = circumference)
+        mydata = ImportData(refion, float(alphap), filename = datafile, reload_data = reload_data, circumference = circumference)
         mydata._set_particles_to_simulate_from_file(filep)
         mydata._calculate_moqs()
         mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = False)

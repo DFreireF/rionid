@@ -33,7 +33,6 @@ class RionID_GUI(QWidget):
                 self.alphap_edit.setText(parameters.get('alphap', ''))
                 self.harmonics_edit.setText(parameters.get('harmonics', ''))
                 self.refion_edit.setText(parameters.get('refion', ''))
-                self.highlight_ions_edit.setText(parameters.get('highlight_ions', ''))
                 self.circumference_edit.setText(parameters.get('circumference', ''))
                 self.mode_combo.setCurrentText(parameters.get('mode', 'Frequency'))
                 self.sim_scalingfactor_edit.setText(parameters.get('sim_scalingfactor', ''))
@@ -50,7 +49,6 @@ class RionID_GUI(QWidget):
             'alphap': self.alphap_edit.text(),
             'harmonics': self.harmonics_edit.text(),
             'refion': self.refion_edit.text(),
-            'highlight_ions': self.highlight_ions_edit.text(),
             'circumference': self.circumference_edit.text(),
             'mode': self.mode_combo.currentText(),
             'value': self.value_edit.text(),
@@ -114,11 +112,6 @@ class RionID_GUI(QWidget):
         self.refion_label.setFont(common_font)
         self.refion_edit.setFont(common_font)
 
-        self.highlight_ions_label = QLabel('Hightlight ions with format AAEl+QQ (e.g. 72Ge+32):')
-        self.highlight_ions_edit = QLineEdit()
-        self.highlight_ions_label.setFont(common_font)
-        self.highlight_ions_edit.setFont(common_font)
-
         self.mode_label = QLabel('Mode:')
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(['Frequency', 'Bρ', 'Kinetic Energy'])
@@ -165,10 +158,6 @@ class RionID_GUI(QWidget):
         hbox_refion.addWidget(self.refion_label)
         hbox_refion.addWidget(self.refion_edit)
 
-        hbox_highlight_ions = QHBoxLayout()
-        hbox_highlight_ions.addWidget(self.highlight_ions_label)
-        hbox_highlight_ions.addWidget(self.highlight_ions_edit)
-
         hbox_circumference = QHBoxLayout()  # Add layout for orbit length
         hbox_circumference.addWidget(self.circumference_label)
         hbox_circumference.addWidget(self.circumference_edit)
@@ -187,7 +176,6 @@ class RionID_GUI(QWidget):
         self.vbox.addLayout(hbox_alphap)
         self.vbox.addLayout(hbox_harmonics)
         self.vbox.addLayout(hbox_refion)
-        self.vbox.addLayout(hbox_highlight_ions)
         self.vbox.addLayout(hbox_mode_value)
         self.vbox.addLayout(hbox_sim_scalingfactor)
         
@@ -259,7 +247,6 @@ class RionID_GUI(QWidget):
             alphap = float(self.alphap_edit.text())
             harmonics = self.harmonics_edit.text()
             refion = self.refion_edit.text()
-            highlight_ions = self.highlight_ions_edit.text()
             circumference = float(self.circumference_edit.text())
             mode = self.mode_combo.currentText()
             sim_scalingfactor = float(self.sim_scalingfactor_edit.text())
@@ -272,7 +259,6 @@ class RionID_GUI(QWidget):
                                         alphap=alphap or None,
                                         harmonics=harmonics or None,
                                         refion=refion or None,
-                                        highlight_ions=highlight_ions or None,
                                         nions=nions or None,
                                         circumference=circumference or None,
                                         mode=mode or None,

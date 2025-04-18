@@ -99,6 +99,7 @@ class CreatePyGUI(QMainWindow):
     def plot_simulated_data(self, data):
         self.simulated_data = data.simulated_data_dict
         refion = data.ref_ion
+        highlight_ions = data.highlight_ions # Get the list of ions to highlight in green
         for i, (harmonic, sdata) in enumerate(self.simulated_data.items()):
             color = pg.intColor(i, hues=len(self.simulated_data))
             for entry in sdata:
@@ -111,10 +112,15 @@ class CreatePyGUI(QMainWindow):
                 if data.experimental_data is None:  # Check if experimental data is available
                     z_value = yield_value
                 else:
-                    z_value = self.get_z_exp_at_freq(freq, freq_range)
+                    z_value = yield_value
+                    #z_value = self.get_z_exp_at_freq(freq, freq_range)
                 label_color = None
-                # Set label color to yellow if it matches the reference ion
-                if label == refion:
+                # If the label is in highlight_ions, set color to green
+                
+                if label in highlight_ions:
+                    label_color = 'green'  # Set to green for highlighted ions
+                    print("chenrj highlight_ions = ",highlight_ions, " label = ",label, " label_color = ",label_color)
+                elif label == refion:
                     label_color = 'yellow'  # If matching, use yellow
                 else:
                     label_color = color  # Otherwise, use the default color
@@ -124,16 +130,33 @@ class CreatePyGUI(QMainWindow):
                 # Text label at top
                 text = pg.TextItem(text=label, color=label_color, anchor=(0.5, 0))
                 self.plot_widget.addItem(text)
-
+                # Rotate the label text by 90 degrees
+                text.setAngle(90)
+                # Get the width of the text label
+                text_width_pixels = text.boundingRect().width()
+                # Convert the width from pixels to plot data units
+                # Get the scaling factor for the x-axis using the plot's viewbox
+                view_box = self.plot_widget.plotItem.vb
+                text_width_data_units = view_box.mapSceneToView(pg.QtCore.QPointF(text_width_pixels, 0)).x() - view_box.mapSceneToView(pg.QtCore.QPointF(0, 0)).x()
                 logy_checked = self.plot_widget.plotItem.ctrl.logYCheck.isChecked()
+                
+                # Position the text above the vertical line
                 if logy_checked:
-                    text.setPos(freq, np.log10(z_value) + 0.2)  # Adjust 0.1 as needed for visibility
+                    # Adjust vertical positioning slightly above the line
+                    y_position = np.log10(z_value) + 0.4
                 else:
-                    text.setPos(freq, z_value * 1.05)
+                    y_position = z_value * 1.05                
+                # Shift text horizontally by half of its width to center it above the vertical line
+                x_position = freq - (text_width_data_units*0.2)
+                #x_position = freq
+                # Set the final position for the label
+                text.setPos(x_position, y_position)
+                    
                 self.simulated_items.append((line, text))  # Add as a tuple
 
             self.legend.addItem(line, f'Harmonic = {float(harmonic)} ; Bρ = {data.brho:.6f} [Tm].')
             
+    
     def get_z_exp_at_freq(self, freq, freq_range):
         # Check if self.x_exp and self.z_exp are not empty
         if len(self.x_exp) == 0 or len(self.z_exp) == 0:
@@ -142,15 +165,19 @@ class CreatePyGUI(QMainWindow):
         # Define the frequency range
         lower_bound = freq - freq_range
         upper_bound = freq + freq_range
-        
+
         # Find indices within the specified frequency range
         indices = (self.x_exp >= lower_bound) & (self.x_exp <= upper_bound)
-        if not np.any(indices):
-            return None
-        
-        # Return the maximum z_exp value within the specified range
-        return np.max(self.z_exp[indices])
-                                                        
+    
+        if np.any(indices):
+            # Return the maximum z_exp value within the specified range
+            return np.max(self.z_exp[indices])
+        else:
+            # If no values in the range, return the z_exp at the closest x_exp to freq
+            closest_index = np.argmin(np.abs(self.x_exp - freq))
+            return self.z_exp[closest_index]
+
+    
     def updateData(self, data):
         print("Updating data in visualization GUI...")
         self.clear_experimental_data()
