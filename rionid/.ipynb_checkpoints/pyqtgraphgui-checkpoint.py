@@ -131,7 +131,7 @@ class CreatePyGUI(QMainWindow):
                 label_color = None
                 # If the label is in highlight_ions, set color to green
                 
-                if label in highlight_ions:
+                if highlight_ions is not None and label in highlight_ions:
                     label_color = 'green'  # Set to green for highlighted ions
                     print("chenrj highlight_ions = ",highlight_ions, " label = ",label, " label_color = ",label_color)
                 elif label == refion:
