@@ -1,209 +1,209 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0" version="26.1.3">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0" version="26.2.12">
   <diagram name="main()" id="aO4VV1BkPGHHD6uGdVux">
-    <mxGraphModel dx="2236" dy="1002" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2264" dy="1124" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-32" value="Start" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-32" value="Start" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="100" y="20" width="100" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-33" value="Initialize QApplication" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-33" value="Initialize QApplication" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="80" y="100" width="180" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-34" value="Create MainWindow" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-34" value="Create MainWindow" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="80" y="180" width="180" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-35" value="Show MainWindow" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-35" value="Show MainWindow" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="80" y="260" width="180" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-36" value="Enter Qt Loop (app.exec_())" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-36" value="Enter Qt Loop (app.exec_())" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="80" y="340" width="180" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-37" value="Exit" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-37" value="Exit" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="100" y="420" width="100" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-38" value="MainWindow.__init__()" style="swimlane;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-38" value="MainWindow.__init__()" style="swimlane;html=1;" parent="1" vertex="1">
           <mxGeometry x="320" y="60" width="300" height="460" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-39" value="创建 RionID_GUI 面板" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="AuoDzLXZq2x2FkoKTNY2-38">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-39" value="创建 RionID_GUI 面板" style="rounded=1;whiteSpace=wrap;html=1;" parent="AuoDzLXZq2x2FkoKTNY2-38" vertex="1">
           <mxGeometry x="20" y="40" width="260" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-40" value="创建 CreatePyGUI 面板" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="AuoDzLXZq2x2FkoKTNY2-38">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-40" value="创建 CreatePyGUI 面板" style="rounded=1;whiteSpace=wrap;html=1;" parent="AuoDzLXZq2x2FkoKTNY2-38" vertex="1">
           <mxGeometry x="20" y="100" width="260" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-41" value="用 QSplitter 左右布局" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="AuoDzLXZq2x2FkoKTNY2-38">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-41" value="用 QSplitter 左右布局" style="rounded=1;whiteSpace=wrap;html=1;" parent="AuoDzLXZq2x2FkoKTNY2-38" vertex="1">
           <mxGeometry x="20" y="160" width="260" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-42" value="主界面布局 = splitter" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="AuoDzLXZq2x2FkoKTNY2-38">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-42" value="主界面布局 = splitter" style="rounded=1;whiteSpace=wrap;html=1;" parent="AuoDzLXZq2x2FkoKTNY2-38" vertex="1">
           <mxGeometry x="20" y="220" width="260" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-43" value="连接信号：visualization_signal → update_visualization()" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="AuoDzLXZq2x2FkoKTNY2-38">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-43" value="连接信号：visualization_signal → update_visualization()" style="rounded=1;whiteSpace=wrap;html=1;" parent="AuoDzLXZq2x2FkoKTNY2-38" vertex="1">
           <mxGeometry x="20" y="280" width="260" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-45" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-32" target="AuoDzLXZq2x2FkoKTNY2-33">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-45" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-32" target="AuoDzLXZq2x2FkoKTNY2-33" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-46" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-33" target="AuoDzLXZq2x2FkoKTNY2-34">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-46" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-33" target="AuoDzLXZq2x2FkoKTNY2-34" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-47" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-34" target="AuoDzLXZq2x2FkoKTNY2-35">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-47" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-34" target="AuoDzLXZq2x2FkoKTNY2-35" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-48" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-35" target="AuoDzLXZq2x2FkoKTNY2-36">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-48" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-35" target="AuoDzLXZq2x2FkoKTNY2-36" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-49" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-36" target="AuoDzLXZq2x2FkoKTNY2-37">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-49" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-36" target="AuoDzLXZq2x2FkoKTNY2-37" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-50" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-34" target="AuoDzLXZq2x2FkoKTNY2-38">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-50" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-34" target="AuoDzLXZq2x2FkoKTNY2-38" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-51" style="endArrow=block;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-43" target="AuoDzLXZq2x2FkoKTNY2-121">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-51" style="endArrow=block;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-43" target="AuoDzLXZq2x2FkoKTNY2-121" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="650" y="500" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-112" value="User clicks &#39;Run&#39; button" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-112" value="User clicks &#39;Run&#39; button" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="710" y="80" width="200" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-113" value="run_script()\n(inside RionID_GUI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-113" value="run_script()&lt;div&gt;(inside parameter_gui.py)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="700" y="160" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-114" value="Validate input\nPrepare args Namespace\nSave TOML config" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-114" value="Validate input\nPrepare args Namespace\nSave TOML config" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="700" y="240" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-115" value="import_controller(**args)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-115" value="import_controller(**args)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" parent="1" vertex="1">
           <mxGeometry x="700" y="320" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-116" value="emit visualization_signal(data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-116" value="emit visualization_signal(data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" parent="1" vertex="1">
           <mxGeometry x="700" y="400" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-117" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-112" target="AuoDzLXZq2x2FkoKTNY2-113">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-117" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-112" target="AuoDzLXZq2x2FkoKTNY2-113" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-118" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-113" target="AuoDzLXZq2x2FkoKTNY2-114">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-118" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-113" target="AuoDzLXZq2x2FkoKTNY2-114" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-119" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-114" target="AuoDzLXZq2x2FkoKTNY2-115">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-119" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-114" target="AuoDzLXZq2x2FkoKTNY2-115" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-120" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-115" target="AuoDzLXZq2x2FkoKTNY2-116">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-120" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-115" target="AuoDzLXZq2x2FkoKTNY2-116" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-121" value="update_visualization(data)\n(connected via signal)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-121" value="update_visualization(data)\n(connected via signal)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" parent="1" vertex="1">
           <mxGeometry x="700" y="470" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-122" style="endArrow=block;dashed=1;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-116" target="AuoDzLXZq2x2FkoKTNY2-121">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-122" style="endArrow=block;dashed=1;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-116" target="AuoDzLXZq2x2FkoKTNY2-121" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-124" style="endArrow=block;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-115" target="AuoDzLXZq2x2FkoKTNY2-153">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-124" style="endArrow=block;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-115" target="AuoDzLXZq2x2FkoKTNY2-153" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1070" y="70" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-153" value="import_controller(...) (inside gui_controller.py)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-153" value="import_controller(...) (inside gui_controller.py)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" parent="1" vertex="1">
           <mxGeometry x="981" y="60" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-154" value="if alphap &gt; 1: convert to 1/gamma²" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-154" value="if alphap &gt; 1: convert to 1/gamma²" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="981" y="140" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-155" value="Parse mode to fref / brho / ke / gam" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-155" value="Parse mode to fref / brho / ke / gam" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="981" y="220" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-156" value="mydata = ImportData(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-156" value="mydata = ImportData(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" parent="1" vertex="1">
           <mxGeometry x="981" y="300" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-157" value="mydata._set_particles_to_simulate_from_file(filep)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-157" value="mydata._set_particles_to_simulate_from_file(filep)" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="951.5" y="380" width="279" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-158" value="mydata._calculate_moqs()" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-158" value="mydata._calculate_moqs()" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="981" y="460" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-159" value="mydata._calculate_srrf(...)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-159" value="mydata._calculate_srrf(...)" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="981" y="540" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-160" value="mydata._simulated_data(...)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-160" value="mydata._simulated_data(...)" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="981" y="620" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-161" value="if nions: display_nions(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-161" value="if nions: display_nions(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" parent="1" vertex="1">
           <mxGeometry x="981" y="700" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-162" value="save_simulation_results(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-162" value="save_simulation_results(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" parent="1" vertex="1">
           <mxGeometry x="981" y="780" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-163" value="return mydata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-163" value="return mydata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" parent="1" vertex="1">
           <mxGeometry x="981" y="860" width="220" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-164" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-153" target="AuoDzLXZq2x2FkoKTNY2-154">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-164" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-153" target="AuoDzLXZq2x2FkoKTNY2-154" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-165" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-154" target="AuoDzLXZq2x2FkoKTNY2-155">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-165" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-154" target="AuoDzLXZq2x2FkoKTNY2-155" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-166" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-155" target="AuoDzLXZq2x2FkoKTNY2-156">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-166" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-155" target="AuoDzLXZq2x2FkoKTNY2-156" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-167" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-156" target="AuoDzLXZq2x2FkoKTNY2-157">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-167" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-156" target="AuoDzLXZq2x2FkoKTNY2-157" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-168" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-157" target="AuoDzLXZq2x2FkoKTNY2-158">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-168" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-157" target="AuoDzLXZq2x2FkoKTNY2-158" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-169" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-158" target="AuoDzLXZq2x2FkoKTNY2-159">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-169" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-158" target="AuoDzLXZq2x2FkoKTNY2-159" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-170" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-159" target="AuoDzLXZq2x2FkoKTNY2-160">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-170" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-159" target="AuoDzLXZq2x2FkoKTNY2-160" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-171" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-160" target="AuoDzLXZq2x2FkoKTNY2-161">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-171" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-160" target="AuoDzLXZq2x2FkoKTNY2-161" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-172" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-161" target="AuoDzLXZq2x2FkoKTNY2-162">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-172" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-161" target="AuoDzLXZq2x2FkoKTNY2-162" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-173" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-162" target="AuoDzLXZq2x2FkoKTNY2-163">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-173" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-162" target="AuoDzLXZq2x2FkoKTNY2-163" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-186" value="Start _simulated_data()&lt;br&gt;(inside:rionid/importdata.py)" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-186" value="Start _simulated_data()&lt;br&gt;(inside:rionid/importdata.py)" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
           <mxGeometry x="1325" y="620" width="170" height="72.86" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-187" value="Loop over harmonics:\nCalculate brho or use input brho" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-187" value="Loop over harmonics:\nCalculate brho or use input brho" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="1280" y="710" width="260" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-188" value="Initialize self.simulated_data_dict = {}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-188" value="Initialize self.simulated_data_dict = {}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="1280" y="790" width="260" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-189" value="Set self.yield_data:\n - [1,1,...] if particles=True\n - From LISE otherwise" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-189" value="Set self.yield_data:\n - [1,1,...] if particles=True\n - From LISE otherwise" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="1280" y="870" width="260" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-190" value="self.nuclei_names = list of ion names" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-190" value="self.nuclei_names = list of ion names" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="1280" y="960" width="260" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-191" value="Loop over harmonics:\n - Compute harmonic_frequency\n - stack(freq, yield, ion)\n - Save to self.simulated_data_dict" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-191" value="Loop over harmonics:\n - Compute harmonic_frequency\n - stack(freq, yield, ion)\n - Save to self.simulated_data_dict" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="1280" y="1030" width="260" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-192" value="End _simulated_data()" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-192" value="End _simulated_data()" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
           <mxGeometry x="1340" y="1150" width="140" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-193" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-186" target="AuoDzLXZq2x2FkoKTNY2-187">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-193" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-186" target="AuoDzLXZq2x2FkoKTNY2-187" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-194" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-187" target="AuoDzLXZq2x2FkoKTNY2-188">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-194" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-187" target="AuoDzLXZq2x2FkoKTNY2-188" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-195" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-188" target="AuoDzLXZq2x2FkoKTNY2-189">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-195" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-188" target="AuoDzLXZq2x2FkoKTNY2-189" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-196" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-189" target="AuoDzLXZq2x2FkoKTNY2-190">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-196" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-189" target="AuoDzLXZq2x2FkoKTNY2-190" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-197" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-190" target="AuoDzLXZq2x2FkoKTNY2-191">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-197" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-190" target="AuoDzLXZq2x2FkoKTNY2-191" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-198" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-191" target="AuoDzLXZq2x2FkoKTNY2-192">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-198" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-191" target="AuoDzLXZq2x2FkoKTNY2-192" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-199" style="endArrow=block;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-160" target="AuoDzLXZq2x2FkoKTNY2-186">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-199" style="endArrow=block;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-160" target="AuoDzLXZq2x2FkoKTNY2-186" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1220" y="480" as="sourcePoint" />
             <mxPoint x="1281" y="220" as="targetPoint" />
@@ -212,34 +212,34 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-200" value="Call _set_particles_to_simulate_from_file(particles_to_simulate)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-200" value="Call _set_particles_to_simulate_from_file(particles_to_simulate)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" parent="1" vertex="1">
           <mxGeometry x="1280" y="100" width="340" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-201" value="self.ame = AMEData()\nself.ame_data = self.ame.ame_table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-201" value="self.ame = AMEData()\nself.ame_data = self.ame.ame_table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" parent="1" vertex="1">
           <mxGeometry x="1280" y="190" width="340" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-202" value="lise = LISEreader(particles_to_simulate)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-202" value="lise = LISEreader(particles_to_simulate)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" parent="1" vertex="1">
           <mxGeometry x="1280" y="280" width="340" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-203" value="self.particles_to_simulate = lise.get_info_all()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-203" value="self.particles_to_simulate = lise.get_info_all()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" parent="1" vertex="1">
           <mxGeometry x="1280" y="370" width="340" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-204" value="Particle info loaded into self.particles_to_simulate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-204" value="Particle info loaded into self.particles_to_simulate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" parent="1" vertex="1">
           <mxGeometry x="1280" y="460" width="340" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-205" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-200" target="AuoDzLXZq2x2FkoKTNY2-201">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-205" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-200" target="AuoDzLXZq2x2FkoKTNY2-201" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-206" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-201" target="AuoDzLXZq2x2FkoKTNY2-202">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-206" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-201" target="AuoDzLXZq2x2FkoKTNY2-202" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-207" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-202" target="AuoDzLXZq2x2FkoKTNY2-203">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-207" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-202" target="AuoDzLXZq2x2FkoKTNY2-203" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-208" style="endArrow=block;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-203" target="AuoDzLXZq2x2FkoKTNY2-204">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-208" style="endArrow=block;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-203" target="AuoDzLXZq2x2FkoKTNY2-204" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AuoDzLXZq2x2FkoKTNY2-209" style="endArrow=block;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="AuoDzLXZq2x2FkoKTNY2-157" target="AuoDzLXZq2x2FkoKTNY2-200">
+        <mxCell id="AuoDzLXZq2x2FkoKTNY2-209" style="endArrow=block;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="AuoDzLXZq2x2FkoKTNY2-157" target="AuoDzLXZq2x2FkoKTNY2-200" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1230.5" y="420" as="sourcePoint" />
             <mxPoint x="1291.5" y="160" as="targetPoint" />
