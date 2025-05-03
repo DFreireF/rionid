@@ -20,8 +20,8 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, highl
         harmonics = [float(h) for h in harmonics.split()]
         mydata._simulated_data(brho = brho, harmonics = harmonics, mode = mode, sim_scalingfactor = sim_scalingfactor) # -> simulated frecs
         # "Outputs"
-        if nions:
-            display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
+        #if nions:
+        #    display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
         logger.info(f'Simulation results (ordered by frequency) will be saved to simulation_result.out')
         sort_index = argsort(mydata.srrf)
         # Save the results to a file with the specified format
