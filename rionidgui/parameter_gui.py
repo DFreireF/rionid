@@ -403,7 +403,9 @@ class RionID_GUI(QWidget):
                                         value=value or None,
                                         reload_data=reload_data or None,
                                         peak_threshold_pct=peak_threshold_pct,
-                                        min_distance = min_distance)
+                                        min_distance = min_distance,
+                                        output_results=True
+                                     )
             self.save_parameters()  # Save parameters before running the script
             # Simulate controller execution and emit data
             data = import_controller(**vars(args))
@@ -502,8 +504,11 @@ class RionID_GUI(QWidget):
             # Grab and remember the original styles so we can restore them later
             orig_value_style  = self.value_edit.styleSheet()
             orig_alpha_style  = self.alphap_edit.styleSheet()
-            first_iteration = True  # Flag to track the first iteration
-            reload_data = False
+            reload_data = True
+            # Initialize first iteration flag
+            # Initialize first iteration flag
+            first_iteration = True
+            saved_data = None  # Variable to save the first particles_to_simulate
             for f_ref in exp_peaks_hz_filtering:
                 QApplication.processEvents()
                 if self._stop_quick_pid:
@@ -542,9 +547,16 @@ class RionID_GUI(QWidget):
                         value=f_ref,
                         reload_data=reload_data,
                         peak_threshold_pct=peak_threshold_pct,
-                        min_distance=min_distance
+                        min_distance=min_distance,
+                        output_results=False,
+                        saved_data=saved_data
                     )
                     data_i = import_controller(**vars(sim_args))
+                    # First iteration: Perform calculations and save data_i
+                        
+                    end_time1 = time.time()  # Record end time after each iteration
+                    elapsed_time1 = end_time1 - start_time  # Calculate elapsed time for this iteration
+
                     if data_i is None:
                         continue
 
@@ -575,6 +587,9 @@ class RionID_GUI(QWidget):
                     else:
                         chi2 = float('inf')
                     
+                    end_time2 = time.time()  # Record end time after each iteration
+                    elapsed_time2 = end_time2 - end_time1  # Calculate elapsed time for this iteration
+
                     data_i.ref_frequency = f_ref
                     data_i.alphap = test_alphap    
                     data_i.chi2 = chi2  
@@ -586,13 +601,16 @@ class RionID_GUI(QWidget):
                     data_i.highlight_ions = filtered_matches  # where unique_matches is a Python list
                     # Emit for the first iteration only
                     if first_iteration:
-                        self.overlay_sim_signal.emit(data_i)
+                        saved_data = data_i
+                        self.overlay_sim_signal.emit(saved_data)
                         first_iteration = False  # Set flag to False after the first iteration
-
+                    else:
+                        reload_data = False
+ 
                     results.append((f_ref, test_alphap, chi2, match_count,filtered_matches))
-                    end_time = time.time()  # Record end time after each iteration
-                    elapsed_time = end_time - start_time  # Calculate elapsed time for this iteration
-                    print(f"Time for test_alphap {test_alphap:.6f}: {elapsed_time:.4f} seconds")
+                    end_time3 = time.time()  # Record end time after each iteration
+                    elapsed_time3 = end_time3 - end_time2  # Calculate elapsed time for this iteration
+                    print(f"Time for test_alphap {test_alphap:.6f}: {elapsed_time1:.4f} seconds, {elapsed_time2:.4f} seconds, {elapsed_time3:.4f} seconds")
                 
                 sorted_results = sorted(results, key=lambda x: (-x[3], x[2]))
                 best_fref, best_alphap, best_chi2, best_match_count, best_match_ions = sorted_results[0]
@@ -611,7 +629,9 @@ class RionID_GUI(QWidget):
                     value=best_fref,
                     reload_data=reload_data,
                     peak_threshold_pct=peak_threshold_pct,
-                    min_distance=min_distance
+                    min_distance=min_distance,
+                    output_results=True,
+                    saved_data=saved_data
                 )
                 best_data = import_controller(**vars(sim_args))
                 best_data.chi2 = best_chi2  

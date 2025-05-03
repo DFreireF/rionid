@@ -10,6 +10,7 @@ from lisereader.reader import LISEreader
 
 from rionid.inouttools import * 
 from scipy.signal import find_peaks, peak_widths
+import traceback
 
 class ImportData(object):
     '''
@@ -18,6 +19,9 @@ class ImportData(object):
     def __init__(self, refion, highlight_ions, alphap, filename = None, reload_data = None, circumference = None, peak_threshold_pct=None,min_distance=None):
         self.simulated_data_dict = {}  # Make sure this is initialized
         # Argparser arguments
+        self.particles_to_simulate = []  # Default to an empty list
+        self.moq = dict()
+        self.total_mass = dict()  # Initialize the total mass dictionary
         self.ref_ion = refion
         self.highlight_ions = highlight_ions
         self.alphap = alphap
@@ -78,7 +82,6 @@ class ImportData(object):
         rel_height = max(0.0, min(self.peak_threshold_pct , 1.0))
         #peaks, _ = find_peaks(amplitude, height=np.max(amplitude) * rel_height)  # 5% threshold
         min_distance = float(self.min_distance)  # min distance
-        print("chenrj min_distance = ",min_distance)
         peaks, _ = find_peaks(amplitude, height=np.max(amplitude) * rel_height, distance=min_distance)
         # Use peak_widths to calculate the width of the peaks
         widths, width_heights, left_ips, right_ips = peak_widths(amplitude, peaks, rel_height=0.5)
@@ -102,40 +105,32 @@ class ImportData(object):
         else:
             raise FileNotFoundError("Cached data file not found. Please set reload_data to True to generate it.")
 
-    def _set_particles_to_simulate_from_file(self, particles_to_simulate):
-        print("chenrj _set_particles_to_simulate_from_file1")
+    def _set_particles_to_simulate_from_file(self, filep, verbose=None):
         # import ame from barion: # This would be moved somewhere else
         self.ame = AMEData()
-        print("chenrj _set_particles_to_simulate_from_file2")
         self.ame_data = self.ame.ame_table
-        print("chenrj _set_particles_to_simulate_from_file3")
         # Read with lise reader  # Extend lise to read not just lise files? 
-        lise = LISEreader(particles_to_simulate)
-        print("chenrj _set_particles_to_simulate_from_file4")
-        self.particles_to_simulate = lise.get_info_all()
-        print("chenrj _set_particles_to_simulate_from_file5")
+        lise = LISEreader(filep)
+        self.particles_to_simulate = lise.get_info_all(verbose)
+        
     def _calculate_moqs(self, particles = None):
-        
         # Calculate the  moq from barion of the particles present in LISE file or of the particles introduced
-        self.moq = dict()
-        self.total_mass = dict()  # Initialize the total mass dictionary
-        
         if particles:
-            for particle in particles:
-                ion_name = f'{particle.tbl_aa}{particle.tbl_name}+{particle.qq}'
-                m_q = particle.get_ionic_moq_in_u()
-                self.moq[ion_name] = m_q
-                self.total_mass[ion_name] = m_q * particle.qq  # Calculate and store the total mass
+             for particle in particles:
+                 ion_name = f'{particle.tbl_aa}{particle.tbl_name}+{particle.qq}'
+                 m_q = particle.get_ionic_moq_in_u()
+                 self.moq[ion_name] = m_q
+                 self.total_mass[ion_name] = m_q * particle.qq  # Calculate and store the total mass
         else:
-            for particle in self.particles_to_simulate:
-                ion_name = f'{particle[1]}{particle[0]}+{particle[4][0]}'
-                for ame in self.ame_data:
-                    if particle[0] == ame[6] and particle[1] == ame[5]:
-                        pp = Particle(particle[2], particle[3], self.ame, self.ring)
-                        pp.qq = particle[4][0]
-                        m_q = pp.get_ionic_moq_in_u()
-                        self.moq[ion_name] = m_q
-                        self.total_mass[ion_name] = m_q * pp.qq  # Calculate and store the total mass
+             for particle in self.particles_to_simulate:
+                 ion_name = f'{particle[1]}{particle[0]}+{particle[4][0]}'
+                 for ame in self.ame_data:
+                     if particle[0] == ame[6] and particle[1] == ame[5]:
+                         pp = Particle(particle[2], particle[3], self.ame, self.ring)
+                         pp.qq = particle[4][0]
+                         m_q = pp.get_ionic_moq_in_u()
+                         self.moq[ion_name] = m_q
+                         self.total_mass[ion_name] = m_q * pp.qq  # Calculate and store the total mass
 
     def _calculate_srrf(self, moqs = None, fref = None, brho = None, ke = None, gam = None, correct = None):
         if moqs:
@@ -151,55 +146,56 @@ class ImportData(object):
             self.srrf = self.srrf + polyval(array(correct), self.srrf * self.ref_frequency) / self.ref_frequency
 
             
-    def _simulated_data(self, brho = None, harmonics = None, particles = False,mode = None, sim_scalingfactor = None):
-        for harmonic in harmonics:
-            ref_moq = self.moq[self.ref_ion]
-            if mode == 'Bρ':
-                ref_frequency =  self.ref_frequency*harmonic
-                self.brho = brho
-            else:
-                ref_frequency =  self.ref_frequency
-                self.brho = self.calculate_brho_relativistic(ref_moq, ref_frequency, self.ring.circumference, harmonic) #improve this line
-        # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
-        self.simulated_data_dict = dict()
-        # Set the yield of the particles to simulate
-        if particles:
-            self.yield_data = array([1 for i in range(len(self.moq))])
-        else:
-            self.yield_data = array([lise[5] for lise in self.particles_to_simulate])
-        
-        # We normalize the yield to avoid problems with ranges and printing
-        #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
-        # If a scaling factor is provided, multiply yield_data by scalingfactor
-        if sim_scalingfactor is not None:
-            self.yield_data *= sim_scalingfactor
-        
-        # Get nuclei name for labels
-        self.nuclei_names = array([nuclei_name for nuclei_name in self.moq])
-        
-        # Simulate the expected measured frequency for each harmonic:
-        for harmonic in harmonics:
-            simulated_data = array([])
-            array_stack = array([])
-        
-            # get srf data
-            if mode == 'Frequency':
-                harmonic_frequency = self.srrf * self.ref_frequency
-            else:
-                harmonic_frequency = self.srrf * self.ref_frequency * harmonic
-            
-            #print("self.ref_frequency ",self.ref_frequency)
-            #print("self.moq[self.ref_ion] ", self.moq[self.ref_ion])
-            
-            # attach harmonic, frequency, yield data and ion properties together:
-            array_stack = stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
-            simulated_data = append(simulated_data, array_stack)
-        
-            simulated_data = simulated_data.reshape(len(array_stack), 3)
-            name = f'{harmonic}'
-            
-            self.simulated_data_dict[name] = simulated_data
-            
+
+    def _simulated_data(self, brho = None, harmonics = None, particles = False,mode = None, sim_scalingfactor = None, nions = None):
+       for harmonic in harmonics:
+           ref_moq = self.moq[self.ref_ion]
+           if mode == 'Bρ':
+               ref_frequency =  self.ref_frequency*harmonic
+               self.brho = brho
+           else:
+               ref_frequency =  self.ref_frequency
+               self.brho = self.calculate_brho_relativistic(ref_moq, ref_frequency, self.ring.circumference, harmonic) #improve this line
+       # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
+       self.simulated_data_dict = dict()
+       # Set the yield of the particles to simulate
+       if particles:
+           self.yield_data = array([1 for i in range(len(self.moq))])
+       else:
+           self.yield_data = array([lise[5] for lise in self.particles_to_simulate])
+       
+       # We normalize the yield to avoid problems with ranges and printing
+       #yield_data = [yieldd / max(yield_data) for yieldd in yield_data]
+       # If a scaling factor is provided, multiply yield_data by scalingfactor
+       if sim_scalingfactor is not None:
+           self.yield_data *= sim_scalingfactor
+       
+       # Get nuclei name for labels
+       self.nuclei_names = array([nuclei_name for nuclei_name in self.moq])
+       
+       # Simulate the expected measured frequency for each harmonic:
+       for harmonic in harmonics:
+           simulated_data = array([])
+           array_stack = array([])
+       
+           # get srf data
+           if mode == 'Frequency':
+               harmonic_frequency = self.srrf * self.ref_frequency
+           else:
+               harmonic_frequency = self.srrf * self.ref_frequency * harmonic
+           
+           #print("self.ref_frequency ",self.ref_frequency)
+           #print("self.moq[self.ref_ion] ", self.moq[self.ref_ion])
+           
+           # attach harmonic, frequency, yield data and ion properties together:
+           array_stack = stack((harmonic_frequency, self.yield_data, self.nuclei_names), axis=1)  # axis=1 stacks vertically
+           simulated_data = append(simulated_data, array_stack)
+       
+           simulated_data = simulated_data.reshape(len(array_stack), 3)
+           name = f'{harmonic}'
+           
+           self.simulated_data_dict[name] = simulated_data
+           
     def calculate_brho_relativistic(self, moq, frequency, circumference, harmonic):
         """
             Calculate the relativistic magnetic rigidity (Bρ) of an ion.

@@ -2,9 +2,10 @@ from numpy import argsort, where, append
 from loguru import logger
 from rionid.importdata import ImportData
 from barion.amedata import AMEData
-
-def import_controller(datafile=None, filep=None, alphap=None, refion=None, highlight_ions=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, sim_scalingfactor=None, value=None, reload_data=None,peak_threshold_pct = None,min_distance=None):
+import time
+def import_controller(datafile=None, filep=None, alphap=None, refion=None, highlight_ions=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, sim_scalingfactor=None, value=None, reload_data=None,peak_threshold_pct = None,min_distance=None,output_results=None,saved_data = None):
     try:
+        start_time = time.time()  # Record start time for each test_alphap iteration
         # initializations
         if float(alphap) > 1: alphap = 1/float(alphap)**2 # handling alphap and gammat
         fref = brho = ke = gam = None
@@ -14,19 +15,37 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, highl
         elif mode == 'Gamma': gam = float(value)
         # Calculations | ImportData library
         mydata = ImportData(refion, highlight_ions, float(alphap), filename = datafile, reload_data = reload_data, circumference = circumference,peak_threshold_pct=peak_threshold_pct,min_distance=min_distance)
-        mydata._set_particles_to_simulate_from_file(filep)
-        mydata._calculate_moqs()
+        end_time1 = time.time()  # Record end time after each iteration
+        elapsed_time1 = end_time1 - start_time  # Calculate elapsed time for this iteration
+        
+        if reload_data: 
+            mydata._set_particles_to_simulate_from_file(filep,verbose=output_results)
+            mydata._calculate_moqs()
+        else:
+            mydata.ame = saved_data.ame
+            mydata.ame_data = saved_data.ame_data
+            mydata.particles_to_simulate = saved_data.particles_to_simulate
+            mydata.moq = saved_data.moq
+            mydata.total_mass = saved_data.total_mass
+
+        
+
         mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = False)
+
         harmonics = [float(h) for h in harmonics.split()]
-        mydata._simulated_data(brho = brho, harmonics = harmonics, mode = mode, sim_scalingfactor = sim_scalingfactor) # -> simulated frecs
+        mydata._simulated_data(brho = brho, harmonics = harmonics, mode = mode, sim_scalingfactor = sim_scalingfactor, nions = nions) # -> simulated frecs
         # "Outputs"
-        #if nions:
-        #    display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
-        logger.info(f'Simulation results (ordered by frequency) will be saved to simulation_result.out')
+        if nions:
+            display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
+        if output_results:
+            logger.info(f'Simulation results (ordered by frequency) will be saved to simulation_result.out')
         sort_index = argsort(mydata.srrf)
         # Save the results to a file with the specified format
-        save_simulation_results(mydata,mode, harmonics, sort_index)
-        logger.info(f'Succesfully saved!')
+        # Save the results if output_results is True
+        if output_results:
+            save_simulation_results(mydata,mode, harmonics, sort_index)
+            logger.info(f'Succesfully saved!')
+
         return mydata # Returns the simulated spectrum data 
     
     except Exception as e:
