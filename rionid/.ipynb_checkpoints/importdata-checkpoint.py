@@ -11,6 +11,7 @@ from lisereader.reader import LISEreader
 from rionid.inouttools import * 
 from scipy.signal import find_peaks, peak_widths
 import traceback
+from scipy.ndimage import gaussian_filter1d  # or use savgol_filter
 
 class ImportData(object):
     '''
@@ -25,6 +26,7 @@ class ImportData(object):
         self.ref_ion = refion
         self.highlight_ions = highlight_ions
         self.alphap = alphap
+        self.gammat = (1/(alphap))**0.5
         # Extra objects
         self.ring = Ring('ESR', circumference)
         self.ref_charge = int(refion[refion.index('+'):])
@@ -32,6 +34,9 @@ class ImportData(object):
         self.experimental_data = None
         self.brho = 0 
         self.peak_threshold_pct = float(peak_threshold_pct)
+        self.peak_freqs = []
+        self.peak_widths_freq = []
+        self.peak_heights = []
         # Data cache file path
         self.cache_file = self._get_cache_file_path(filename)
         self.chi2= 0
@@ -40,7 +45,6 @@ class ImportData(object):
         # Get the experimental data
         if filename is not None:
             if reload_data:
-                #print("reload_data ", reload_data)
                 self._get_experimental_data(filename)
                 self._save_experimental_data()
             else:
@@ -76,21 +80,45 @@ class ImportData(object):
     def detect_peaks_and_widths(self):
         if self.experimental_data is None:
             return
-        
-        frequency, amplitude = self.experimental_data
-        # Use find_peaks to detect the peaks in the amplitude data with a 5% height threshold
-        rel_height = max(0.0, min(self.peak_threshold_pct , 1.0))
-        #peaks, _ = find_peaks(amplitude, height=np.max(amplitude) * rel_height)  # 5% threshold
-        min_distance = float(self.min_distance)  # min distance
-        peaks, _ = find_peaks(amplitude, height=np.max(amplitude) * rel_height, distance=min_distance)
-        # Use peak_widths to calculate the width of the peaks
-        widths, width_heights, left_ips, right_ips = peak_widths(amplitude, peaks, rel_height=0.5)
+    
+        freq, amp = self.experimental_data
+    
+        # 1) (Optional) smooth the amplitude to suppress high-freq noise
+        amp_smooth = gaussian_filter1d(amp, sigma=2)
+    
+        # 2) set up your thresholds
+        rel_height = max(0.0, min(self.peak_threshold_pct, 1.0))
+        height_thresh = np.max(amp_smooth) * rel_height
+        min_dist    = float(self.min_distance)
+        min_prom    = height_thresh * 0.3      # e.g. at least 30% of your threshold
+        min_w       = 2                         # in samples, adjust to reject narrow spikes
+    
+        # 3) call find_peaks with prominence and minimum width
+        peaks, props = find_peaks(
+            amp_smooth,
+            height=height_thresh,
+            distance=min_dist,
+            prominence=min_prom,
+            width=min_w
+        )
+    
+        # 4) measure “true” half-height widths on the smoothed data
+        widths, width_heights, left_ips, right_ips = peak_widths(
+            amp_smooth, peaks, rel_height=0.5
+        )
+    
+        # 5) convert to frequency units and store results
+        self.peak_freqs       = freq[peaks]
+        self.peak_heights     = amp[peaks]   # use raw amp or amp_smooth[peaks]
+        self.peak_widths_freq = (
+            freq[np.round(right_ips).astype(int)] -
+            freq[np.round(left_ips) .astype(int)]
+        )
+    
+        # optional: inspect what remains
+        print(f"Detected {len(peaks)} peaks after filtering by height={height_thresh:.2g}, "
+              f"prominence>={min_prom:.2g}, width>={min_w} samples.")
 
-        # Calculate the peak frequencies and their corresponding widths (in frequency units)
-        self.peak_freqs = frequency[peaks]
-        self.peak_widths_freq = frequency[np.round(right_ips).astype(int)] - frequency[np.round(left_ips).astype(int)]
-
-        
     def _save_experimental_data(self):
         if self.experimental_data is not None:
             frequency, amplitude_avg = self.experimental_data

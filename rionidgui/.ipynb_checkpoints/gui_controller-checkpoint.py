@@ -28,8 +28,6 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, highl
             mydata.moq = saved_data.moq
             mydata.total_mass = saved_data.total_mass
 
-        
-
         mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = False)
 
         harmonics = [float(h) for h in harmonics.split()]
@@ -40,7 +38,6 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, highl
         if output_results:
             logger.info(f'Simulation results (ordered by frequency) will be saved to simulation_result.out')
         sort_index = argsort(mydata.srrf)
-        # Save the results to a file with the specified format
         # Save the results if output_results is True
         if output_results:
             save_simulation_results(mydata,mode, harmonics, sort_index)

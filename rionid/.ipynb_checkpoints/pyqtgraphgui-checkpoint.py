@@ -95,7 +95,6 @@ class CreatePyGUI(QMainWindow):
         self.x_exp, self.z_exp = self.exp_data[0]*1e-6, self.exp_data[1]
         
         if self.saved_x_range is None:
-            print(" 1.self.saved_x_range is None: ")
             self.saved_x_range = (min(self.x_exp), max(self.x_exp))
             self.plot_widget.setXRange(*self.saved_x_range, padding=0.05)
 
@@ -105,11 +104,30 @@ class CreatePyGUI(QMainWindow):
             if min_z <= 0:
                 # Handle the logarithmic scale by setting the minimum to a small value if necessary
                 min_z = 1e-10  # or some other small positive value
-            print("min_z ",min_z ," max_z = ",max_z)
-
+        
         self.exp_data_line = self.plot_widget.plot(self.x_exp, self.z_exp, pen=pg.mkPen('white', width=3))
         self.legend.addItem(self.exp_data_line, 'Experimental Data')
-
+        
+        # --- Mark each detected peak with a red triangle ---
+        # 1) Convert peak frequencies to MHz and get peak heights
+        peak_x = data.peak_freqs * 1e-6
+        peak_y = data.peak_heights
+    
+        # 2) Plot red triangles at (peak_x, peak_y)
+        self.peak_symbols = self.plot_widget.plot(
+            peak_x,
+            peak_y,
+            pen=None,               # no line
+            symbol='t',             # triangle marker
+            symbolBrush='r',        # red fill
+            symbolSize=12           # size in pixels
+        )
+        self.legend.addItem(self.peak_symbols, 'Peaks')
+    
+        # Optional debug print
+        print("Peak frequencies (MHz):", peak_x)
+        print("Peak heights:", peak_y)
+        
     def plot_simulated_data(self, data):
         self.simulated_data = data.simulated_data_dict
         refion = data.ref_ion
@@ -133,7 +151,6 @@ class CreatePyGUI(QMainWindow):
                 
                 if highlight_ions is not None and label in highlight_ions:
                     label_color = 'green'  # Set to green for highlighted ions
-                    print("chenrj highlight_ions = ",highlight_ions, " label = ",label, " label_color = ",label_color)
                 elif label == refion:
                     label_color = 'yellow'  # If matching, use yellow
                 else:
@@ -174,9 +191,10 @@ class CreatePyGUI(QMainWindow):
                 line,
                 f"reference frequency = {data.ref_frequency:.2f} Hz ; "
                 f"αₚ = {data.alphap:.4f} ; "
+                f"γₜ = {data.gammat:.4f} ; "
                 f"χ² = {data.chi2:.1f} ; "
                 f"match_count = {int(data.match_count)}"
-            )    
+            )            
             # compute threshold
             rel_height = getattr(data, 'peak_threshold_pct', 0.05)
             rel_height = max(0.0, min(rel_height, 1.0))

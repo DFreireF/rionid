@@ -499,7 +499,6 @@ class RionID_GUI(QWidget):
                 # If peaks are found, reset the background color to normal
                 self.fref_min_edit.setStyleSheet("")
                 self.fref_max_edit.setStyleSheet("")
-            # Outer loop over each experimental peak frequency
                    
             # Grab and remember the original styles so we can restore them later
             orig_value_style  = self.value_edit.styleSheet()
@@ -551,11 +550,6 @@ class RionID_GUI(QWidget):
                         saved_data=saved_data
                     )
                     data_i = import_controller(**vars(sim_args))
-                    # First iteration: Perform calculations and save data_i
-                        
-                    end_time1 = time.time()  # Record end time after each iteration
-                    elapsed_time1 = end_time1 - start_time  # Calculate elapsed time for this iteration
-
                     if data_i is None:
                         continue
 
@@ -579,16 +573,13 @@ class RionID_GUI(QWidget):
                             match_count += 1
                             # record the matched ion's name
                             matched_ions.append(sim_items[idx][1])
-
+                    
                     # Normalize chi2 by number of matches
                     if match_count > 0:
                         chi2 /= match_count
                     else:
                         chi2 = float('inf')
-                    
-                    end_time2 = time.time()  # Record end time after each iteration
-                    elapsed_time2 = end_time2 - end_time1  # Calculate elapsed time for this iteration
-
+                        
                     data_i.ref_frequency = f_ref
                     data_i.alphap = test_alphap    
                     data_i.chi2 = chi2  
@@ -607,12 +598,11 @@ class RionID_GUI(QWidget):
                         reload_data = False
  
                     results.append((f_ref, test_alphap, chi2, match_count,filtered_matches))
-                    end_time3 = time.time()  # Record end time after each iteration
-                    elapsed_time3 = end_time3 - end_time2  # Calculate elapsed time for this iteration
-                    print(f"Time for test_alphap {test_alphap:.6f}: {elapsed_time1:.4f} seconds, {elapsed_time2:.4f} seconds, {elapsed_time3:.4f} seconds")
-                
+                    del data_i  # Clear memory by deleting data_i after each iteration
+
                 sorted_results = sorted(results, key=lambda x: (-x[3], x[2]))
                 best_fref, best_alphap, best_chi2, best_match_count, best_match_ions = sorted_results[0]
+                
                 # Run simulation for this combination
                 sim_args = argparse.Namespace(
                     datafile=datafile,
@@ -633,6 +623,7 @@ class RionID_GUI(QWidget):
                     saved_data=saved_data
                 )
                 best_data = import_controller(**vars(sim_args))
+                
                 best_data.chi2 = best_chi2  
                 best_data.match_count = best_match_count 
                 # turn your list of matches into a comma‐string, unique them
@@ -640,7 +631,7 @@ class RionID_GUI(QWidget):
                 filtered_matches = [ion for ion in unique_matches if ion != refion]
                 new_highlight_str = ",".join(filtered_matches)
                 best_data.highlight_ions = filtered_matches  # where unique_matches is a Python list
-
+                
                 print(f"\n→ Best: f_ref={best_fref:.2f}Hz, alphap={best_alphap:.4f}, χ²={best_chi2:.3e}, matches={best_match_count} {best_match_ions}")
                 self.value_edit.setText(f"{best_fref:.2f}")
                 self.alphap_edit.setText(f"{best_alphap:.6f}")
@@ -652,7 +643,7 @@ class RionID_GUI(QWidget):
                 
                 # after inner loop, restore alphap style
                 self.alphap_edit.setStyleSheet(orig_alpha_style)
-                    
+                
                 # after outer loop, restore value style
             self.value_edit.setStyleSheet(orig_value_style)
             self.save_parameters()  # Save parameters before running the script

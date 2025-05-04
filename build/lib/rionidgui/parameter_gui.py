@@ -506,7 +506,6 @@ class RionID_GUI(QWidget):
             orig_alpha_style  = self.alphap_edit.styleSheet()
             reload_data = True
             # Initialize first iteration flag
-            # Initialize first iteration flag
             first_iteration = True
             saved_data = None  # Variable to save the first particles_to_simulate
             for f_ref in exp_peaks_hz_filtering:
@@ -610,8 +609,8 @@ class RionID_GUI(QWidget):
                     results.append((f_ref, test_alphap, chi2, match_count,filtered_matches))
                     end_time3 = time.time()  # Record end time after each iteration
                     elapsed_time3 = end_time3 - end_time2  # Calculate elapsed time for this iteration
-                    print(f"Time for test_alphap {test_alphap:.6f}: {elapsed_time1:.4f} seconds, {elapsed_time2:.4f} seconds, {elapsed_time3:.4f} seconds")
-                
+                    del data_i  # Clear memory by deleting data_i after each iteration
+
                 sorted_results = sorted(results, key=lambda x: (-x[3], x[2]))
                 best_fref, best_alphap, best_chi2, best_match_count, best_match_ions = sorted_results[0]
                 # Run simulation for this combination
@@ -653,7 +652,7 @@ class RionID_GUI(QWidget):
                 
                 # after inner loop, restore alphap style
                 self.alphap_edit.setStyleSheet(orig_alpha_style)
-                    
+                
                 # after outer loop, restore value style
             self.value_edit.setStyleSheet(orig_value_style)
             self.save_parameters()  # Save parameters before running the script
