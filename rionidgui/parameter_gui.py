@@ -506,7 +506,6 @@ class RionID_GUI(QWidget):
             orig_alpha_style  = self.alphap_edit.styleSheet()
             reload_data = True
             # Initialize first iteration flag
-            # Initialize first iteration flag
             first_iteration = True
             saved_data = None  # Variable to save the first particles_to_simulate
             for f_ref in exp_peaks_hz_filtering:
