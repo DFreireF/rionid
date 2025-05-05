@@ -12,6 +12,7 @@ from rionid.inouttools import *
 from scipy.signal import find_peaks, peak_widths
 import traceback
 from scipy.ndimage import gaussian_filter1d  # or use savgol_filter
+from scipy.signal import savgol_filter
 
 class ImportData(object):
     '''
@@ -37,6 +38,7 @@ class ImportData(object):
         self.peak_freqs = []
         self.peak_widths_freq = []
         self.peak_heights = []
+        self.gammats = []
         # Data cache file path
         self.cache_file = self._get_cache_file_path(filename)
         self.chi2= 0
@@ -52,6 +54,123 @@ class ImportData(object):
         else:
             print("No experimental data file provided. Using default or simulated data.")
             self.experimental_data = None  # Set empty or simulated data here
+
+    def compute_matches(self, threshold):
+        '''
+        Match the experimental peaks in self.peak_freqs against the simulated spectrum:
+        - Compute chi2 and match_count
+        - Deduplicate matched ions and filter out the reference ion, then update self.highlight_ions
+        Returns (chi2, match_count, self.highlight_ions)
+        '''
+        # Build list of (frequency, ion_name) tuples from the simulated data
+        sim_items = []
+        for sdata in self.simulated_data_dict.values():
+            for row in sdata:
+                sim_items.append((float(row[0]), row[2]))
+        sim_freqs = np.array([freq for freq, _ in sim_items])
+    
+        # Initialize chi-squared and match counter
+        chi2 = 0.0
+        match_count = 0
+    
+        # Prepare lists to store detailed match information
+        matched_ions           = []
+        matched_sim_items      = []
+        matched_sim_freqs      = []
+        matched_exp_freqs      = []
+        matched_peak_widths    = []
+        matched_peak_heights   = []
+    
+        # Iterate over each experimental peak frequency, width, and height
+        for exp_freq, width, height in zip(self.peak_freqs, self.peak_widths_freq, self.peak_heights):
+            # Find the index of the closest simulated frequency
+            idx = np.argmin(np.abs(sim_freqs - exp_freq))
+            diff = abs(sim_freqs[idx] - exp_freq)
+            if diff <= threshold:
+                # Update chi-squared and match count
+                chi2 += diff**2
+                match_count += 1
+    
+                # Record matched information
+                matched_ions.append(sim_items[idx][1])
+                matched_sim_items.append(sim_items[idx])
+                matched_sim_freqs.append(sim_freqs[idx])
+                matched_exp_freqs.append(exp_freq)
+                matched_peak_widths.append(width)
+                matched_peak_heights.append(height)
+    
+        # Normalize chi-squared if any matches were found
+        chi2 = chi2 / match_count if match_count > 0 else float('inf')
+    
+        # Deduplicate matched ions and exclude the reference ion
+        unique_ions = sorted(set(matched_ions))
+        filtered_ions = [ion for ion in unique_ions if ion != self.ref_ion]
+    
+        # Update instance attributes with summary results
+        self.chi2           = chi2
+        self.match_count    = match_count
+        self.highlight_ions = filtered_ions
+        # Also store detailed match data for further analysis
+        self.matched_ions         = matched_ions
+        self.matched_sim_items    = matched_sim_items
+        self.matched_sim_freqs    = matched_sim_freqs
+        self.matched_exp_freqs    = matched_exp_freqs
+        self.matched_peak_widths  = matched_peak_widths
+        self.matched_peak_heights = matched_peak_heights
+        return chi2, match_count, filtered_ions
+    
+    def save_matched_result(self, output_file='best_match_details.csv'):
+        """
+        1) Compute γₜ for each matched ion by pairing it with its nearest‐frequency neighbor.
+        2) Write all matched data plus computed γₜ into a CSV.
+        Returns:
+            list: self.gammats
+        """
+        # 1) Initialize gamma list
+        self.gammats = []
+    
+        # 2) Prepare arrays for neighbor search
+        ions      = self.matched_ions
+        exp_freqs = np.array(self.matched_exp_freqs)
+        moqs      = np.array([self.moq[ion] for ion in ions])
+    
+        # 3) For each ion, find its closest-frequency neighbor and compute gamma_t
+        for i, (ion_i, f_i, moq_i) in enumerate(zip(ions, exp_freqs, moqs)):
+            # Compute abs differences, ignore self
+            diffs = np.abs(exp_freqs - f_i)
+            diffs[i] = np.inf
+            j        = np.argmin(diffs)
+            f_ref    = exp_freqs[j]
+            moq_ref  = moqs[j]
+    
+            # Formula:
+            #   –(f_i – f_ref)/f_ref = (1/γ_t²) * ((moq_i – moq_ref)/moq_ref)
+            num   = abs(moq_i   - moq_ref) / moq_ref
+            denom = abs(f_i     - f_ref)   / f_ref
+            gamma_t = np.sqrt(num/denom) if num>0 and denom>0 else np.nan
+    
+            self.gammats.append(gamma_t)
+    
+        # 4) Write CSV including gamma_t column
+        with open(output_file, 'w', newline='') as f:
+            f.write('ion_name,sim_freq[Hz],exp_freq[Hz],'
+                    'peak_width[Hz],peak_height,'
+                    'm/q,gamma_t\n')
+            for ion, sim_f, exp_f, w, h, gt in zip(
+                self.matched_ions,
+                self.matched_sim_freqs,
+                self.matched_exp_freqs,
+                self.matched_peak_widths,
+                self.matched_peak_heights,
+                self.gammats
+            ):
+                moq = self.moq[ion]
+                f.write(f"{ion},{sim_f:.2f},{exp_f:.2f},"
+                        f"{w:.2f},{h:.6f},"
+                        f"{moq:.12f},{gt:.6f}\n")
+    
+        print(f"Detailed match data saved to '{output_file}'")
+        return self.gammats
 
     def _get_cache_file_path(self, filename):
         base, _ = os.path.splitext(filename)
@@ -82,9 +201,10 @@ class ImportData(object):
             return
     
         freq, amp = self.experimental_data
-    
+        baseline = savgol_filter(amp, window_length=201, polyorder=3)
+        amp_corr = amp - baseline
         # 1) (Optional) smooth the amplitude to suppress high-freq noise
-        amp_smooth = gaussian_filter1d(amp, sigma=2)
+        amp_smooth = gaussian_filter1d(amp_corr, sigma=2)
     
         # 2) set up your thresholds
         rel_height = max(0.0, min(self.peak_threshold_pct, 1.0))

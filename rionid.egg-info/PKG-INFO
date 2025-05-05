@@ -1,4 +1,4 @@
-Metadata-Version: 2.4
+Metadata-Version: 2.2
 Name: rionid
 Version: 5.2.1
 Summary: Ringed Ions IDentification
@@ -16,7 +16,6 @@ Classifier: Intended Audience :: Science/Research
 Requires-Python: <4,>=3.7
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Dynamic: license-file
 
 # RionID (Ringed IONs IDentification) Usage Guide
 [![documentation](https://img.shields.io/badge/docs-mkdocs%20material-blue.svg?style=flat)](https://DFreireF.github.io/rionid)[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8169341.svg)](https://doi.org/10.5281/zenodo.8169341)

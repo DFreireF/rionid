@@ -78,11 +78,13 @@ class CreatePyGUI(QMainWindow):
         self.add_buttons(main_layout)
     
     def plot_all_data(self, data):
+        print("plotting all data...")
         self.plot_widget.clear()
         self.plot_experimental_data(data)
         self.plot_simulated_data(data)
 
     def plot_experimental_data(self, data):
+        print("plotting experimental data...")
         if data.experimental_data is None:  # Check if experimental data is available
             print("No experimental data available, skipping experimental data plotting.")
             return  # Skip plotting experimental data
@@ -123,12 +125,9 @@ class CreatePyGUI(QMainWindow):
             symbolSize=12           # size in pixels
         )
         self.legend.addItem(self.peak_symbols, 'Peaks')
-    
-        # Optional debug print
-        print("Peak frequencies (MHz):", peak_x)
-        print("Peak heights:", peak_y)
         
     def plot_simulated_data(self, data):
+        print("plotting simulated data...")
         self.simulated_data = data.simulated_data_dict
         refion = data.ref_ion
         highlight_ions = data.highlight_ions # Get the list of ions to highlight in green
@@ -159,7 +158,7 @@ class CreatePyGUI(QMainWindow):
                 # Vertical line
                 line = self.plot_widget.plot([freq, freq], [1e-10, z_value], pen=pg.mkPen(color=label_color, width=1, style = Qt.DashLine ))
                 # Text label at top
-                text = pg.TextItem(text=label, color=label_color, anchor=(0.5, 0))
+                text = pg.TextItem(text=label, color=label_color, anchor=(0,0.5))
                 self.plot_widget.addItem(text)
                 # Rotate the label text by 90 degrees
                 text.setAngle(90)
@@ -174,12 +173,12 @@ class CreatePyGUI(QMainWindow):
                 # Position the text above the vertical line
                 if logy_checked:
                     # Adjust vertical positioning slightly above the line
-                    y_position = np.log10(z_value) + 0.4
+                    y_position = np.log10(z_value)
                 else:
-                    y_position = z_value * 1.05                
+                    y_position = z_value                
                 # Shift text horizontally by half of its width to center it above the vertical line
-                x_position = freq - (text_width_data_units*0.2)
-                #x_position = freq
+                #x_position = freq - (text_width_data_units*0.2)
+                x_position = freq
                 # Set the final position for the label
                 text.setPos(x_position, y_position)
                     
@@ -198,8 +197,11 @@ class CreatePyGUI(QMainWindow):
             # compute threshold
             rel_height = getattr(data, 'peak_threshold_pct', 0.05)
             rel_height = max(0.0, min(rel_height, 1.0))
-            threshold_val = rel_height * np.max(self.z_exp)
-
+            #threshold_val = rel_height * np.max(self.z_exp)
+            if hasattr(self, 'z_exp') and self.z_exp is not None:
+                threshold_val = rel_height * np.max(self.z_exp)
+            else:
+                threshold_val = 0.01            
             # choose the correct "pos" depending on linear vs. log mode
             if self.plot_widget.plotItem.ctrl.logYCheck.isChecked():
                 pos = np.log10(threshold_val)
@@ -215,11 +217,15 @@ class CreatePyGUI(QMainWindow):
         
             # annotate threshold with a TextItem
             # place it at left edge, at threshold height
-            x0 = self.saved_x_range[0]
+            if self.saved_x_range is not None:
+                x0 = self.saved_x_range[0]
+            else:
+                # 处理 saved_x_range 为空的情形，比如设一个默认值
+                x0 = 0        
             self.threshold_label_item = pg.TextItem(
-                html=f'<span style="color:blue;">Threshold = {rel_height*1:.1e}</span>',
-                anchor=(0, 1)
-            )
+                        html=f'<span style="color:blue;">Threshold = {rel_height*1:.1e}</span>',
+                        anchor=(0, 1)
+                    )
             self.threshold_label_item.setPos(x0, pos)
             self.plot_widget.addItem(self.threshold_label_item)
 

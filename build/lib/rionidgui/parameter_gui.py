@@ -248,7 +248,17 @@ class RionID_GUI(QWidget):
         hbox_peak_min_distance.addWidget(self.min_distance_label)
         hbox_peak_min_distance.addWidget(self.min_distance_edit)
         self.vbox.addLayout(hbox_peak_min_distance)
-         
+
+        # Matching threshold
+        hbox_threshold = QHBoxLayout()
+        self.threshold_label = QLabel('Matching threshold (Hz):')
+        self.threshold_label.setFont(common_font)
+        self.threshold_edit  = QLineEdit()
+        self.threshold_edit.setFont(common_font)
+        hbox_threshold.addWidget(self.threshold_label)
+        hbox_threshold.addWidget(self.threshold_edit)
+        self.vbox.addLayout(hbox_threshold)
+        
         self.run_button = QPushButton('Run')
         self.run_button.setStyleSheet("""
             QPushButton {
@@ -282,11 +292,6 @@ class RionID_GUI(QWidget):
         self.alphap_step_label.setFont(common_font)
         self.alphap_step_edit.setFont(common_font)
     
-        # Matching threshold
-        self.threshold_label = QLabel('Matching threshold (Hz):')
-        self.threshold_label.setFont(common_font)
-        self.threshold_edit  = QLineEdit()
-        self.threshold_edit.setFont(common_font)
 
         self.fref_min_label = QLabel('f_ref min (Hz):')
         self.fref_min_label.setFont(common_font)
@@ -316,9 +321,6 @@ class RionID_GUI(QWidget):
         qp_layout.addWidget(self.fref_max_label)
         qp_layout.addWidget(self.fref_max_edit)
         
-        # match threshold
-        qp_layout.addWidget(self.threshold_label)
-        qp_layout.addWidget(self.threshold_edit)
         
         
         # ——— Add 'Run Quick PID' button here ———
@@ -389,6 +391,10 @@ class RionID_GUI(QWidget):
             value = self.value_edit.text()
             reload_data = self.reload_data_checkbox.isChecked()
             nions = self.nions_edit.text()
+            try:
+                threshold = float(self.threshold_edit.text())
+            except ValueError:
+                raise ValueError("Please enter a valid number for matching threshold")
 
             args = argparse.Namespace(datafile=datafile,
                                         filep=filep or None,
@@ -410,6 +416,8 @@ class RionID_GUI(QWidget):
             # Simulate controller execution and emit data
             data = import_controller(**vars(args))
             if data:
+                best_chi2, best_match_count, best_match_ions = data.compute_matches(threshold)
+                data.save_matched_result()
                 self.visualization_signal.emit(data)        
     
         except Exception as e:
@@ -499,7 +507,6 @@ class RionID_GUI(QWidget):
                 # If peaks are found, reset the background color to normal
                 self.fref_min_edit.setStyleSheet("")
                 self.fref_max_edit.setStyleSheet("")
-            # Outer loop over each experimental peak frequency
                    
             # Grab and remember the original styles so we can restore them later
             orig_value_style  = self.value_edit.styleSheet()
@@ -551,68 +558,23 @@ class RionID_GUI(QWidget):
                         saved_data=saved_data
                     )
                     data_i = import_controller(**vars(sim_args))
-                    # First iteration: Perform calculations and save data_i
-                        
-                    end_time1 = time.time()  # Record end time after each iteration
-                    elapsed_time1 = end_time1 - start_time  # Calculate elapsed time for this iteration
-
                     if data_i is None:
                         continue
-
-                    # Build a flat list of (freq, label) so we can look up the label by index
-                    sim_items = []
-                    for sdata in data_i.simulated_data_dict.values():
-                        # each row is [freq, yield, name]
-                        for row in sdata:
-                            sim_items.append((float(row[0]), row[2]))
-                
-                    sim_freqs = np.array([f for f, _ in sim_items])
-                    # Compute chi-squared and match count
-                    chi2 = 0.0
-                    match_count = 0
-                    matched_ions = []       # <-- new list to accumulate
-                    for f_exp in exp_peaks_hz:
-                        idx  = np.argmin(np.abs(sim_freqs - f_exp))
-                        diff = abs(sim_freqs[idx] - f_exp)
-                        if diff <= threshold:
-                            chi2       += diff**2
-                            match_count += 1
-                            # record the matched ion's name
-                            matched_ions.append(sim_items[idx][1])
-
-                    # Normalize chi2 by number of matches
-                    if match_count > 0:
-                        chi2 /= match_count
-                    else:
-                        chi2 = float('inf')
                     
-                    end_time2 = time.time()  # Record end time after each iteration
-                    elapsed_time2 = end_time2 - end_time1  # Calculate elapsed time for this iteration
-
-                    data_i.ref_frequency = f_ref
-                    data_i.alphap = test_alphap    
-                    data_i.chi2 = chi2  
-                    data_i.match_count = match_count 
-                    # turn your list of matches into a comma‐string, unique them
-                    unique_matches = sorted(set(matched_ions))
-                    filtered_matches = [ion for ion in unique_matches if ion != refion]
-                    new_highlight_str = ",".join(filtered_matches)
-                    data_i.highlight_ions = filtered_matches  # where unique_matches is a Python list
-                    # Emit for the first iteration only
+                    chi2, match_count, highlights = data_i.compute_matches(threshold)
+                    results.append((f_ref, test_alphap, chi2, match_count,highlights))
                     if first_iteration:
                         saved_data = data_i
                         self.overlay_sim_signal.emit(saved_data)
                         first_iteration = False  # Set flag to False after the first iteration
                     else:
                         reload_data = False
- 
-                    results.append((f_ref, test_alphap, chi2, match_count,filtered_matches))
-                    end_time3 = time.time()  # Record end time after each iteration
-                    elapsed_time3 = end_time3 - end_time2  # Calculate elapsed time for this iteration
+                    
                     del data_i  # Clear memory by deleting data_i after each iteration
 
                 sorted_results = sorted(results, key=lambda x: (-x[3], x[2]))
                 best_fref, best_alphap, best_chi2, best_match_count, best_match_ions = sorted_results[0]
+                
                 # Run simulation for this combination
                 sim_args = argparse.Namespace(
                     datafile=datafile,
@@ -633,20 +595,14 @@ class RionID_GUI(QWidget):
                     saved_data=saved_data
                 )
                 best_data = import_controller(**vars(sim_args))
-                best_data.chi2 = best_chi2  
-                best_data.match_count = best_match_count 
-                # turn your list of matches into a comma‐string, unique them
-                unique_matches = sorted(set(best_match_ions))
-                filtered_matches = [ion for ion in unique_matches if ion != refion]
-                new_highlight_str = ",".join(filtered_matches)
-                best_data.highlight_ions = filtered_matches  # where unique_matches is a Python list
-
+                best_chi2, best_match_count, best_match_ions = best_data.compute_matches(threshold)
+                best_data.save_matched_result()
+                self.save_parameters()  # Save parameters before running the script
                 print(f"\n→ Best: f_ref={best_fref:.2f}Hz, alphap={best_alphap:.4f}, χ²={best_chi2:.3e}, matches={best_match_count} {best_match_ions}")
+                
+                self.mode_combo.setCurrentText('Frequency')
                 self.value_edit.setText(f"{best_fref:.2f}")
                 self.alphap_edit.setText(f"{best_alphap:.6f}")
-                ions_str = ",".join(best_match_ions)
-                self.highlight_ions_edit.setText(ions_str)
-                self.highlight_ions_edit.setText(ions_str)
                 self.overlay_sim_signal.emit(best_data)
                 QApplication.processEvents()
                 
@@ -656,6 +612,7 @@ class RionID_GUI(QWidget):
                 # after outer loop, restore value style
             self.value_edit.setStyleSheet(orig_value_style)
             self.save_parameters()  # Save parameters before running the script
+            
             
         except Exception as e:
             # On any error, also ensure any highlight is reset if needed

@@ -27,20 +27,21 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, highl
             mydata.particles_to_simulate = saved_data.particles_to_simulate
             mydata.moq = saved_data.moq
             mydata.total_mass = saved_data.total_mass
-
-        
+            mydata.peak_freqs = saved_data.peak_freqs
+            mydata.peak_widths_freq = saved_data.peak_widths_freq
+            mydata.peak_heights = saved_data.peak_heights
 
         mydata._calculate_srrf(fref = fref, brho = brho, ke = ke, gam = gam, correct = False)
 
         harmonics = [float(h) for h in harmonics.split()]
         mydata._simulated_data(brho = brho, harmonics = harmonics, mode = mode, sim_scalingfactor = sim_scalingfactor, nions = nions) # -> simulated frecs
+        
         # "Outputs"
         if nions:
             display_nions(int(nions), mydata.yield_data, mydata.nuclei_names, mydata.simulated_data_dict, refion, harmonics)
         if output_results:
             logger.info(f'Simulation results (ordered by frequency) will be saved to simulation_result.out')
         sort_index = argsort(mydata.srrf)
-        # Save the results to a file with the specified format
         # Save the results if output_results is True
         if output_results:
             save_simulation_results(mydata,mode, harmonics, sort_index)
