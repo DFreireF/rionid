@@ -18,7 +18,7 @@ class ImportData(object):
     '''
     Model (MVC)
     '''
-    def __init__(self, refion, highlight_ions, alphap, filename = None, reload_data = None, circumference = None, peak_threshold_pct=None,min_distance=None):
+    def __init__(self, refion, highlight_ions, alphap, filename = None, reload_data = None, circumference = None, peak_threshold_pct=None,min_distance=None,matching_freq_min=None,matching_freq_max=None):
         self.simulated_data_dict = {}  # Make sure this is initialized
         # Argparser arguments
         self.particles_to_simulate = []  # Default to an empty list
@@ -44,6 +44,8 @@ class ImportData(object):
         self.chi2= 0
         self.match_count=0
         self.min_distance=min_distance
+        self.matching_freq_min=matching_freq_min
+        self.matching_freq_max=matching_freq_max
         # Get the experimental data
         if filename is not None:
             if reload_data:
@@ -55,43 +57,55 @@ class ImportData(object):
             print("No experimental data file provided. Using default or simulated data.")
             self.experimental_data = None  # Set empty or simulated data here
 
-    def compute_matches(self, threshold):
-        '''
-        Match the experimental peaks in self.peak_freqs against the simulated spectrum:
-        - Compute chi2 and match_count
-        - Deduplicate matched ions and filter out the reference ion, then update self.highlight_ions
-        Returns (chi2, match_count, self.highlight_ions)
-        '''
-        # Build list of (frequency, ion_name) tuples from the simulated data
+    def compute_matches(self,
+                        match_threshold,
+                        match_frequency_min=None,
+                        match_frequency_max=None):
+        """
+        Match the experimental peaks in self.peak_freqs against the simulated spectrum,
+        but only for exp_freq in [match_frequency_min, match_frequency_max] if those are set.
+    
+        Args:
+            match_threshold (float): maximum allowed |sim_freq – exp_freq|
+            match_frequency_min (float, optional): lowest exp_freq to consider
+            match_frequency_max (float, optional): highest exp_freq to consider
+    
+        Returns:
+            tuple: (chi2, match_count, self.highlight_ions)
+        """
+        # Build list of (frequency, ion_name) from simulated_data_dict
         sim_items = []
         for sdata in self.simulated_data_dict.values():
             for row in sdata:
                 sim_items.append((float(row[0]), row[2]))
         sim_freqs = np.array([freq for freq, _ in sim_items])
     
-        # Initialize chi-squared and match counter
+        # Initialize accumulators
         chi2 = 0.0
         match_count = 0
+        matched_ions        = []
+        matched_sim_items   = []
+        matched_sim_freqs   = []
+        matched_exp_freqs   = []
+        matched_peak_widths = []
+        matched_peak_heights= []
     
-        # Prepare lists to store detailed match information
-        matched_ions           = []
-        matched_sim_items      = []
-        matched_sim_freqs      = []
-        matched_exp_freqs      = []
-        matched_peak_widths    = []
-        matched_peak_heights   = []
+        # Loop over each experimental peak
+        for exp_freq, width, height in zip(self.peak_freqs,
+                                           self.peak_widths_freq,
+                                           self.peak_heights):
+            # Skip peaks outside the desired frequency window
+            if match_frequency_min is not None and exp_freq < match_frequency_min:
+                continue
+            if match_frequency_max is not None and exp_freq > match_frequency_max:
+                continue
     
-        # Iterate over each experimental peak frequency, width, and height
-        for exp_freq, width, height in zip(self.peak_freqs, self.peak_widths_freq, self.peak_heights):
-            # Find the index of the closest simulated frequency
-            idx = np.argmin(np.abs(sim_freqs - exp_freq))
+            # Find the closest simulated frequency
+            idx  = np.argmin(np.abs(sim_freqs - exp_freq))
             diff = abs(sim_freqs[idx] - exp_freq)
-            if diff <= threshold:
-                # Update chi-squared and match count
+            if diff <= match_threshold:
                 chi2 += diff**2
                 match_count += 1
-    
-                # Record matched information
                 matched_ions.append(sim_items[idx][1])
                 matched_sim_items.append(sim_items[idx])
                 matched_sim_freqs.append(sim_freqs[idx])
@@ -99,25 +113,26 @@ class ImportData(object):
                 matched_peak_widths.append(width)
                 matched_peak_heights.append(height)
     
-        # Normalize chi-squared if any matches were found
+        # Finalize chi²
         chi2 = chi2 / match_count if match_count > 0 else float('inf')
     
-        # Deduplicate matched ions and exclude the reference ion
-        unique_ions = sorted(set(matched_ions))
+        # Deduplicate and filter out the reference ion
+        unique_ions   = sorted(set(matched_ions))
         filtered_ions = [ion for ion in unique_ions if ion != self.ref_ion]
     
-        # Update instance attributes with summary results
-        self.chi2           = chi2
-        self.match_count    = match_count
-        self.highlight_ions = filtered_ions
-        # Also store detailed match data for further analysis
-        self.matched_ions         = matched_ions
-        self.matched_sim_items    = matched_sim_items
-        self.matched_sim_freqs    = matched_sim_freqs
-        self.matched_exp_freqs    = matched_exp_freqs
-        self.matched_peak_widths  = matched_peak_widths
-        self.matched_peak_heights = matched_peak_heights
+        # Store results on self
+        self.chi2                = chi2
+        self.match_count         = match_count
+        self.highlight_ions      = filtered_ions
+        self.matched_ions        = matched_ions
+        self.matched_sim_items   = matched_sim_items
+        self.matched_sim_freqs   = matched_sim_freqs
+        self.matched_exp_freqs   = matched_exp_freqs
+        self.matched_peak_widths = matched_peak_widths
+        self.matched_peak_heights= matched_peak_heights
+    
         return chi2, match_count, filtered_ions
+
     
     def save_matched_result(self, output_file='best_match_details.csv'):
         """
@@ -202,17 +217,19 @@ class ImportData(object):
     
         freq, amp = self.experimental_data
         baseline = savgol_filter(amp, window_length=201, polyorder=3)
-        amp_corr = amp - baseline
+        baseline_min   = np.mean(baseline)
+        amp_corr = amp - baseline_min
+        #self.experimental_data = (freq, amp_corr)
         # 1) (Optional) smooth the amplitude to suppress high-freq noise
         amp_smooth = gaussian_filter1d(amp_corr, sigma=2)
     
         # 2) set up your thresholds
         rel_height = max(0.0, min(self.peak_threshold_pct, 1.0))
-        height_thresh = np.max(amp_smooth) * rel_height
+        height_thresh = np.max(amp) * rel_height - baseline_min
         min_dist    = float(self.min_distance)
         min_prom    = height_thresh * 0.3      # e.g. at least 30% of your threshold
         min_w       = 2                         # in samples, adjust to reject narrow spikes
-    
+        
         # 3) call find_peaks with prominence and minimum width
         peaks, props = find_peaks(
             amp_smooth,
@@ -226,13 +243,30 @@ class ImportData(object):
         widths, width_heights, left_ips, right_ips = peak_widths(
             amp_smooth, peaks, rel_height=0.5
         )
-    
-        # 5) convert to frequency units and store results
+        
+        # — apply matching_freq_min / matching_freq_max window —
+        if self.matching_freq_min is not None or self.matching_freq_max is not None:
+            # build a boolean mask, one entry per peak
+            mask = np.ones_like(peaks, dtype=bool)
+            # lower bound
+            if self.matching_freq_min is not None:
+                mask &= (freq[peaks] >= self.matching_freq_min)
+            # upper bound
+            if self.matching_freq_max is not None:
+                mask &= (freq[peaks] <= self.matching_freq_max)
+            # apply mask to peaks & width arrays
+            peaks        = peaks[mask]
+            widths       = widths[mask]
+            width_heights= width_heights[mask]
+            left_ips     = left_ips[mask]
+            right_ips    = right_ips[mask]
+        
+        # 5) convert to frequency units and store only the filtered peaks
         self.peak_freqs       = freq[peaks]
-        self.peak_heights     = amp[peaks]   # use raw amp or amp_smooth[peaks]
+        self.peak_heights     = amp[peaks]   # raw amplitude
         self.peak_widths_freq = (
-            freq[np.round(right_ips).astype(int)] -
-            freq[np.round(left_ips) .astype(int)]
+            freq[np.round(right_ips).astype(int)]
+          - freq[np.round(left_ips) .astype(int)]
         )
     
         # optional: inspect what remains

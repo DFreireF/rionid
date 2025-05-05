@@ -47,6 +47,8 @@ class RionID_GUI(QWidget):
                 self.alphap_max_edit.setText(parameters.get('alphap_max', ''))
                 self.alphap_step_edit.setText(parameters.get('alphap_step', ''))
                 self.threshold_edit.setText(str(parameters.get('threshold', '')))
+                self.matching_freq_min_edit.setText(str(parameters.get('matching_freq_min', '')))
+                self.matching_freq_max_edit.setText(str(parameters.get('matching_freq_max', '')))
                 self.fref_min_edit.setText(parameters.get('fref_min', ''))
                 self.fref_max_edit.setText(parameters.get('fref_max', ''))
                 self.peak_thresh_edit.setText(str(parameters.get('peak_threshold_pct', '')))
@@ -72,6 +74,8 @@ class RionID_GUI(QWidget):
             'alphap_max': self.alphap_max_edit.text(),
             'alphap_step': self.alphap_step_edit.text(),
             'threshold': self.threshold_edit.text(),
+            'matching_freq_min': self.matching_freq_min_edit.text(),
+            'matching_freq_max': self.matching_freq_max_edit.text(),
             'peak_threshold_pct': float(self.peak_thresh_edit.text()),
             'min_distance': float(self.min_distance_edit.text()),
             'fref_min': self.fref_min_edit.text(),
@@ -248,17 +252,35 @@ class RionID_GUI(QWidget):
         hbox_peak_min_distance.addWidget(self.min_distance_label)
         hbox_peak_min_distance.addWidget(self.min_distance_edit)
         self.vbox.addLayout(hbox_peak_min_distance)
+        # 
+        hbox_matching_freq_min = QHBoxLayout()
+        self.matching_freq_min_label = QLabel('Peak search range min. (Hz):')
+        self.matching_freq_min_label.setFont(common_font)
+        self.matching_freq_min_edit = QLineEdit()
+        self.matching_freq_min_edit.setFont(common_font)
+        hbox_matching_freq_min.addWidget(self.matching_freq_min_label)
+        hbox_matching_freq_min.addWidget(self.matching_freq_min_edit)
+        self.vbox.addLayout(hbox_matching_freq_min)
+         
+        hbox_matching_freq_max = QHBoxLayout()
+        self.matching_freq_max_label = QLabel('Peak search range max. (Hz):')
+        self.matching_freq_max_label.setFont(common_font)
+        self.matching_freq_max_edit = QLineEdit()
+        self.matching_freq_max_edit.setFont(common_font)
+        hbox_matching_freq_max.addWidget(self.matching_freq_max_label)
+        hbox_matching_freq_max.addWidget(self.matching_freq_max_edit)
+        self.vbox.addLayout(hbox_matching_freq_max)
 
         # Matching threshold
         hbox_threshold = QHBoxLayout()
-        self.threshold_label = QLabel('Matching threshold (Hz):')
+        self.threshold_label = QLabel('Sim. - Exp. max. distance (Hz):')
         self.threshold_label.setFont(common_font)
         self.threshold_edit  = QLineEdit()
         self.threshold_edit.setFont(common_font)
         hbox_threshold.addWidget(self.threshold_label)
         hbox_threshold.addWidget(self.threshold_edit)
         self.vbox.addLayout(hbox_threshold)
-        
+                
         self.run_button = QPushButton('Run')
         self.run_button.setStyleSheet("""
             QPushButton {
@@ -293,12 +315,12 @@ class RionID_GUI(QWidget):
         self.alphap_step_edit.setFont(common_font)
     
 
-        self.fref_min_label = QLabel('f_ref min (Hz):')
+        self.fref_min_label = QLabel('Reference frequency min (Hz):')
         self.fref_min_label.setFont(common_font)
         self.fref_min_edit  = QLineEdit()
         self.fref_min_edit.setFont(common_font)
 
-        self.fref_max_label = QLabel('f_ref max (Hz):')
+        self.fref_max_label = QLabel('Reference frequency max (Hz):')
         self.fref_max_label.setFont(common_font)
         self.fref_max_edit  = QLineEdit()
         self.fref_max_edit.setFont(common_font)
@@ -395,6 +417,12 @@ class RionID_GUI(QWidget):
                 threshold = float(self.threshold_edit.text())
             except ValueError:
                 raise ValueError("Please enter a valid number for matching threshold")
+            try:
+                matching_freq_min = float(self.matching_freq_min_edit.text())
+                matching_freq_max = float(self.matching_freq_max_edit.text())
+            except ValueError:
+                raise ValueError("Please enter a valid number for matching_freq_min_edit")
+                raise ValueError("Please enter a valid number for matching_freq_max_edit")
 
             args = argparse.Namespace(datafile=datafile,
                                         filep=filep or None,
@@ -410,13 +438,15 @@ class RionID_GUI(QWidget):
                                         reload_data=reload_data or None,
                                         peak_threshold_pct=peak_threshold_pct,
                                         min_distance = min_distance,
-                                        output_results=True
+                                        output_results=True,
+                                        matching_freq_min=matching_freq_min,
+                                        matching_freq_max=matching_freq_max
                                      )
             self.save_parameters()  # Save parameters before running the script
             # Simulate controller execution and emit data
             data = import_controller(**vars(args))
             if data:
-                best_chi2, best_match_count, best_match_ions = data.compute_matches(threshold)
+                best_chi2, best_match_count, best_match_ions = data.compute_matches(threshold,matching_freq_min,matching_freq_max)
                 data.save_matched_result()
                 self.visualization_signal.emit(data)        
     
@@ -453,6 +483,19 @@ class RionID_GUI(QWidget):
             sim_scalingfactor = self.sim_scalingfactor_edit.text().strip()
             sim_scalingfactor = float(sim_scalingfactor) if sim_scalingfactor else None
             reload_data = self.reload_data_checkbox.isChecked()
+            try:
+                threshold = float(self.threshold_edit.text())
+            except ValueError:
+                raise ValueError("Please enter a valid number for matching threshold")
+            try:
+                matching_freq_min = float(self.matching_freq_min_edit.text())
+                matching_freq_max = float(self.matching_freq_max_edit.text())
+            except ValueError:
+                raise ValueError("Please enter a valid number for matching_freq_min_edit")
+                raise ValueError("Please enter a valid number for matching_freq_max_edit")
+                
+            fref_min = float(self.fref_min_edit.text() or '-inf')
+            fref_max = float(self.fref_max_edit.text() or 'inf')
 
             # --- 1) Load experimental data and detect peaks ---
             model = ImportData(
@@ -463,7 +506,9 @@ class RionID_GUI(QWidget):
                 reload_data=reload_data,
                 circumference=circumference,
                 peak_threshold_pct=peak_threshold_pct,
-                min_distance=min_distance
+                min_distance=min_distance,
+                matching_freq_min=matching_freq_min,
+                matching_freq_max=matching_freq_max
             )
             if not hasattr(model, 'peak_freqs') or len(model.peak_freqs) == 0:
                 raise RuntimeError("Could not detect any experimental peaks.")
@@ -484,13 +529,6 @@ class RionID_GUI(QWidget):
 
             results = []
  
-            try:
-                threshold = float(self.threshold_edit.text())
-            except ValueError:
-                raise ValueError("Please enter a valid number for matching threshold")
-                
-            fref_min = float(self.fref_min_edit.text() or '-inf')
-            fref_max = float(self.fref_max_edit.text() or 'inf')
             # 过滤实验峰：
             exp_peaks_hz = [f for f in model.peak_freqs]
             exp_peaks_hz_filtering = [f for f in model.peak_freqs if fref_min <= f <= fref_max]
@@ -555,13 +593,15 @@ class RionID_GUI(QWidget):
                         peak_threshold_pct=peak_threshold_pct,
                         min_distance=min_distance,
                         output_results=False,
-                        saved_data=saved_data
+                        saved_data=saved_data,
+                        matching_freq_min=matching_freq_min,
+                        matching_freq_max=matching_freq_max
                     )
                     data_i = import_controller(**vars(sim_args))
                     if data_i is None:
                         continue
                     
-                    chi2, match_count, highlights = data_i.compute_matches(threshold)
+                    chi2, match_count, highlights = data_i.compute_matches(threshold,matching_freq_min,matching_freq_max)
                     results.append((f_ref, test_alphap, chi2, match_count,highlights))
                     if first_iteration:
                         saved_data = data_i
@@ -592,10 +632,12 @@ class RionID_GUI(QWidget):
                     peak_threshold_pct=peak_threshold_pct,
                     min_distance=min_distance,
                     output_results=True,
-                    saved_data=saved_data
+                    saved_data=saved_data,
+                    matching_freq_min=matching_freq_min,
+                    matching_freq_max=matching_freq_max
                 )
                 best_data = import_controller(**vars(sim_args))
-                best_chi2, best_match_count, best_match_ions = best_data.compute_matches(threshold)
+                best_chi2, best_match_count, best_match_ions = best_data.compute_matches(threshold,matching_freq_min,matching_freq_max)
                 best_data.save_matched_result()
                 self.save_parameters()  # Save parameters before running the script
                 print(f"\n→ Best: f_ref={best_fref:.2f}Hz, alphap={best_alphap:.4f}, χ²={best_chi2:.3e}, matches={best_match_count} {best_match_ions}")

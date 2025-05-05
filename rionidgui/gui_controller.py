@@ -3,7 +3,7 @@ from loguru import logger
 from rionid.importdata import ImportData
 from barion.amedata import AMEData
 import time
-def import_controller(datafile=None, filep=None, alphap=None, refion=None, highlight_ions=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, sim_scalingfactor=None, value=None, reload_data=None,peak_threshold_pct = None,min_distance=None,output_results=None,saved_data = None):
+def import_controller(datafile=None, filep=None, alphap=None, refion=None, highlight_ions=None, harmonics = None, nions = None, amplitude=None, circumference = None, mode=None, sim_scalingfactor=None, value=None, reload_data=None,peak_threshold_pct = None,min_distance=None,output_results=None,saved_data = None,matching_freq_min=None,matching_freq_max=None):
     try:
         start_time = time.time()  # Record start time for each test_alphap iteration
         # initializations
@@ -14,7 +14,7 @@ def import_controller(datafile=None, filep=None, alphap=None, refion=None, highl
         elif mode == 'Kinetic Energy': ke = float(value)
         elif mode == 'Gamma': gam = float(value)
         # Calculations | ImportData library
-        mydata = ImportData(refion, highlight_ions, float(alphap), filename = datafile, reload_data = reload_data, circumference = circumference,peak_threshold_pct=peak_threshold_pct,min_distance=min_distance)
+        mydata = ImportData(refion, highlight_ions, float(alphap), filename = datafile, reload_data = reload_data, circumference = circumference,peak_threshold_pct=peak_threshold_pct,min_distance=min_distance,matching_freq_min=matching_freq_min,matching_freq_max=matching_freq_max)
         end_time1 = time.time()  # Record end time after each iteration
         elapsed_time1 = end_time1 - start_time  # Calculate elapsed time for this iteration
         
