@@ -293,7 +293,7 @@ class ImportData(object):
         self.ame_data = self.ame.ame_table
         # Read with lise reader  # Extend lise to read not just lise files? 
         lise = LISEreader(filep)
-        self.particles_to_simulate = lise.get_info_all(verbose)
+        self.particles_to_simulate = lise.get_info_all(verbose=verbose)
         
     def _calculate_moqs(self, particles = None):
         # Calculate the  moq from barion of the particles present in LISE file or of the particles introduced

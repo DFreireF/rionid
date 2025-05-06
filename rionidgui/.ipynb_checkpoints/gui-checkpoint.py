@@ -20,7 +20,7 @@ class MainWindow(QWidget):
         self.setWindowTitle("RionID+")
         width = QDesktopWidget().screenGeometry(-1).width()
         height = QDesktopWidget().screenGeometry(-1).height()
-        self.setGeometry(100, 100, width, height)  # Set window size
+        self.setGeometry(10, 10, int(width * 0.9), int(height * 0.6))
 
         # Create a QSplitter to hold both the input and the visualization
         splitter = QSplitter(Qt.Horizontal)

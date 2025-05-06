@@ -219,21 +219,7 @@ class RionID_GUI(QWidget):
         # value
         self.value_label = QLabel('Value:')
         self.value_edit = QLineEdit()
-        self.value_label.setFont(common_font)
-        self.value_edit.setFont(common_font)
-    
-        # Optional feature fold group
-        self.nions_label = QLabel('Number of ions to display:')
-        self.nions_edit = QLineEdit()
-        self.correction_label = QLabel('Second-order correction (a0, a1, a2):')
-        self.correction_edit = QLineEdit()
-        self.optional_features_group = CollapsibleGroupBox("Optional Features")
-        self.optional_features_group.setFont(common_font)
-        self.optional_features_group.addWidget(self.nions_label)
-        self.optional_features_group.addWidget(self.nions_edit)
-        self.optional_features_group.addWidget(self.correction_label)
-        self.optional_features_group.addWidget(self.correction_edit)
-    
+            
         # Overload, Quick PID, αₚ main input
         self.vbox.addWidget(self.reload_data_checkbox)
         hbox_alphap = QHBoxLayout()
@@ -331,7 +317,20 @@ class RionID_GUI(QWidget):
         hbox_threshold.addWidget(self.threshold_label)
         hbox_threshold.addWidget(self.threshold_edit)
         self.vbox.addLayout(hbox_threshold)
-                
+        
+        # Optional feature fold group
+        self.nions_label = QLabel('Number of ions to display:')
+        self.nions_edit = QLineEdit()
+        hbox_nions = QHBoxLayout()
+        hbox_nions.addWidget(self.nions_label)
+        hbox_nions.addWidget(self.nions_edit)
+        self.vbox.addLayout(hbox_nions)
+
+        self.correction_label = QLabel('Second-order correction (a0, a1, a2):')
+        self.correction_edit = QLineEdit()
+        self.vbox.addWidget(self.correction_label)
+        self.vbox.addWidget(self.correction_edit)
+        
         self.run_button = QPushButton('Run')
         self.run_button.setStyleSheet("""
             QPushButton {
@@ -346,8 +345,11 @@ class RionID_GUI(QWidget):
         self.run_button.clicked.connect(self.run_script)
         hbox_run_button = QHBoxLayout()
         hbox_run_button.addWidget(self.run_button)
-        self.vbox.addWidget(self.optional_features_group)
         self.vbox.addLayout(hbox_run_button)
+
+
+
+        
         # ——— Quick PID 设置 ———
         # αₚ scan range
         self.alphap_min_label = QLabel('<i>α<sub>p</sub> or γ<sub>t</sub> min:</i>')
@@ -396,13 +398,18 @@ class RionID_GUI(QWidget):
         quick_pid_group.setFont(common_font)
         qp_layout = QVBoxLayout()
         # αₚ scan range
-        qp_layout.addWidget(self.alphap_min_label)
-        qp_layout.addWidget(self.alphap_min_edit)
-        qp_layout.addWidget(self.alphap_max_label)
-        qp_layout.addWidget(self.alphap_max_edit)
-        qp_layout.addWidget(self.alphap_step_label)
-        qp_layout.addWidget(self.alphap_step_edit)
-        
+        hbox_alphap_min = QHBoxLayout()
+        hbox_alphap_min.addWidget(self.alphap_min_label)
+        hbox_alphap_min.addWidget(self.alphap_min_edit)
+        qp_layout.addLayout(hbox_alphap_min)       
+        hbox_alphap_max = QHBoxLayout()
+        hbox_alphap_max.addWidget(self.alphap_max_label)
+        hbox_alphap_max.addWidget(self.alphap_max_edit)
+        qp_layout.addLayout(hbox_alphap_max)   
+        hbox_alphap_step = QHBoxLayout()
+        hbox_alphap_step.addWidget(self.alphap_step_label)
+        hbox_alphap_step.addWidget(self.alphap_step_edit)
+        qp_layout.addLayout(hbox_alphap_step)  
         # reference frequency scan range
         qp_layout.addWidget(self.fref_min_label)
         # make an HBox for those two
