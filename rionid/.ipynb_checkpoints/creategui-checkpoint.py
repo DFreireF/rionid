@@ -17,7 +17,9 @@ class CreateGUI(object):
         self.idx_case = yield_option
         self.show = show
         
-       
+    def getPlotWidget(self):
+        return self.plot_widget    
+        
     def _view(self, exp_data, simulated_data_dict, filename = 'Spectrum', out = ''):
 
         self.create_canvas()
