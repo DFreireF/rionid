@@ -1,2 +1,7 @@
 ezodf
 lxml
+loguru
+fortranformat
+pytdms
+nibabel
+uproot3
