@@ -329,7 +329,7 @@ class ImportData(object):
 
             
     def build_ion_name(self,p):
-        return f"{int(p[1])}{p[0]}+{int(p[2])}"
+        return f"{int(p[1])}{p[0]}+{int(p[4][-1])}"
         
     def _simulated_data(self, brho = None, harmonics = None, particles = False,mode = None, sim_scalingfactor = None, nions = None):
        for harmonic in harmonics:
@@ -342,11 +342,6 @@ class ImportData(object):
                self.brho = self.calculate_brho_relativistic(ref_moq, ref_frequency, self.ring.circumference, harmonic) #improve this line
        # Dictionary with the simulated meassured frecuency and expected yield, for each harmonic
        self.simulated_data_dict = dict()
-       # Set the yield of the particles to simulate
-       #if particles:
-       #    self.yield_data = array([1 for i in range(len(self.moq))])
-       #else:
-       #    self.yield_data = array([lise[5] for lise in self.particles_to_simulate])
        moq_keys = list(self.moq.keys())
        self.yield_data = array([
            next((p[5] for p in self.particles_to_simulate if self.build_ion_name(p) == key), 0)
