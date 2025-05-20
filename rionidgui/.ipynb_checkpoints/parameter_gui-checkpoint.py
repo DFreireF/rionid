@@ -585,10 +585,10 @@ class RionID_GUI(QWidget):
             self.save_parameters()  # Save parameters before running the script
             # Simulate controller execution and emit data
             data = import_controller(**vars(args))
-            if data:
+            if data.experimental_data:
                 best_chi2, best_match_count, best_match_ions = data.compute_matches(threshold,matching_freq_min,matching_freq_max)
                 data.save_matched_result(matched_result)
-                self.visualization_signal.emit(data)        
+            self.visualization_signal.emit(data)        
     
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'An error occurred: {str(e)}')

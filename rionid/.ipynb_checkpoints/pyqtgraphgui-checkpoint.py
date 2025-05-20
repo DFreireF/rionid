@@ -153,7 +153,6 @@ class CreatePyGUI(QMainWindow):
                     #z_value = self.get_z_exp_at_freq(freq, freq_range)
                 label_color = None
                 # If the label is in highlight_ions, set color to green
-                
                 if highlight_ions is not None and label in highlight_ions:
                     label_color = 'green'  # Set to green for highlighted ions
                 elif label == refion:
@@ -179,7 +178,10 @@ class CreatePyGUI(QMainWindow):
                 # Position the text above the vertical line
                 if logy_checked:
                     # Adjust vertical positioning slightly above the line
-                    y_position = np.log10(z_value)
+                    if z_value!=0:
+                        y_position = np.log10(z_value)
+                    else:
+                        y_position = 0
                 else:
                     y_position = z_value                
                 # Shift text horizontally by half of its width to center it above the vertical line
