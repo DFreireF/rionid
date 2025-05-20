@@ -533,8 +533,8 @@ class RionID_GUI(QWidget):
         try:
             print("Running script...")
             datafile = self.datafile_edit.text()
-            if not datafile:
-                raise ValueError("No experimental data provided. Please enter any filename and click Run, the program will automatically calculate the simulated data.")
+            #if not datafile:
+            #    raise ValueError("No experimental data provided. Please enter any filename and click Run, the program will automatically calculate the simulated data.")
 
             filep = self.filep_edit.text()
             alphap = float(self.alphap_edit.text())
